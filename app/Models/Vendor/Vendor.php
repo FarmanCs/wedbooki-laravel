@@ -2,44 +2,54 @@
 
 namespace App\Models\Vendor;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Vendor\Category;
+use App\Models\Vendor\Business;
+use App\Models\Vendor\Booking;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 
 class Vendor extends Authenticatable
 {
     use HasApiTokens, HasFactory;
 
+
     protected $fillable = [
         'full_name',
         'email',
         'phone_no',
+        'pending_email',
         'country_code',
+        'profile_image',
+        'years_of_experience',
+        'languages',
+        'team_members',
+        'specialties',
+        'about',
         'country',
         'city',
+        'role',
         'password',
-        'category',
-        'custom_vendor_id',
-        'business_profile_id',
-        'profile_image',
-        'cover_image',
-        'about',
-        'years_of_experince',
-        'team_members',
-        'languages',
-        'specialties',
+        'category_id',
+        'postal_code',
         'otp',
-        'pending_email',
-        'google_id',
-        'apple_id',
-        'signup_method',
+        'business_id',
+        'profile_verification',
         'email_verified',
-        'is_verified',
+        'stripe_account_id',
+        'bank_last4',
+        'bank_name',
+        'account_holder_name',
+        'payout_currency',
+        'custom_vendor_id',
+        'google_id',
+        'signup_method',
+        'cover_image',
+        'last_login',
         'account_deactivated',
         'account_soft_deleted',
         'account_soft_deleted_at',
-        'role',
-        'services',
+        'auto_hard_delete_after_days',
     ];
 
     protected $hidden = [
@@ -50,26 +60,39 @@ class Vendor extends Authenticatable
     protected $casts = [
         'languages' => 'array',
         'specialties' => 'array',
-        'services' => 'array',
+        'team_members' => 'integer',
         'email_verified' => 'boolean',
-        'is_verified' => 'boolean',
         'account_deactivated' => 'boolean',
         'account_soft_deleted' => 'boolean',
         'account_soft_deleted_at' => 'datetime',
+        'last_login' => 'datetime',
     ];
 
-    public function businessProfile()
+    // -------------------------
+    //      RELATIONSHIPS
+    // -------------------------
+
+    /**
+     * Vendor belongs to a business
+     */
+    public function business()
     {
-        return $this->belongsTo(Business::class, 'business_profile_id');
+        return $this->belongsTo(Business::class, 'business_id');
     }
 
+    /**
+     * Vendor belongs to a category
+     */
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
+    /**
+     * Vendor has many bookings (vendor_id)
+     */
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'venue_id');
+        return $this->hasMany(Booking::class, 'vendor_id');
     }
 }

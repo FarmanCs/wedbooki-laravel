@@ -3,7 +3,6 @@
 namespace App\Mail\Vendor;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,12 +12,18 @@ class HostBookingMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $host;
+    public $business;
+    public $formattedTime;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($host, $business, $formattedTime)
     {
-        //
+        $this->host = $host;
+        $this->business = $business;
+        $this->formattedTime = $formattedTime;
     }
 
     /**
@@ -37,15 +42,10 @@ class HostBookingMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.host_booking', // Your Blade view
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];

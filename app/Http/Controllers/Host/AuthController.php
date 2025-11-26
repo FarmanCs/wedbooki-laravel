@@ -63,7 +63,7 @@ class AuthController extends Controller
             'signup_method' => 'email',
             'otp' => $this->otpService->generateOtp()
         ]);
-        $token = $host->createToken('api_token', ['server:update', 'otp:verify'])->plainTextToken;
+        $token = $host->createToken('api_token', ['can:update', 'otp:verify'])->plainTextToken;
 
         $this->emailService->sendSignupOtp($host, $host->otp);
 
@@ -191,6 +191,7 @@ class AuthController extends Controller
             // 2. Get OTP from request
             $otp = $request->input('otp');
 
+
             // 3. Find host
             $host = Host::find($userId);
             if (!$host) {
@@ -210,7 +211,7 @@ class AuthController extends Controller
             // Remove old tokens for security
             $host->tokens()->delete();
 
-            $hostAccessToken = $host->createToken('api_token', ['server:update'])->plainTextToken;
+            $hostAccessToken = $host->createToken('api_token', ['otp:verify'])->plainTextToken;
 
             // 7. Return response
             return response()->json([
@@ -257,7 +258,7 @@ class AuthController extends Controller
         // Remove old tokens
         $host->tokens()->delete();
 
-        $hostAccessToken = $host->createToken('api_token', ['server:update', 'otp:verify'])
+        $hostAccessToken = $host->createToken('api_token', ['can:update', 'otp:verify'])
             ->plainTextToken;
 
         // 6. RETURN RESPONSE
@@ -308,6 +309,7 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'password' => 'required|min:8|regex:/[A-Z]/'
         ]);
@@ -318,6 +320,8 @@ class AuthController extends Controller
 
         // Get authenticated user ID (like req.userId in Express)
         $userId = $request->user()->id;
+
+//        dd($userId);
 
         $host = Host::find($userId);
 
@@ -341,7 +345,7 @@ class AuthController extends Controller
     }
 
 
-    public function hostUpdatePassword(Request $request, $id)
+    public function hostUpdatePassword(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -355,10 +359,11 @@ class AuthController extends Controller
                 ], 400);
             }
 
+            $hostid = auth()->user()->id;
             $currentPassword = $request->input('currentPassword');
             $newPassword = $request->input('newPassword');
 
-            $user = Host::find($id);
+            $user = Host::find($hostid);
 
             if (!$user) {
                 return response()->json(['message' => 'user not exist'], 404);
@@ -373,12 +378,11 @@ class AuthController extends Controller
             $user->password = Hash::make($newPassword);
             $user->save();
 
-            // Send email notification
-            $updatePassTemp = $this->emailService->updatePasswordTemplate($user->full_name);
-            $this->emailService->sendEmail($user->email, $updatePassTemp);
+            // Send email notification using the new service method
+            $this->emailService->sendPasswordUpdateConfirmation($user);
 
-            // Generate new Sanctum token (similar to JWT in Express)
-            $user->tokens()->delete(); // optional: remove old tokens
+            // Generate new Sanctum token
+            $user->tokens()->delete(); // Remove old tokens
             $hostAccessToken = $user->createToken('api_token', ['server:update'])->plainTextToken;
 
             return response()->json([
@@ -388,7 +392,6 @@ class AuthController extends Controller
 
         } catch (\Exception $error) {
             \Log::error('HostUpdatePassword Error: ' . $error->getMessage());
-            // fallback response as in your Express code
             return response()->json(['message' => 'password updated Successfully']);
         }
     }
@@ -411,7 +414,7 @@ class AuthController extends Controller
 
     }
 
-    public  function appleLogin()
+    public function appleLogin()
     {
 
     }

@@ -23,17 +23,21 @@ Route::prefix('/v1/host')->group(function () {
     // ---------------------------
     Route::post('/signup', [AuthController::class, 'signup']);
     Route::post('/host-verify-signup', [AuthController::class, 'verifySignup']);
-    Route::post('/host-resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
+    Route::get('/resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
+
+    //pending routes for the moments
     Route::post('/google-auth', [AuthController::class, 'googleLogin']);
     Route::post('/apple-auth', [AuthController::class, 'appleLogin']);
-    Route::post('/resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
+
+
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
-    Route::post('/verify-otp', [AuthController::class, 'hostVerifyOtp']);
+
 
     Route::group(['prefix' => '/', 'middleware' => ['auth:sanctum']], function () {
+        Route::post('/verify-otp', [AuthController::class, 'hostVerifyOtp']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-        Route::put('/update-password/{id}', [AuthController::class, 'hostUpdatePassword']);
+        Route::patch('/update-password/{id?}', [AuthController::class, 'hostUpdatePassword']);
 
         Route::post('/password-change-request/{id}', [AuthController::class, 'passwordChangeRequest']);
         Route::post('/password-change-verify/{id}', [AuthController::class, 'passwordChangeVerify']);
@@ -77,30 +81,33 @@ Route::prefix('/v1/host')->group(function () {
         // BOOKINGS
         // ---------------------------
         Route::post('/book-venue/{id?}', [BookingController::class, 'createVenueBooking']);
+
+
+        //pending routes . . .  all booking
         Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
         Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
 
         Route::post('/book-vendor/{id}', [BookingController::class, 'createVendorBooking']);
         Route::put('/cancel-booking/{id}', [BookingController::class, 'cancelBooking']);
 
-        Route::get('/my-bookings/{id}', [BookingController::class, 'getAllMyBookings']);
+        Route::get('/my-bookings/{id?}', [BookingController::class, 'getAllBookings']);
         Route::get('/getbooking/{bookingId}', [BookingController::class, 'getBookingById']);
         Route::get('/host-booking-detail/{id}', [BookingController::class, 'hostBookingDetail']);
 
         Route::patch('/get-booked-vendors', [BookingController::class, 'getBookedVendors']);
 
         // ---------------------------
-        // REVIEWS
+        // REVIEWS working on these
         // ---------------------------
-        Route::post('/give-review/{id}', [ReviewController::class, 'giveReview']);
-        Route::put('/update-review/{id}', [ReviewController::class, 'editReview']);
-        Route::delete('/delete-review/{id}', [ReviewController::class, 'deleteReview']);
-        Route::get('/get-vendor-reviews/{id}', [ReviewController::class, 'getVendorReviews']);
+        Route::post('/give-review/{id?}', [ReviewController::class, 'giveReview']);
+        Route::patch('/update-review/{id?}', [ReviewController::class, 'editReview']);
+        Route::delete('/delete-review/{id?}', [ReviewController::class, 'deleteReview']);
+        Route::get('/get-vendor-reviews/{id?}', [ReviewController::class, 'getAllVendorReviews']);
 
         // ---------------------------
         // GUEST GROUPS
         // ---------------------------
-        Route::post('/create-guest-group/{id}', [GuestGroupController::class, 'createGroup']);
+        Route::post('/create-guest-group/{id?}', [GuestGroupController::class, 'createGroup']);
         Route::post('/add-guest-to-group/{id}', [GuestGroupController::class, 'addGuestsToGroup']);
         Route::put('/update-guest/{id}', [GuestGroupController::class, 'updateGuest']);
         Route::get('/update-guest-status/{id}', [GuestGroupController::class, 'rsvpGuest']);

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Models;
+namespace App\Models\Host;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Chat extends Model
+class GuestGroup extends Model
 {
     //
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Host;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review;
+use App\Models\Host\Review;
 use App\Models\Vendor\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;

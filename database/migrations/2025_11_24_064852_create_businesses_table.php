@@ -10,14 +10,10 @@ return new class extends Migration
     {
         Schema::create('businesses', function (Blueprint $table) {
             $table->id();
-            $table->string('country')->default('United Kingdom');
-            $table->string('city')->default('');
-            $table->string('zip')->nullable();
-            $table->string('street_address')->default('');
-            $table->string('company_name')->nullable();
+            $table->string('company_name');
             $table->text('business_desc')->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
-            $table->foreignId('sub_category_id')->nullable()->constrained('sub_categories')->onDelete('set null');
+            $table->foreignId('subcategory_id')->nullable()->constrained('subcategories')->onDelete('set null');
             $table->string('venue_type')->nullable();
             $table->enum('member_type', ['general', 'premium'])->default('general');
             $table->string('business_registration')->nullable();
@@ -28,15 +24,15 @@ return new class extends Migration
             $table->string('website')->nullable();
             $table->json('social_links')->nullable();
             $table->string('postal_code')->nullable();
-            $table->string('business_email')->nullable();
-            $table->string('business_phone')->nullable();
+            $table->string('businessEmail')->nullable();
+            $table->string('businessPhone')->nullable();
             $table->json('features')->nullable();
             $table->enum('profile_verification', ['under_review', 'rejected', 'verified'])->default('verified');
             $table->json('services')->nullable();
             $table->json('faqs')->nullable();
             $table->json('portfolio_images')->nullable();
             $table->json('videos')->nullable();
-            $table->string('street')->nullable();
+            $table->string('street_address')->nullable();
             $table->integer('capacity')->nullable();
             $table->integer('view_count')->default(0);
             $table->integer('social_count')->default(0);
@@ -44,11 +40,8 @@ return new class extends Migration
             $table->integer('payment_days_advance')->default(7);
             $table->integer('payment_days_final')->default(1);
             $table->integer('services_radius')->default(50);
-            $table->integer('advance_percentage')->default(10);
+            $table->decimal('advance_percentage', 5, 2)->default(10);
             $table->timestamps();
-
-            $table->index('category_id');
-            $table->index('is_featured');
         });
     }
 

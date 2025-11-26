@@ -2,10 +2,9 @@
 
 namespace App\Models\Vendor;
 
-use App\Models\Models\Category;
+use App\Models\Host\Review;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 
 class Business extends Model
 {
@@ -13,65 +12,82 @@ class Business extends Model
 
     protected $fillable = [
         'company_name',
-        'category',
-        'subcategory',
+        'business_desc',
+        'category_id',
+        'subcategory_id',
+        'venue_type',
+        'member_type',
         'business_registration',
         'business_license_number',
-        'vendor_type',
-        'business_desc',
-        'features',
-        'businessEmail',
-        'businessPhone',
-        'country',
-        'city',
-        'zip',
-        'street_address',
+        'rating',
+        'is_featured',
+        'business_type',
         'website',
         'social_links',
         'postal_code',
-        'capacity',
+        'businessEmail',
+        'businessPhone',
+        'features',
+        'profile_verification',
         'services',
-        'addi_services',
         'faqs',
-        'PaymentDaysAdvance',
-        'PaymentDaysFinal',
-        'ServicesRadius',
-        'advancePercentage',
         'portfolio_images',
         'videos',
-        'packages',
+        'street_address',
+        'capacity',
         'view_count',
         'social_count',
+        'last_login',
+        'payment_days_advance',
+        'payment_days_final',
+        'services_radius',
+        'advance_percentage',
     ];
 
     protected $casts = [
-        'features' => 'array',
         'social_links' => 'array',
+        'features' => 'array',
         'services' => 'array',
-        'addi_services' => 'array',
         'faqs' => 'array',
         'portfolio_images' => 'array',
         'videos' => 'array',
-        'packages' => 'array',
+        'last_login' => 'datetime',
     ];
+
+    // Relationships
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category');
+        return $this->belongsTo(\App\Models\Models\Category::class, 'category_id');
     }
 
-    public function packagesRelation()
+    public function subcategory()
+    {
+        return $this->belongsTo(\App\Models\Models\Subcategory::class, 'subcategory_id');
+    }
+
+    public function packages()
     {
         return $this->hasMany(Package::class, 'business_id');
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'business_id');
+    }
+
     public function vendor()
     {
-        return $this->hasOne(Vendor::class, 'business_profile_id');
+        return $this->hasOne(Vendor::class, 'business_id');
     }
 
     public function timings()
     {
         return $this->hasOne(Timing::class, 'business_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'business_id');
     }
 }

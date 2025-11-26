@@ -3,7 +3,6 @@
 namespace App\Mail\Vendor;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,12 +12,20 @@ class VendorBookingMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $vendor;
+    public $business;
+    public $formattedTime;
+    public $hostName;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($vendor, $business, $formattedTime, $hostName)
     {
-        //
+        $this->vendor = $vendor;
+        $this->business = $business;
+        $this->formattedTime = $formattedTime;
+        $this->hostName = $hostName;
     }
 
     /**
@@ -27,7 +34,7 @@ class VendorBookingMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vendor Booking Mail',
+            subject: 'New Booking Received',
         );
     }
 
@@ -37,17 +44,7 @@ class VendorBookingMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.vendor_booking'
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }

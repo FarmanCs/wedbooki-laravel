@@ -3,180 +3,256 @@
 namespace App\Http\Controllers\Host;
 
 use App\Http\Controllers\Controller;
-use App\Models\Business;
-use App\Models\Review;
+use App\Models\Host\Review;
+use App\Models\Host\Host;
+use App\Models\Vendor;
 use App\Models\Vendor\Booking;
-use App\Models\VendorReply;
+use App\Models\Vendor\Business;
+use App\Models\Vendor\VendorReply;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
-    public function giveReview(Request $request, $hostId)
+    public function giveReview(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'business_id' => 'required|exists:businesses,id',
-            'review_text' => 'required|string',
-            'points' => 'required|integer|min:1|max:5'
-        ]);
+        try {
+            $hostId = auth()->id(); // Sanctum Auth ID
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+            $validator = Validator::make($request->all(), [
+                'business_id' => 'required|exists:businesses,id',
+                'review_text' => 'required|string',
+                'points' => 'required|integer|min:1|max:5',
+            ]);
 
-        $host = \App\Models\Host::find($hostId);
-        if (!$host) {
-            return response()->json(['message' => 'Host does not exist'], 404);
-        }
+            if ($validator->fails()) {
+                return response()->json([
+                    'errors' => $validator->errors()
+                ], 400);
+            }
 
-        $business = Business::find($request->business_id);
-        if (!$business) {
-            return response()->json(['message' => 'Vendor does not exist'], 404);
-        }
+            $businessId = $request->business_id;
 
-        // Check if host has a confirmed booking with this vendor
-        $hasBooking = Booking::where('business_id', $request->business_id)
-            ->where('host_id', $hostId)
-            ->where('status', 'accepted')
-            ->exists();
+            // Check host
+            $host = Host::find($hostId);
+            if (!$host) {
+                return response()->json([
+                    'message' => 'Host does not exist'
+                ], 404);
+            }
 
-        if (!$hasBooking) {
+            // Check business/vendor
+            $business = Business::find($businessId);
+            if (!$business) {
+                return response()->json([
+                    'message' => 'Vendor does not exist'
+                ], 404);
+            }
+
+            // Check if user has a confirmed booking
+            $hasBooking = Booking::where('business_id', $businessId)
+                ->where('host_id', $hostId)
+                ->where('status', 'accepted')
+                ->exists();
+
+//            if (!$hasBooking) {
+//                return response()->json([
+//                    'message' => 'You cannot review this vendor without a confirmed booking.'
+//                ], 403);
+//            }
+
+            // Check if already reviewed
+            $alreadyReviewed = Review::where('host_id', $hostId)
+                ->where('business_id', $businessId)
+                ->exists();
+
+            if ($alreadyReviewed) {
+                return response()->json([
+                    'message' => 'You have already reviewed this vendor.'
+                ], 400);
+            }
+
+            // Rating range check (Same as Express)
+            if ($request->points < 1 || $request->points > 5) {
+                return response()->json([
+                    'message' => 'Rating must be between 1 and 5.'
+                ], 400);
+            }
+
+            // Create review
+            $review = Review::create([
+                'host_id'     => $hostId,
+                'business_id' => $businessId,
+                'text'        => $request->review_text,
+                'points'      => $request->points,
+            ]);
+
+            // In Express they push review ID into business.reviews[]
+            // In Laravel, this equals using a many-to-many or hasMany.
+            // If your DB has business_id in reviews table, NO need to attach.
+            // Only attach if you have pivot table business_review.
+            if (method_exists($business, 'reviews')) {
+                $business->reviews()->save($review);
+            }
+
             return response()->json([
-                'message' => 'You cannot review this vendor without a confirmed booking.'
-            ], 403);
-        }
+                'message' => 'Review submitted successfully',
+                'review'  => $review
+            ], 201);
 
-        // Check if already reviewed
-        $alreadyReviewed = Review::where('host_id', $hostId)
-            ->where('business_id', $request->business_id)
-            ->exists();
-
-        if ($alreadyReviewed) {
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'You have already reviewed this vendor.'
-            ], 400);
+                'message' => 'Please try again later.',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        $review = Review::create([
-            'host_id' => $hostId,
-            'business_id' => $request->business_id,
-            'text' => $request->review_text,
-            'points' => $request->points
-        ]);
-
-        $business->reviews()->attach($review->id);
-
-        return response()->json([
-            'message' => 'Review submitted successfully',
-            'review' => $review
-        ], 201);
     }
 
-    public function editReview(Request $request, $hostId)
+    public function editReview(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'review_id' => 'required|exists:reviews,id',
-            'review_text' => 'sometimes|string',
-            'points' => 'sometimes|integer|min:1|max:5'
-        ]);
+       try{
+           $hostId = auth()->id();
+           $validator = Validator::make($request->all(), [
+               'review_id' => 'required|exists:reviews,id',
+               'review_text' => 'sometimes|string',
+               'points' => 'sometimes|integer|min:1|max:5'
+           ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+           if ($validator->fails()) {
+               return response()->json(['errors' => $validator->errors()], 400);
+           }
 
-        $review = Review::find($request->review_id);
+           $review = Review::find($request->review_id);
 
-        if (!$review) {
-            return response()->json(['message' => 'Review not found'], 404);
-        }
+           if (!$review) {
+               return response()->json(['message' => 'Review not found'], 404);
+           }
 
-        if ($review->host_id != $hostId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+           if ($review->host_id != $hostId) {
+               return response()->json(['message' => 'Unauthorized'], 403);
+           }
 
-        $updateData = [];
-        if ($request->has('review_text')) {
-            $updateData['text'] = $request->review_text;
-        }
-        if ($request->has('points')) {
-            $updateData['points'] = $request->points;
-        }
+           $updateData = [];
+           if ($request->has('review_text')) {
+               $updateData['text'] = $request->review_text;
+           }
+           if ($request->has('points')) {
+               $updateData['points'] = $request->points;
+           }
 
-        $review->update($updateData);
+           $review->update($updateData);
 
-        return response()->json([
-            'message' => 'Review updated',
-            'review' => $review
-        ]);
+           return response()->json([
+               'message' => 'Review updated',
+               'review' => $review
+           ]);
+       }
+       catch (\Exception $e) {
+           return response()->json([
+               'message' => 'Please try again later.',
+               'error'   => $e->getMessage()
+           ], 500);
+       }
     }
 
-    public function deleteReview(Request $request, $hostId)
+    public function deleteReview(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'review_id' => 'required|exists:reviews,id'
-        ]);
+        try {
+            $hostId = auth()->id();
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+            // Validate review ID
+            $validator = Validator::make($request->all(), [
+                'review_id' => 'required|exists:reviews,id',
+            ]);
 
-        $host = \App\Models\Host::find($hostId);
-        if (!$host) {
-            return response()->json(['message' => 'Host not found'], 404);
-        }
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
+            }
 
-        $review = Review::where('id', $request->review_id)
-            ->where('host_id', $hostId)
-            ->first();
+            // 1. Ensure the authenticated host exists
+            $host = Host::find($hostId);
+            if (!$host) {
+                return response()->json(['message' => 'Host not found.'], 404);
+            }
 
-        if (!$review) {
+            // 2. Find the review that belongs to this host
+            $review = Review::where('id', $request->review_id)
+                ->where('host_id', $hostId)
+                ->first();
+
+            if (!$review) {
+                return response()->json([
+                    'message' => 'Review not found or unauthorized.'
+                ], 404);
+            }
+
+            // 3. Delete associated vendor replies
+            VendorReply::where('review_id', $review->id)->delete();
+
+            // 4. Remove review from vendor/business relationship
+            // (Equivalent to $pull in MongoDB)
+            if ($review->business) {
+                $review->business->reviews()
+                    ->where('id', $review->id)
+                    ->delete(); // deletes business->reviews relation if using pivot or hasMany
+            }
+
+            // 5. Delete the review itself
+            $review->delete();
+
             return response()->json([
-                'message' => 'Review not found or unauthorized'
-            ], 404);
+                'message' => 'Review and associated replies deleted successfully.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Please try again later.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Delete associated vendor replies
-        VendorReply::whereIn('id', $review->vendor_replies ?? [])->delete();
-
-        // Remove review from vendor
-        $review->business->reviews()->detach($review->id);
-
-        // Delete the review
-        $review->delete();
-
-        return response()->json([
-            'message' => 'Review and associated replies deleted successfully'
-        ]);
     }
 
-    public function getAllVendorReviews($vendorId)
+
+    public function getAllVendorReviews(Request $request)
     {
-        $vendor = \App\Models\Vendor::with(['business'])
-            ->where('id', $vendorId)
-            ->first();
+        try {
+            // 1. Get the authenticated vendor's ID via Sanctum
+            $hostId = auth()->id();
 
-        if (!$vendor) {
-            return response()->json(['message' => 'Vendor not found'], 404);
+           
+
+
+            // 3. Fetch reviews with host info and vendor replies + vendor info
+            $reviews = Review::where('host_id', $hostId)
+                ->with(['business'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if ($reviews->isEmpty()) {
+                return response()->json(['message' => 'No reviews found'], 404);
+            }
+
+            // 4. Calculate average rating
+            $totalRating = $reviews->sum('points');
+            $averageRating = $reviews->count() > 0
+                ? number_format($totalRating / $reviews->count(), 2)
+                : 0;
+
+            // 5. Respond with same structure as Express.js
+            return response()->json([
+                'message'       => 'Reviews found',
+                'vendor'        => $vendor,
+                'averageRating' => (float) $averageRating,
+                'totalReviews'  => $reviews->count(),
+                'reviews'       => $reviews
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Please try again later.',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        $reviews = Review::with(['host', 'vendorReplies.vendor'])
-            ->where('vendor_id', $vendorId)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        if ($reviews->isEmpty()) {
-            return response()->json(['message' => 'No reviews found'], 404);
-        }
-
-        $averageRating = $reviews->avg('points');
-        $totalReviews = $reviews->count();
-
-        return response()->json([
-            'message' => 'Reviews found',
-            'vendor' => $vendor,
-            'average_rating' => round($averageRating, 2),
-            'total_reviews' => $totalReviews,
-            'reviews' => $reviews
-        ]);
     }
+
 }

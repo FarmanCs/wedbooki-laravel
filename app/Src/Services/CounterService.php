@@ -2,68 +2,52 @@
 
 namespace App\Src\Services;
 
-use App\Models\Counter;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class CounterService
 {
     /**
-     * Get the next counter value for a given type
+     * Get the next counter value and optionally prepend a prefix.
      *
-     * @param string $type Counter type (e.g., 'venue_booking_id')
-     * @param string $prefix Prefix for the counter (e.g., 'WB-B400')
-     * @return string The formatted counter value
+     * @param string $name Name of the counter (maps to `name` column in table)
+     * @param string|null $prefix Optional prefix for the generated ID
+     * @return string
+     * @throws Exception
      */
-    public function getNextCounter($type, $prefix)
+    public function getNextCounter(string $name, string $prefix = null): string
     {
-        return DB::transaction(function () use ($type, $prefix) {
-            // Find or create counter
-            $counter = Counter::where('type', $type)->lockForUpdate()->first();
+        return DB::transaction(function () use ($name, $prefix) {
+            // Lock the row for update
+            $counter = DB::table('counters')
+                ->where('name', $name)
+                ->lockForUpdate()
+                ->first();
 
             if (!$counter) {
-                $counter = Counter::create([
-                    'type' => $type,
-                    'value' => 1,
-                    'prefix' => $prefix,
+                // If counter row doesn't exist, create it starting at 1
+                DB::table('counters')->insert([
+                    'name' => $name,
+                    'seq' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
-                return $prefix . '1';
+                $seq = 1;
+            } else {
+                // Increment the sequence
+                $seq = $counter->seq + 1;
+
+                DB::table('counters')
+                    ->where('id', $counter->id)
+                    ->update([
+                        'seq' => $seq,
+                        'updated_at' => now(),
+                    ]);
             }
 
-            // Increment counter
-            $counter->increment('value');
-
-            // Return formatted counter
-            return $prefix . $counter->value;
+            // Return ID with optional prefix
+            return $prefix ? $prefix . $seq : (string) $seq;
         });
-    }
-
-    /**
-     * Reset counter to a specific value
-     */
-    public function resetCounter($type, $value = 0)
-    {
-        $counter = Counter::where('type', $type)->first();
-
-        if ($counter) {
-            $counter->value = $value;
-            $counter->save();
-        }
-
-        return $counter;
-    }
-
-    /**
-     * Get current counter value without incrementing
-     */
-    public function getCurrentCounter($type)
-    {
-        $counter = Counter::where('type', $type)->first();
-
-        if (!$counter) {
-            return 0;
-        }
-
-        return $counter->value;
     }
 }

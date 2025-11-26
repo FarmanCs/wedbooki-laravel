@@ -47,8 +47,7 @@ return new class extends Migration
             $table->integer('auto_hard_delete_after_days')->default(30);
             $table->timestamps();
 
-            $table->index('email');
-            $table->index('google_id');
+
         });
     }
 

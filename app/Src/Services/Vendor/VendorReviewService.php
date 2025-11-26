@@ -2,12 +2,13 @@
 
 namespace App\Src\Services\Vendor;
 
-use App\Models\Review;
-//use App\Models\ReviewReply;
-use App\Models\Vendor\Business;
+use App\Models\Host\Review;
 use App\Models\Vendor;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Vendor\Business;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
+
+//use App\Models\ReviewReply;
 
 class VendorReviewService
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Models;
+namespace App\Models\Host;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Admin extends Model
+class Guest extends Model
 {
     //
 }
