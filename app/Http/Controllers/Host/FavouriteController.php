@@ -62,7 +62,7 @@ class FavouriteController extends Controller
             ], 400);
         }
 
-        $favourites = Favourite::with('business')
+        $favourites = Favo::with('business')
             ->where('host_id', $request->host)
             ->get();
 

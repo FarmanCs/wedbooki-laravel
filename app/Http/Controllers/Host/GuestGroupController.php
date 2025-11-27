@@ -11,9 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class GuestGroupController extends Controller
 {
-    // --------------------------------------------------
     // CREATE GROUP  (Express: createGroup)
-    // --------------------------------------------------
+
     public function createGuestGroup(Request $request)
     {
         // 1. Validate request
@@ -60,8 +59,8 @@ class GuestGroupController extends Controller
         $validator = Validator::make($request->all(), [
             'guests' => 'required|array',
             'guests.*.email' => 'required|email',
-            'guests.*.full_name' => 'required|string',
-            'guests.*.last_name' => 'required|string',
+            'guests.*.full_name' => 'nullable|string',
+            'guests.*.last_name' => 'nullable|string',
             'group_id' => 'required|exists:guest_groups,id',
         ]);
 
@@ -70,99 +69,57 @@ class GuestGroupController extends Controller
         }
 
         $hostId = auth()->id();
-        $group = GuestGroup::find($request->group_id);
+        $group = GuestGroup::where('id', $request->group_id)
+            ->where('host_id', $hostId)
+            ->first();
 
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
         }
 
-        // ensure group belongs to authenticated host
-        if ((int)$group->host_id !== (int)$hostId) {
-            return response()->json(['message' => 'Not authorized'], 403);
-        }
-
-        // existing emails already attached to the group (lowercased)
-        $existingEmails = $group->guests()->pluck('email')->map(function ($e) {
-            return strtolower($e);
-        })->toArray();
-
-        $incoming = $request->guests;
-        $duplicateEmails = [];
-        $addedCount = 0;
-        $attachIds = [];
-
-        DB::beginTransaction();
         try {
-            foreach ($incoming as $g) {
-                // skip items without email (mirrors Express behavior)
-                if (empty($g['email'])) {
-                    continue;
+            $guestsData = collect($request->guests);
+            $emails = $guestsData->pluck('email')->map(fn($e) => strtolower(trim($e)))->filter()->unique();
+            $existingGuests = Guest::whereIn('email', $emails)->get()->keyBy(fn($g) => strtolower($g->email));
+            $newGuestData = $guestsData->filter(fn($g) => !isset($existingGuests[strtolower(trim($g['email'] ?? ''))]));
+            $newGuestIds = $newGuestData->map(function ($g) {
+                $fullName = trim($g['full_name'] ?? '');
+                if (empty($fullName)) {
+                    $fullName = trim($g['last_name'] ?? '');
                 }
 
-                $email = strtolower(trim($g['email']));
+                $guest = Guest::create([
+                    'email' => strtolower(trim($g['email'])),
+                    'full_name' => $fullName,
+                    'phone_no' => $g['phone_no'] ?? null,
+                    'mobile_no' => $g['mobile_no'] ?? null,
+                    'address' => $g['address'] ?? null,
+                    'city' => $g['city'] ?? null,
+                    'state' => $g['state'] ?? null,
+                    'zipcode' => $g['zipcode'] ?? null,
+                ]);
 
-                if (in_array($email, $existingEmails)) {
-                    $duplicateEmails[] = $email;
-                    continue;
-                }
+                return $guest->id;
+            })->toArray();
 
-                // build full_name: prefer full_name, if missing and last_name present combine
-                $fullName = isset($g['full_name']) && strlen(trim($g['full_name'])) > 0
-                    ? trim($g['full_name'])
-                    : '';
-
-                if (empty($fullName) && !empty($g['last_name'])) {
-                    $fullName = trim($g['last_name']);
-                }
-
-                // Find existing guest by email, create if not found
-                $guest = Guest::where('email', $email)->first();
-                if (!$guest) {
-                    $guest = Guest::create([
-                        'email' => $email,
-                        'full_name' => $fullName,
-                        'phone_no' => $g['phone_no'] ?? null,
-                        'mobile_no' => $g['mobile_no'] ?? null,
-                        'address' => $g['address'] ?? null,
-                        'city' => $g['city'] ?? null,
-                        'state' => $g['state'] ?? null,
-                        'zipcode' => $g['zipcode'] ?? null,
-                    ]);
-                }
-
-                // Prevent duplicate pivot entries just in case
-                if (!$group->guests()->where('guest_id', $guest->id)->exists()) {
-                    $attachIds[] = $guest->id;
-                    // also mark email as present to avoid duplicate incoming entries in same request
-                    $existingEmails[] = $email;
-                    $addedCount++;
-                } else {
-                    $duplicateEmails[] = $email;
-                }
-            }
-
-            // Attach all new guest ids at once, without removing existing (like push)
-            if (!empty($attachIds)) {
-                $group->guests()->syncWithoutDetaching($attachIds);
-            }
-
-            DB::commit();
-
-            // reload with relations to return
+            $existingGuestIds = $existingGuests->pluck('id')->toArray();
+            $allGuestIds = array_merge($existingGuestIds, $newGuestIds);
+            $group->guests()->syncWithoutDetaching($allGuestIds);
             $group->load(['host', 'guests']);
 
             return response()->json([
                 'message' => 'Guests processed successfully.',
-                'addedCount' => $addedCount,
-                'skippedDuplicates' => array_values(array_unique($duplicateEmails)),
-                'group' => $group
+                'addedCount' => count($newGuestIds),
+                'skippedDuplicates' => $existingGuests->pluck('email'),
+                'group' => $group,
             ], 200);
+
         } catch (\Throwable $e) {
-            DB::rollBack();
             \Log::error('Error adding guests to group: ' . $e->getMessage());
+
             return response()->json([
                 'message' => 'Server error',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -481,6 +438,6 @@ class GuestGroupController extends Controller
 
 //        $group->load(['host', 'guests']);
 
-        return response()->json(["message"=>"guest deleted succesfuly"]);
+        return response()->json(["message" => "guest deleted succesfuly"]);
     }
 }

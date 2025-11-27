@@ -13,10 +13,6 @@ return new class extends Migration
             $table->foreignId('host_id')->constrained('hosts')->onDelete('cascade');
             $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
             $table->timestamps();
-
-            $table->unique(['host_id', 'business_id']);
-            $table->index('host_id');
-            $table->index('business_id');
         });
     }
 

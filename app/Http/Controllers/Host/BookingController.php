@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Host;
 
 use App\Http\Controllers\Controller;
-use App\Models\Timings;
+use App\Models\Vendor\Timing;
 use App\Models\Vendor\Booking;
 use App\Src\Services\BookingService;
 use App\Src\Services\EmailService;
@@ -155,6 +155,35 @@ class BookingController extends Controller
             'data' => $booking
         ]);
     }
+
+
+    //get vendor timings
+    public function vendorTimings(Request $request, $business_id)
+    {
+        try {
+            // Fetch timings by business ID
+            $timings = Timing::where('business_id', $business_id)->first();
+
+            if (!$timings) {
+                return response()->json([
+                    'message' => 'Vendor timings not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Unavailable dates fetched successfully',
+                'timings' => $timings
+            ], 200);
+
+        } catch (\Throwable $e) {
+            \Log::error('Error fetching unavailable dates: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Server error'
+            ], 500);
+        }
+    }
+
 
     //rject rejectVenueBooking
     public function rejectVenueBooking(){

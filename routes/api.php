@@ -71,7 +71,6 @@ Route::prefix('/v1/host')->group(function () {
         Route::get('/all-my-groups/{id?}', [GuestGroupController::class, 'getMyGroups']);
         Route::get('/get-all-groups', [GuestGroupController::class, 'getAllGroups']);
 
-        // NEW ADDITIONAL ROUTES FROM EXPRESS
         Route::delete('/delete-guest/{id?}', [GuestGroupController::class, 'deleteGuest']);
         Route::post('/add-guest/{id?}', [GuestGroupController::class, 'addGuest']);
         Route::delete('/delete-group/{id}', [GuestGroupController::class, 'deleteGroup']);
