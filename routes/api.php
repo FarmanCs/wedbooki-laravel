@@ -82,11 +82,8 @@ Route::prefix('/v1/host')->group(function () {
         // VENDOR TIMINGS
         Route::get('/vendor-timings/{id}', [BookingController::class, 'vendorTimings']);
 
-        // ---------------------------
         // CHECKLIST
-        // ---------------------------
-
-        Route::put('/assign-checklist/{id}', [ChecklistController::class, 'assignChecklist']);
+        Route::put('/assign-checklist/{id?}', [ChecklistController::class, 'assignChecklist']);
 
         Route::put('/checklist/toggle/{hostId}', [ChecklistController::class, 'toggleChecklistStatus']);
         Route::delete('/delete-checklist-item/{hostId}', [ChecklistController::class, 'deleteChecklistItem']);

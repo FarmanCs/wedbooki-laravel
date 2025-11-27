@@ -71,4 +71,9 @@ class Host extends Authenticatable
     {
         return $this->hasMany(GuestGroup::class, 'host_id');
     }
+
+    public function favourites()
+    {
+        return $this->hasMany(Favorite::class, 'host_id');
+    }
 }

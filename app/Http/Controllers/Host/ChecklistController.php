@@ -9,6 +9,7 @@ use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class ChecklistController extends Controller
 {
@@ -54,31 +55,39 @@ class ChecklistController extends Controller
         ], 201);
     }
 
-    public function assignChecklist(Request $request, $hostId)
+    public function assignChecklist(Request $request)
     {
+        // Get host id from authenticated user (Sanctum)
+        $hostId = auth()->id();
+
+        if (!$hostId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        // Validate request
         $validator = Validator::make($request->all(), [
             'event_type' => 'required|string',
-            'wedding_date' => 'required|date'
+            'wedding_date' => 'required|date',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+        // Fetch host
         $host = Host::find($hostId);
         if (!$host) {
             return response()->json(['message' => 'Host not found'], 404);
         }
 
-        $today = now();
-        $eventDate = \Carbon\Carbon::parse($request->wedding_date);
+        $today = Carbon::today();
+        $eventDate = Carbon::parse($request->wedding_date);
 
         if ($today->gte($eventDate)) {
-            return response()->json([
-                'message' => 'Wedding date must be after today.'
-            ], 400);
+            return response()->json(['message' => 'Wedding date must be after today.'], 400);
         }
 
+        // Fetch checklist template for the event type
         $template = ChecklistTemplate::where('event_type', $request->event_type)->first();
         if (!$template) {
             return response()->json([
@@ -86,48 +95,58 @@ class ChecklistController extends Controller
             ], 404);
         }
 
+        $checklistItems = $template->checklist_items ?? [];
         $totalDays = $today->diffInDays($eventDate);
-        $itemsPerDay = ceil(count($template->checklist_items) / $totalDays);
+        if ($totalDays <= 0) {
+            return response()->json(['message' => 'Invalid wedding date range.'], 400);
+        }
+
+        $itemsPerDay = ceil(count($checklistItems) / $totalDays);
 
         $personalizedChecklist = $host->personalized_checklist ?? [];
         $currentDay = 1;
         $itemCount = 0;
 
-        foreach ($template->checklist_items as $item) {
+        foreach ($checklistItems as $item) {
             $shouldLock = $item['lock_to_wedding_date'] ?? false;
 
-            $existingItem = collect($personalizedChecklist)->first(function ($c) use ($item) {
-                return $c['check_list_title'] === $item['check_list_title'] &&
-                    $c['check_list_category'] === $item['check_list_category'] &&
-                    !($c['is_custom'] ?? false);
+            // Find existing non-custom item
+            $existingItemKey = collect($personalizedChecklist)->search(function ($c) use ($item) {
+                return ($c['check_list_title'] ?? null) === ($item['check_list_title'] ?? null)
+                    && ($c['check_list_category'] ?? null) === ($item['check_list_category'] ?? null)
+                    && !($c['is_custom'] ?? false);
             });
 
-            if ($existingItem) {
+            if ($existingItemKey !== false) {
+                $existingItem = $personalizedChecklist[$existingItemKey];
+
                 if (!($existingItem['is_edited'] ?? false)) {
                     if ($shouldLock) {
-                        $existingItem['check_list_due_date'] = $eventDate;
+                        $existingItem['check_list_due_date'] = $eventDate->toDateString();
                         $existingItem['lock_to_wedding_date'] = true;
                     } else {
-                        $dueDate = $today->copy()->addDays($currentDay);
-                        $existingItem['check_list_due_date'] = $dueDate;
+                        $existingItem['check_list_due_date'] = $today->copy()->addDays($currentDay)->toDateString();
                         $existingItem['lock_to_wedding_date'] = false;
                     }
+                    $personalizedChecklist[$existingItemKey] = $existingItem;
                 }
             } else {
-                $dueDate = $shouldLock ? $eventDate : $today->copy()->addDays($currentDay);
+                // Add new checklist item
+                $dueDate = $shouldLock ? $eventDate->toDateString() : $today->copy()->addDays($currentDay)->toDateString();
 
                 $personalizedChecklist[] = [
-                    'check_list_title' => $item['check_list_title'],
-                    'check_list_category' => $item['check_list_category'],
-                    'check_list_description' => $item['check_list_description'],
+                    'check_list_title' => $item['check_list_title'] ?? null,
+                    'check_list_category' => $item['check_list_category'] ?? null,
+                    'check_list_description' => $item['check_list_description'] ?? null,
                     'check_list_due_date' => $dueDate,
                     'checklist_status' => 'pending',
                     'is_custom' => false,
                     'is_edited' => false,
-                    'lock_to_wedding_date' => $shouldLock
+                    'lock_to_wedding_date' => $shouldLock,
                 ];
             }
 
+            // Distribute non-locked items across days
             if (!$shouldLock) {
                 $itemCount++;
                 if ($itemCount >= $itemsPerDay) {
@@ -137,10 +156,11 @@ class ChecklistController extends Controller
             }
         }
 
+        // Save updated host data
         $host->update([
             'event_type' => $request->event_type,
-            'wedding_date' => $eventDate,
-            'personalized_checklist' => $personalizedChecklist
+            'wedding_date' => $eventDate->toDateString(),
+            'personalized_checklist' => $personalizedChecklist,
         ]);
 
         return response()->json([
@@ -148,10 +168,9 @@ class ChecklistController extends Controller
             'host_id' => $host->id,
             'event_type' => $request->event_type,
             'total_days' => $totalDays,
-            'checklist' => $personalizedChecklist
+            'checklist' => $personalizedChecklist,
         ]);
     }
-
     public function toggleChecklistStatus(Request $request, $hostId)
     {
         $validator = Validator::make($request->all(), [

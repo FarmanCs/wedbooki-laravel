@@ -2,6 +2,7 @@
 
 namespace App\Models\Vendor;
 
+use App\Models\Host\Favorite;
 use App\Models\Host\Review;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -89,5 +90,9 @@ class Business extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class, 'business_id');
+    }
+    public function favourites()
+    {
+        return $this->hasMany(Favorite::class, 'business_id');
     }
 }
