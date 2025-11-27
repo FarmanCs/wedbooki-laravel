@@ -66,4 +66,9 @@ class Host extends Authenticatable
             'id'
         );
     }
+
+    public function guestGroups()
+    {
+        return $this->hasMany(GuestGroup::class, 'host_id');
+    }
 }
