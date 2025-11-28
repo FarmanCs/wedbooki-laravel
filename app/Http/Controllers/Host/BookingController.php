@@ -29,7 +29,6 @@ class BookingController extends Controller
     {
         // Get authenticated host from Sanctum
         $host = auth()->user();
-
         if (!$host || $host->role !== 'host') {
             return response()->json([
                 'message' => 'Only hosts can create bookings.'

@@ -2,14 +2,15 @@
 
 namespace App\Src\Services;
 
+use App\Mail\Host\AccountDeactivationOtp;
 use App\Mail\Vendor\HostBookingMail;
 use App\Mail\Vendor\VendorBookingMail;
 use App\Mail\EmailChangeMail;
 use App\Mail\ForgetPasswordOtp;
 use App\Mail\ResetPasswordMail;
 use App\Mail\SignupOtp;
-use App\Mail\PasswordUpdateMail;
-use App\Mail\AccountDeletionMail;
+use App\Mail\Host\PasswordUpdateMail;
+use App\Mail\Host\AccountDeletionOtp;
 use Illuminate\Support\Facades\Mail;
 
 class EmailService
@@ -77,11 +78,14 @@ class EmailService
         Mail::to($user->email)->send(new PasswordUpdateMail($user->full_name ?? $user->name));
     }
 
-    /**
-     * Send account deletion confirmation email
-     */
-    public function sendAccountDeletionConfirmation($user)
+    public function sendAccountDeactivationOtp($host, $otp)
     {
-        Mail::to($user->email)->send(new AccountDeletionMail($user->full_name ?? $user->name));
+        Mail::to($host->email)->send(new AccountDeactivationOtp($host->full_name, $otp));
+    }
+
+    public function sendAccountDeletionOtp($user, $otp)
+    {
+        Mail::to($user->email)->send(new AccountDeletionOtp($user->full_name ?? $user->name, $otp
+        ));
     }
 }

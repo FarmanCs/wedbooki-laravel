@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Host;
 use App\Http\Controllers\Controller;
 use App\Models\Host\ChecklistTemplate;
 use App\Models\Host\Host;
+use App\Models\Host\HostPersonalizedChecklist;
 use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use Illuminate\Http\Request;
@@ -13,7 +14,6 @@ use Carbon\Carbon;
 
 class ChecklistController extends Controller
 {
-
     public function createTemplate(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -54,7 +54,6 @@ class ChecklistController extends Controller
             'template' => $template
         ], 201);
     }
-
     public function assignChecklist(Request $request)
     {
         // Get host id from authenticated user (Sanctum)
@@ -171,100 +170,310 @@ class ChecklistController extends Controller
             'checklist' => $personalizedChecklist,
         ]);
     }
-    public function toggleChecklistStatus(Request $request, $hostId)
+    public function toggleChecklistStatus(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'item_id' => 'required'
-        ]);
+        try {
+            $host = auth()->user();
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            if (!$host) {
+                return response()->json(['message' => 'Unauthorized.'], 401);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'itemId' => 'required|integer|exists:personalized_checklists,id'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Checklist item ID is required.',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            $itemId = $request->itemId;
+
+            // Get the checklist item for the host
+            $item = HostPersonalizedChecklist::where('host_id', $host->id)
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$item) {
+                return response()->json(['message' => 'Checklist item not found.'], 404);
+            }
+
+            // Toggle status
+            $item->checklist_status = $item->checklist_status === 'pending' ? 'checked' : 'pending';
+            $item->save();
+
+            return response()->json([
+                'message' => 'Checklist status updated successfully.',
+                'itemId' => $itemId,
+                'newStatus' => $item->checklist_status
+            ], 200);
+
+        } catch (\Exception $error) {
+            \Log::error("ToggleChecklistStatus Error: ".$error->getMessage());
+
+            return response()->json(['message' => 'Server error.'], 500);
         }
+    }
+    public function addCustomChecklistItem(Request $request)
+    {
+        try {
+            $host = auth()->user();
+            if (!$host) {
+                return response()->json(['message' => 'Unauthorized.'], 401);
+            }
+            $validator = Validator::make($request->all(), [
+                'check_list_title'               => 'required|string',
+                'check_list_category'            => 'required|string',
+                'check_list_description'         => 'nullable|string',
+                'check_list_due_date'            => 'required|date',
+                'check_list_item_linked_with_id' => 'nullable|integer|exists:businesses,id',
+                'checklist_linked_booking_id'    => 'nullable|integer|exists:bookings,id',
+            ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed.',
+                    'errors'  => $validator->errors()
+                ], 400);
+            }
 
-        $host = Host::find($hostId);
-        if (!$host) {
-            return response()->json(['message' => 'Host not found'], 404);
-        }
+            $data = $validator->validated();
 
-        $checklistItem = collect($host->personalized_checklist)
-            ->firstWhere('_id', $request->item_id);
+            //  Get linked business name
+            $linkedBusinessName = null;
+            if (!empty($data['check_list_item_linked_with_id'])) {
+                $business = Business::where('id', $data['check_list_item_linked_with_id'])
+                    ->select('company_name')
+                    ->first();
 
-        if (!$checklistItem) {
-            return response()->json(['message' => 'Checklist item not found'], 404);
-        }
-
-        // Update the status in the personalized_checklist array
-        $updatedChecklist = collect($host->personalized_checklist)
-            ->map(function ($item) use ($request) {
-                if ($item['_id'] == $request->item_id) {
-                    $item['checklist_status'] =
-                        $item['checklist_status'] === 'pending' ? 'checked' : 'pending';
+                if (!$business) {
+                    return response()->json([
+                        'message' => 'Invalid linked business ID.'
+                    ], 400);
                 }
-                return $item;
-            })
-            ->toArray();
 
-        $host->update(['personalized_checklist' => $updatedChecklist]);
+                $linkedBusinessName = $business->company_name;
+            }
 
-        return response()->json([
-            'message' => 'Checklist status updated successfully.',
-            'item_id' => $request->item_id,
-            'new_status' => $checklistItem['checklist_status'] === 'pending' ? 'checked' : 'pending'
-        ]);
+            // Get booking custom_booking_id
+            $linkedBookingCustomId = null;
+            if (!empty($data['checklist_linked_booking_id'])) {
+                $booking = Booking::where('id', $data['checklist_linked_booking_id'])
+                    ->select('custom_booking_id')
+                    ->first();
+
+                $linkedBookingCustomId = $booking ? $booking->custom_booking_id : null;
+            }
+
+            //  Build data for DB insert
+            $newChecklistData = [
+                'host_id'                        => $host->id,
+                'check_list_title'               => $data['check_list_title'] ,
+                'check_list_category'            => $data['check_list_category'] ,
+                'check_list_description'         => $data['check_list_description'] ,
+                'check_list_due_date'            => $data['check_list_due_date'],
+                'checklist_status'               => 'pending',
+                'is_custom'                      => true,
+                'is_edited'                      => false,
+                'lock_to_wedding_date'           => $request->lock_to_wedding_date ?? null,
+
+                'check_list_item_linked_with'    => $linkedBusinessName,
+                'check_list_item_linked_with_id' => $data['check_list_item_linked_with_id'] ?? null,
+
+                'checklist_linked_booking'       => $linkedBookingCustomId,
+                'checklist_linked_booking_id'    => $data['checklist_linked_booking_id'] ?? null,
+            ];
+
+            //  Insert into DB
+            $createdItem = HostPersonalizedChecklist::create($newChecklistData);
+            return response()->json([
+                'message'   => 'Custom checklist item added successfully.',
+                'hostId'    => $host->id,
+                'checklist' => $createdItem
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error("AddCustomChecklistItem Error: ".$e->getMessage());
+            return response()->json([
+                'message' => 'Server error.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function deleteChecklistItem(Request $request)
+    {
+        try {
+            // ---------------------------------------
+            // 1. AUTH: Get host from Sanctum
+            // ---------------------------------------
+            $host = auth()->user();
+
+            if (!$host) {
+                return response()->json([
+                    'message' => 'Unauthorized.'
+                ], 401);
+            }
+
+            // ---------------------------------------
+            // 2. Validate input
+            // ---------------------------------------
+            $validator = Validator::make($request->all(), [
+                'item_id' => 'required|integer|exists:personalized_checklists,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed.',
+                    'errors'  => $validator->errors()
+                ], 400);
+            }
+
+            $itemId = $request->item_id;
+
+            // ---------------------------------------
+            // 3. Find the checklist item belonging to this host
+            // ---------------------------------------
+            $checklistItem = HostPersonalizedChecklist::where('host_id', $host->id)
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$checklistItem) {
+                return response()->json([
+                    'message' => 'Checklist item not found.'
+                ], 404);
+            }
+
+            // ---------------------------------------
+            // 4. Delete the item
+            // ---------------------------------------
+            $checklistItem->delete();
+
+            // ---------------------------------------
+            // 5. Fetch remaining checklist for response
+            // ---------------------------------------
+            $remainingChecklist = HostPersonalizedChecklist::where('host_id', $host->id)->get();
+
+            return response()->json([
+                'message'             => 'Checklist item deleted successfully.',
+                'hostId'              => $host->id,
+                'remainingChecklist'  => $remainingChecklist
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error("DeleteChecklistItem Error: " . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Server error.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function addCustomChecklistItem(Request $request, $hostId)
+    public function editChecklistItem(Request $request, $itemId)
     {
-        $validator = Validator::make($request->all(), [
-            'check_list_due_date' => 'required|date',
-            'check_list_title' => 'required|string',
-            'check_list_category' => 'required|string'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
-
-        $host = Host::find($hostId);
-        if (!$host) {
-            return response()->json(['message' => 'Host not found'], 404);
-        }
-
-        $linkedBusinessName = "";
-        if ($request->has('check_list_item_linked_with')) {
-            $linkedBusiness = Business::find($request->check_list_item_linked_with);
-            if (!$linkedBusiness) {
-                return response()->json(['message' => 'Invalid linked business ID'], 400);
+        try {
+            // 1️⃣ Get authenticated host via Sanctum
+            $host = auth()->user();
+            if (!$host) {
+                return response()->json(['message' => 'Unauthorized.'], 401);
             }
-            $linkedBusinessName = $linkedBusiness->company_name;
+
+            if (!$itemId) {
+                return response()->json([
+                    'message' => 'Checklist Item ID is required.'
+                ], 400);
+            }
+
+            // 2️⃣ Validate optional fields
+            $validator = Validator::make($request->all(), [
+                'check_list_title'                => 'nullable|string',
+                'check_list_category'             => 'nullable|string',
+                'check_list_description'          => 'nullable|string',
+                'check_list_due_date'             => 'nullable|date',
+                'check_list_item_linked_with_id'  => 'nullable|integer|exists:businesses,id',
+                'checklist_linked_booking_id'     => 'nullable|integer|exists:bookings,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed.',
+                    'errors'  => $validator->errors()
+                ], 400);
+            }
+
+            // 3️⃣ Find the checklist item for this host
+            $checklistItem = HostPersonalizedChecklist::where('host_id', $host->id)
+                ->where('id', $itemId)
+                ->first();
+
+            if (!$checklistItem) {
+                return response()->json([
+                    'message' => 'Checklist item not found.'
+                ], 404);
+            }
+
+            $data = $request->all();
+
+            // 4️⃣ Update fields if provided
+            if (isset($data['check_list_title'])) {
+                $checklistItem->check_list_title = $data['check_list_title'];
+            }
+            if (isset($data['check_list_category'])) {
+                $checklistItem->check_list_category = $data['check_list_category'];
+            }
+            if (isset($data['check_list_description'])) {
+                $checklistItem->check_list_description = $data['check_list_description'];
+            }
+            if (isset($data['check_list_due_date'])) {
+                $checklistItem->check_list_due_date = $data['check_list_due_date'];
+            }
+
+            // 5️⃣ Update linked booking if provided
+            if (isset($data['checklist_linked_booking_id'])) {
+                $linkedBooking = Booking::select('custom_booking_id')
+                    ->where('id', $data['checklist_linked_booking_id'])
+                    ->first();
+                $checklistItem->checklist_linked_booking = $linkedBooking ? $linkedBooking->custom_booking_id : null;
+                $checklistItem->checklist_linked_booking_id = $data['checklist_linked_booking_id'];
+            }
+
+            // 6️⃣ Update linked business if provided
+            if (isset($data['check_list_item_linked_with_id'])) {
+                $linkedBusiness = Business::select('company_name')
+                    ->where('id', $data['check_list_item_linked_with_id'])
+                    ->first();
+
+                if (!$linkedBusiness) {
+                    return response()->json([
+                        'message' => 'Invalid linked business ID provided.'
+                    ], 400);
+                }
+
+                $checklistItem->check_list_item_linked_with = $linkedBusiness->company_name;
+                $checklistItem->check_list_item_linked_with_id = $data['check_list_item_linked_with_id'];
+            }
+
+            // 7️⃣ Mark as edited
+            $checklistItem->is_edited = true;
+
+            // 8️⃣ Save changes
+            $checklistItem->save();
+
+            return response()->json([
+                'message' => 'Checklist item updated successfully.',
+                'updatedItem' => $checklistItem
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error("EditChecklistItem Error: " . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Server Error.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $linkedBookingId = null;
-        if ($request->has('checklist_linked_booking')) {
-            $linkedBooking = Booking::find($request->checklist_linked_booking);
-            $linkedBookingId = $linkedBooking ? $linkedBooking->custom_booking_id : null;
-        }
-
-        $newItem = array_merge($request->all(), [
-            'check_list_item_linked_with' => $linkedBusinessName,
-            'checklist_linked_booking' => $linkedBookingId,
-            'check_list_item_linked_with_id' => $request->check_list_item_linked_with ?? null,
-            'checklist_linked_booking_id' => $request->checklist_linked_booking ?? null,
-            'checklist_status' => 'pending',
-            'is_custom' => true,
-            'is_edited' => false
-        ]);
-
-        $personalizedChecklist = $host->personalized_checklist ?? [];
-        $personalizedChecklist[] = $newItem;
-
-        $host->update(['personalized_checklist' => $personalizedChecklist]);
-
-        return response()->json([
-            'message' => 'Custom checklist item added successfully.',
-            'host_id' => $host->id,
-            'checklist' => $personalizedChecklist
-        ], 201);
     }
 
     public function getAllTemplates()

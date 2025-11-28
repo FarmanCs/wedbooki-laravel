@@ -26,7 +26,8 @@ Route::prefix('/v1/host')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
 
-//need authentication
+
+    //need authentication
     Route::group(['prefix' => '/', 'middleware' => ['auth:sanctum']], function () {
         Route::post('/verify-otp', [AuthController::class, 'hostVerifyOtp']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -85,27 +86,43 @@ Route::prefix('/v1/host')->group(function () {
         // CHECKLIST
         Route::put('/assign-checklist/{id?}', [ChecklistController::class, 'assignChecklist']);
 
-        Route::put('/checklist/toggle/{hostId}', [ChecklistController::class, 'toggleChecklistStatus']);
-        Route::delete('/delete-checklist-item/{hostId}', [ChecklistController::class, 'deleteChecklistItem']);
-        Route::post('/add-custom-checklist-item/{hostId}', [ChecklistController::class, 'addCustomChecklistItem']);
-        Route::put('/update-checklist-item/{hostId}/checklist/{itemId}', [ChecklistController::class, 'editChecklistItem']);
+        Route::patch('/checklist/toggle/{hostId?}', [ChecklistController::class, 'toggleChecklistStatus']);
+        Route::delete('/delete-checklist-item/{hostId?}', [ChecklistController::class, 'deleteChecklistItem']);
+        Route::post('/add-custom-checklist-item/{hostId?}', [ChecklistController::class, 'addCustomChecklistItem']);
+        Route::patch('/update-checklist-item/checklist/{itemId?}', [ChecklistController::class, 'editChecklistItem']);
 
-        // ---------------------------
         // ACCOUNT (DEACTIVATE / DELETE)
-        // ---------------------------
-        Route::post('/deactivate-request/{id}', [AccountController::class, 'deactivateRequest']);
-        Route::post('/deactivate-verify/{id}', [AccountController::class, 'deactivateVerify']);
-        Route::post('/delete-request/{id}', [AccountController::class, 'deleteRequest']);
-        Route::post('/delete-verify/{id}', [AccountController::class, 'deleteVerify']);
-        Route::delete('/delete-account/{id}', [AccountController::class, 'deleteAccount']);
+        Route::post('/deactivate-request/{id?}', [AccountController::class, 'deactivateRequest']);
+        Route::post('/deactivate-verify/{id?}', [AccountController::class, 'deactivateVerify']);
+        Route::post('/delete-request/{id?}', [AccountController::class, 'deleteRequest']);
+        Route::post('/delete-verify/{id?}', [AccountController::class, 'deleteVerify']);
+
 
         // ---------------------------
         // GOOGLE CALENDAR
         // ---------------------------
-        Route::post('/google-calendar/save-tokens', [GoogleCalendarController::class, 'saveTokens']);
-        Route::post('/google-calendar/create-event', [GoogleCalendarController::class, 'createEvent']);
-        Route::get('/google-calendar/status/{id}', [GoogleCalendarController::class, 'getStatus']);
-        Route::post('/unlink-google-account', [GoogleCalendarController::class, 'unlink']);
+        Route::post('/google-calendar/save-tokens', [GoogleCalendarController::class, 'saveHostGoogleTokens']);
+        Route::post('/google-calendar/create-event', [GoogleCalendarController::class, 'createHostGoogleCalendarEvent']);
+        Route::get('/google-calendar/status/{id}', [GoogleCalendarController::class, 'getHostGoogleCalendarStatus']);
+        Route::post('/unlink-google-account', [GoogleCalendarController::class, 'unlinkHostGoogleAccount']);
+
+        //bookings
+        Route::post('/book-venue/{id?}', [BookingController::class, 'createVenueBooking']);
+
+
+        //pending routes . . .  all booking
+        Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
+        Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
+
+        Route::post('/book-vendor/{id}', [BookingController::class, 'createVendorBooking']);
+        Route::put('/cancel-booking/{id}', [BookingController::class, 'cancelBooking']);
+
+        Route::get('/my-bookings/{id?}', [BookingController::class, 'getAllBookings']);
+        Route::get('/getbooking/{bookingId}', [BookingController::class, 'getBookingById']);
+        Route::get('/host-booking-detail/{id}', [BookingController::class, 'hostBookingDetail']);
+
+        Route::patch('/get-booked-vendors', [BookingController::class, 'getBookedVendors']);
+
     });
     // ---------------------------
     // SESSIONS (RECENT ACTIVITY)
@@ -117,28 +134,11 @@ Route::prefix('/v1/host')->group(function () {
     //pending routes for the moments
     Route::post('/google-auth', [AuthController::class, 'googleLogin']);
     Route::post('/apple-auth', [AuthController::class, 'appleLogin']);
-
     Route::put('/email-change-otp/{id}', [ProfileController::class, 'verifyChangeEmailOtp']);
 
-
-    // ---------------------------
-    // BOOKINGS
-    // ---------------------------
-    Route::post('/book-venue/{id?}', [BookingController::class, 'createVenueBooking']);
+    Route::delete('/delete-account/{id?}', [AccountController::class, 'deleteAccount']);
 
 
-    //pending routes . . .  all booking
-    Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
-    Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
-
-    Route::post('/book-vendor/{id}', [BookingController::class, 'createVendorBooking']);
-    Route::put('/cancel-booking/{id}', [BookingController::class, 'cancelBooking']);
-
-    Route::get('/my-bookings/{id?}', [BookingController::class, 'getAllBookings']);
-    Route::get('/getbooking/{bookingId}', [BookingController::class, 'getBookingById']);
-    Route::get('/host-booking-detail/{id}', [BookingController::class, 'hostBookingDetail']);
-
-    Route::patch('/get-booked-vendors', [BookingController::class, 'getBookedVendors']);
 
 });
 

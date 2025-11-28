@@ -30,6 +30,9 @@ class Host extends Authenticatable
         'signupMethod',
         'status',
         'role',
+        'account_deactivated',
+        'account_soft_deleted',
+        'account_soft_deleted_at',
         'otp',
         'isVerified',
         'pending_email',
@@ -75,5 +78,15 @@ class Host extends Authenticatable
     public function favourites()
     {
         return $this->hasMany(Favorite::class, 'host_id');
+    }
+
+    public function personalizedChecklists()
+    {
+        return $this->hasMany(HostPersonalizedChecklist::class, 'host_id');
+    }
+
+    public function checklists()
+    {
+        return $this->hasMany(Checklist::class, 'host_id', 'id');
     }
 }
