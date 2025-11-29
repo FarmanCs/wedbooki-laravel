@@ -31,6 +31,20 @@ class Booking extends Model
         'status',
     ];
 
+    protected $casts = [
+        'extra_services' => 'array',
+        'event_date' => 'date',
+        'advance_due_date' => 'date',
+        'final_due_date' => 'date',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'approved_at' => 'datetime',
+        'payment_completed_at' => 'datetime',
+        'advance_paid' => 'boolean',
+        'final_paid' => 'boolean',
+        'is_synced_with_calendar' => 'boolean',
+    ];
+
     // Relationships
 
     public function vendor()

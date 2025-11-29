@@ -2,7 +2,7 @@
 
 namespace App\Src\Services\Vendor;
 
-use App\Models\Models\SubCategory;
+use App\Models\SubCategory;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Vendor;
 use App\Models\Host\Host;
@@ -11,6 +11,7 @@ use App\Mail\Vendor\SignupOtpMail;
 use App\Mail\Vendor\ForgetPasswordMail;
 use App\Mail\Vendor\ResetPasswordMail;
 use App\Mail\Vendor\UpdatePasswordMail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -34,96 +35,114 @@ class VendorAuthService
         return rand(1000, 9999);
     }
 
-    public function signup(array $data): JsonResponse
+    public function signup(Request $request)
     {
-        $validator = Validator::make($data, [
+        // VALIDATION
+        $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
-            'category' => 'required|string',
-            'subcategory' => 'nullable|string|size:24',
+            'category_id' => 'required|numeric:',
+            'sub_category' => 'nullable|numeric:',
+            'country' => 'required|string',
+            'city' => 'required|string',
             'email' => 'required|email',
             'phone_no' => 'required|numeric',
             'country_code' => 'required|string',
-            'city' => 'required|string',
             'password' => 'required|string|min:8|regex:/[A-Z]/',
             'business_registration' => 'nullable|string',
             'business_license_number' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
+            return response()->json([
+                'error' => $validator->errors()->first()
+            ], 400);
         }
 
-        $email = strtolower($data['email']);
+        // LOWERCASE EMAIL
+        $email = strtolower($request->email);
 
-        // Check Host table email or phone
-        $existingHost = Host::where('email', $email)
-            ->orWhere('phone_no', $data['phone_no'])
+        // CHECK HOST TABLE (email OR phone)
+        $existingHost = Vendor::where('email', $email)
+            ->orWhere('phone_no', $request->phone_no)
             ->first();
 
         if ($existingHost) {
+
             $message = $existingHost->email === $email
-                ? "This email is already registered as a Host. Please use another email."
-                : "This phone number is already registered as a Host. Please use another phone number.";
+                ? "This email is already registered as a Host. You cannot signup as a Vendor. Please use another email."
+                : "This phone number is already registered as a Host. You cannot signup as a Vendor. Please use another phone number.";
 
             return response()->json(['message' => $message], 409);
         }
 
-        // Check existing vendor email/phone
+        // CHECK EXISTING VENDOR EMAIL
         if (Vendor::where('email', $email)->exists()) {
-            return response()->json(['message' => 'Email already exists.'], 409);
+            return response()->json([
+                'message' => "Email already exists. Please use another."
+            ], 409);
         }
 
-        if (Vendor::where('phone_no', $data['phone_no'])->exists()) {
-            return response()->json(['message' => 'Phone already exists.'], 409);
+        // CHECK EXISTING VENDOR PHONE
+        if (Vendor::where('phone_no', $request->phone_no)->exists()) {
+            return response()->json([
+                'message' => "Phone number already exists. Please use another."
+            ], 409);
         }
 
-        // Vendor type
-        $vendorType = strtolower($data['category']) === 'venue' ? 'venue' : 'service';
+        // VENDOR TYPE
+        $vendorType = strtolower($request->category) === 'venue' ? 'venue' : 'service';
 
-        // Custom vendor ID
-//        $customVendorId = $this->counterService->getNextCounter('vendor_id', 'WB-V300');
+        // CUSTOM VENDOR ID (Your Counter Service)
+        $customVendorId = $this->counterService->getNextCounter('vendor_id', 'WB-V300');
 
-        $busCategory = Category::where('type', $data['category'])->first();
+        // CATEGORY MAPPING
+        $busCategory = Category::where('category_id', $request->category)->first();
         if (!$busCategory) {
             return response()->json(['message' => 'Category not found.'], 404);
         }
 
-
-        // BUSINESS PROFILE
+        // BUSINESS PROFILE DATA
         $businessData = [
-            'company_name' => $data['company_name'],
+            'company_name' => $request->company_name,
             'category_id' => $busCategory->id,
-            'business_registration' => $data['business_registration'] ?? null,
-            'business_license_number' => $data['business_license_number'] ?? null,
-//            'vendor_type' => $vendorType,
+            'business_registration' => $request->business_registration ?? null,
+            'business_license_number' => $request->business_license_number ?? null,
+            'vendor_type' => $vendorType,
         ];
 
-        if (!empty($data['subcategory']) && strlen($data['subcategory']) === 24) {
+        // SUBCATEGORY (Only if valid 24-character ID)
+        if (!empty($request->subcategory) && strlen($request->subcategory) === 24) {
+
             $busSubCategory = SubCategory::where('category_id', $busCategory->id)
-                ->where('name', $data['subcategory'])->first();
+                ->where('mongo_uid', $request->subcategory) // Mapped properly
+                ->first();
+
             if (!$busSubCategory) {
                 return response()->json(['message' => 'Sub category not found.'], 404);
             }
+
             $businessData['sub_category_id'] = $busSubCategory->id;
         }
 
+        // CREATE BUSINESS PROFILE
         $businessProfile = Business::create($businessData);
 
         // OTP
         $otp = $this->generateOtp();
 
-        // CREATE VENDOR (WITHOUT COUNTRY)
+        // CREATE VENDOR
         $vendor = Vendor::create([
-            'full_name' => $data['full_name'],
-            'city' => $data['city'],
+            'full_name' => $request->full_name,
+            'country' => $request->country,
+            'city' => $request->city,
             'email' => $email,
-            'phone_no' => $data['phone_no'],
-            'country_code' => $data['country_code'],
-            'category' => $data['category'],
-            'password' => Hash::make($data['password']),
+            'phone_no' => $request->phone_no,
+            'country_code' => $request->country_code,
+            'category' => $request->category,
+            'password' => Hash::make($request->password),
             'custom_vendor_id' => $customVendorId,
-            'business_profile_id' => $businessProfile->id,
+            'business_id' => $businessProfile->id,
             'otp' => $otp,
         ]);
 

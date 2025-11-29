@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
@@ -91,76 +92,43 @@ class BookingController extends Controller
     }
 
     // Create a vendor booking (non-venue)
-    public function createVendorBooking(Request $request)
+    public function createBooking(Request $request)
     {
-        $host = auth()->user();
-
-        if (!$host || $host->role !== 'host') {
-            return response()->json(['message'=>'Only hosts can create bookings.'], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'package_id'     => 'nullable|exists:packages,id',
-            'business_id'    => 'required|exists:businesses,id',
-            'event_date'     => 'required|date_format:d-m-Y',
-            'start_time'     => 'required|string',
-            'end_time'       => 'required|string',
-            'timezone'       => 'required|string',
-            'extra_services' => 'nullable|array',
+        $validation = Validator::make($request->all(), [
+            'business_id' => 'required|exists:businesses,id',
+            'package_id' => 'nullable|exists:packages,id',
+            'event_date' => ['required',
+                Rule::date()->afterOrEqual(today()->addDays(7)),
+                'date_format:d-m-Y'
+            ],
+            'start_time' =>'required|date_format:h:i A',
+            'end_time'=>'required|date_format:h:i A|after:start_time',
+            'timezone'=>'required|timezone',
+            'extra_services'=>'required_unless:package_id,null|array',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['message'=>$validator->errors()->first()], 400);
+        if($validation->fails()){
+            return response()->json([$validation->errors()], 400);
         }
+//        dd($validation->getData());
 
         try {
-            $bookingData = $request->only([
-                'package_id','business_id','event_date','start_time','end_time','timezone','extra_services'
-            ]);
+            $hostId = auth()->id();
+            $data = $validation->getData();
+            $data['host_id'] = $hostId;
 
-            $result = DB::transaction(function() use ($host, $bookingData) {
-                return $this->bookingService->createVendorBooking($host, $bookingData);
-            });
+            $booking = $this->bookingService->createBooking($data);
 
             return response()->json([
                 'message' => 'Vendor booked successfully.',
-                'booking' => $result['booking'],
-                'bookingId' => $result['bookingId'],
-                'priceBreakdown' => $result['priceBreakdown']
+                'booking' => $booking,
+                'booking_id' => $booking->custom_booking_id
             ], 201);
-
         } catch (\Exception $e) {
-            \Log::error('Vendor Booking Error: '.$e->getMessage());
             return response()->json([
-                'message' => $e->getMessage() // show detailed error for debugging
-            ], 500);
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 500);
         }
     }
-
-
-
-    private function formatTime($time)
-    {
-        // Already in correct format
-        if (preg_match('/^\d{1,2}:\d{2}\s?(AM|PM)$/i', $time)) {
-            return $time;
-        }
-
-        // Convert 24-hour to 12-hour format
-        if (preg_match('/^\d{1,2}:\d{2}$/', $time)) {
-            try {
-                $carbon = \Carbon\Carbon::createFromFormat('H:i', $time);
-                return $carbon->format('h:i A');
-            } catch (\Exception $e) {
-                // If that fails, try with different format
-                $carbon = \Carbon\Carbon::createFromFormat('G:i', $time);
-                return $carbon->format('h:i A');
-            }
-        }
-
-        return $time;
-    }
-
     /**
      * Get all bookings for authenticated host
      */

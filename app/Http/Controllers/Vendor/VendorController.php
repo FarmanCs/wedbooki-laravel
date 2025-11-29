@@ -46,10 +46,10 @@ class VendorController extends Controller
     }
 
     // Authentication Methods
-    public function signup(Request $request): JsonResponse
+    public function VendorSignup(Request $request)
     {
 
-        return $this->vendorAuthService->signup($request->all());
+        return $this->vendorAuthService->signup($request);
     }
 
     public function verifySignup(Request $request): JsonResponse

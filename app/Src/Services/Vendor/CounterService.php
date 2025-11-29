@@ -6,27 +6,21 @@ use App\Models\Counter;
 
 class CounterService
 {
-    /**
-     * Get next counter value for a given type
-     *
-     * @param string $type
-     * @param string $prefix
-     * @return string
-     */
-    public function getNextCounter(string $type, string $prefix = ''): string
+    public function getNextCounter(string $name, string $prefix = ''): string
     {
-        $counter = Counter::where('type', $type)->lockForUpdate()->first();
+        $counter = Counter::where('name', $name)->lockForUpdate()->first();
 
         if (!$counter) {
             $counter = Counter::create([
-                'type' => $type,
-                'value' => 1
+                'name' => $name,
+                'seq' => 1
             ]);
+
             return $prefix . '1';
         }
 
-        $counter->increment('value');
+        $counter->increment('seq');
 
-        return $prefix . $counter->value;
+        return $prefix . $counter->seq;
     }
 }
