@@ -2,7 +2,9 @@
 
 namespace App\Src\Services;
 
+use App\Models\Counter;
 use App\Models\Host\Host;
+use App\Models\Services\ExtraService;
 use App\Models\Vendor\Timing;
 use App\Models\Vendor\Vendor;
 use App\Models\Vendor\Booking;
@@ -206,6 +208,224 @@ class BookingService
                 'priceBreakdown' => $priceBreakdown,
             ];
         });
+    }
+
+
+    public function createVendorBooking($host, array $data)
+    {
+        // Fetch business
+        $business = Business::find($data['business_id']);
+        if (!$business) {
+            throw new \Exception('Business not found');
+        }
+
+        // Fetch package if exists
+        $selectedPackage = null;
+        if (!empty($data['package_id'])) {
+            $selectedPackage = Package::find($data['package_id']);
+            if (!$selectedPackage) {
+                throw new \Exception('Package not found');
+            }
+        }
+
+        // Vendor related to business
+        $vendor = Vendor::where('business_id', $business->id)
+            ->select('id', 'email', 'full_name')
+            ->first();
+
+        if (!$vendor) {
+            throw new \Exception('Vendor not found for this business');
+        }
+
+        // Timings
+        $timings = Timing::where('business_id', $business->id)->first();
+        if (!$timings) {
+            throw new \Exception('No timing information found for this vendor.');
+        }
+
+        // Parse event datetime in given timezone
+        $localStart = Carbon::createFromFormat(
+            'd-m-Y H:i', // H = 24-hour format
+            $data['event_date'].' '.$data['start_time'],
+            $data['timezone']
+        );
+
+        $localEnd = Carbon::createFromFormat(
+            'd-m-Y H:i',
+            $data['event_date'].' '.$data['end_time'],
+            $data['timezone']
+        );
+
+        if ($localEnd->lte($localStart)) {
+            throw new \Exception('End time must be after start time.');
+        }
+
+        $utcStart = $localStart->copy()->setTimezone('UTC');
+        $utcEnd   = $localEnd->copy()->setTimezone('UTC');
+        $localDateOnly = $localStart->toDateString();
+
+        if (in_array($localDateOnly, $timings->unavailable_dates ?? [])) {
+            throw new \Exception('The vendor is unavailable on the selected date.');
+        }
+
+        // Determine available slots for the weekday
+        $weekday = strtolower($localStart->format('l'));
+        $rawForDay = collect($timings->timings_service_weekly ?? [])
+            ->get($weekday, $timings->timings_venue[$weekday] ?? null);
+
+        $flatSlotsMeta = [];
+        if (is_array($rawForDay)) {
+            foreach ($rawForDay as $idx => $slot) {
+                $flatSlotsMeta[] = ['slot' => $slot, 'meta' => ['source'=>'weekly','index'=>$idx]];
+            }
+        } elseif (is_array($rawForDay) || is_object($rawForDay)) {
+            foreach ($rawForDay as $key => $v) {
+                if (!$v) continue;
+                if (is_array($v)) {
+                    foreach ($v as $idx => $s) {
+                        $flatSlotsMeta[] = ['slot'=>$s,'meta'=>['source'=>'venue','period'=>$key,'index'=>$idx]];
+                    }
+                } elseif (is_object($v) || is_array($v)) {
+                    $flatSlotsMeta[] = ['slot'=>$v,'meta'=>['source'=>'venue','period'=>$key]];
+                }
+            }
+        }
+
+        if (empty($flatSlotsMeta)) {
+            throw new \Exception("No available slots on {$weekday}.");
+        }
+
+        $requestedSlot = [
+            'start' => $localStart->format('h:i A'),
+            'end'   => $localEnd->format('h:i A')
+        ];
+
+        $matched = collect($flatSlotsMeta)->first(function ($item) use ($requestedSlot) {
+            return $item['slot'] && $item['slot']['status'] === 'active'
+                && $item['slot']['start'] === $requestedSlot['start']
+                && $item['slot']['end'] === $requestedSlot['end'];
+        });
+
+        if (!$matched) {
+            throw new \Exception("Selected slot {$requestedSlot['start']}–{$requestedSlot['end']} is not available.");
+        }
+
+        // Determine time_slot
+        $bookingTimeSlot = null;
+        $allowedSlots = ['morning','afternoon','evening'];
+        if (!empty($matched['meta']['period']) && in_array($matched['meta']['period'], $allowedSlots)) {
+            $bookingTimeSlot = $matched['meta']['period'];
+        } else {
+            $hour = Carbon::createFromFormat('h:i A', $matched['slot']['start'])->hour;
+            if ($hour >= 5 && $hour < 12) $bookingTimeSlot = 'morning';
+            elseif ($hour >= 12 && $hour < 17) $bookingTimeSlot = 'afternoon';
+            elseif ($hour >= 17 && $hour <= 23) $bookingTimeSlot = 'evening';
+        }
+
+        // Check overlapping bookings
+        $overlapping = Booking::where('business_id', $business->id)
+            ->whereDate('event_date', $utcStart->toDateString())
+            ->where(function ($q) use ($utcStart, $utcEnd) {
+                $q->where(function ($q2) use ($utcStart, $utcEnd) {
+                    $q2->where('start_time','<',$utcEnd)
+                        ->where('end_time','>',$utcStart);
+                });
+            })
+            ->whereNotIn('status', ['rejected','cancelled'])
+            ->first();
+
+        if ($overlapping) {
+            throw new \Exception('Vendor already booked for this time range.');
+        }
+
+        // Extra services
+        $selectedExtras = [];
+        if (!empty($data['extra_services']) && is_array($data['extra_services'])) {
+            foreach ($data['extra_services'] as $id) {
+                $service = ExtraService::where('business_id', $business->id)
+                    ->where('id', $id)
+                    ->first();
+                if (!$service) throw new \Exception('Invalid extra service selected');
+                $selectedExtras[] = ['name'=>$service->name,'price'=>$service->price];
+            }
+        }
+
+        // Price calculation
+        $packagePrice = $selectedPackage->price ?? 0;
+        $discountedPrice = $selectedPackage->discount ?? 0;
+        $extrasTotal = collect($selectedExtras)->sum('price');
+        $base = $discountedPrice > 0 ? $discountedPrice : $packagePrice;
+        $totalAmount = $base + $extrasTotal;
+        $priceBreakdown = [
+            'basePrice' => $packagePrice,
+            'extras' => $extrasTotal,
+            'discountedPrice' => $discountedPrice,
+            'finalPrice' => $totalAmount
+        ];
+
+        // Custom booking ID using Counter model
+        $counter = Counter::firstOrCreate(['name' => 'vendor_booking_id'], ['seq' => 400]);
+        $counter->seq += 1;
+        $counter->save();
+        $customBookingId = 'WB-B'.$counter->seq;
+
+        // Payment calculations
+        $paymentDaysAdvance = $business->payment_days_advance ?? 7;
+        $paymentDaysFinal = $business->payment_days_final ?? 1;
+        $advancePercentage = $business->advance_percentage ?? 10;
+
+        $advanceAmount = round(($totalAmount * $advancePercentage)/100,2);
+        $today = Carbon::now();
+        $advanceDue = $today->copy()->addDays($paymentDaysAdvance);
+        $finalDue = $localStart->copy()->subDays($paymentDaysFinal);
+        $finalAmount = round($totalAmount - $advanceAmount, 2);
+
+        if ($advanceDue->gt($finalDue)) {
+            $advanceDue = $finalDue->copy();
+        }
+
+        // Save booking
+        $booking = Booking::create([
+            'host_id'           => $host->id,
+            'business_id'       => $business->id,
+            'venue_id'          => $vendor->id,
+            'package_id'        => $selectedPackage->id ?? null,
+            'event_date'        => $utcStart->toDateString(),
+            'start_time'        => $utcStart,
+            'end_time'          => $utcEnd,
+            'time_slot'         => $bookingTimeSlot,
+            'timezone'          => $data['timezone'],
+            'amount'            => $totalAmount,
+            'custom_booking_id' => $customBookingId,
+            'extra_services'    => $selectedExtras,
+            'advance_percentage'=> $advancePercentage,
+            'advance_amount'    => $advanceAmount,
+            'final_amount'      => $finalAmount,
+            'advance_due_date'  => $advanceDue->toDateString(),
+            'final_due_date'    => $finalDue->toDateString(),
+        ]);
+
+        // Attach booking to business relation
+        $business->bookings()->save($booking);
+
+        // Auto accept via external API
+        try {
+            $baseUrl = 'https://api.wedbooki.com';
+            Http::put("{$baseUrl}/api/v1/vendor/accept-booking/{$host->id}", [
+                'bookingId' => $booking->id
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Vendor Booking Error: '.$e->getMessage());
+            return response()->json([
+                'message' => $e->getMessage() // show exact reason
+            ], 500);
+        }
+
+        return [
+            'booking'       => $booking,
+            'bookingId'     => $customBookingId,
+            'priceBreakdown'=> $priceBreakdown,
+        ];
     }
 
     public function cancelBooking($hostId, $bookingId)

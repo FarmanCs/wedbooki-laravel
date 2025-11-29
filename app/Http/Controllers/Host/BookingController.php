@@ -7,8 +7,10 @@ use App\Models\Vendor\Timing;
 use App\Models\Vendor\Booking;
 use App\Src\Services\BookingService;
 use App\Src\Services\EmailService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -21,53 +23,77 @@ class BookingController extends Controller
         $this->emailService = $emailService;
     }
 
-    /**
-     * Create a venue booking
-     * Uses authenticated user from Sanctum
-     */
+    // Create a venue booking
     public function createVenueBooking(Request $request)
     {
-        // Get authenticated host from Sanctum
-        $host = auth()->user();
-        if (!$host || $host->role !== 'host') {
-            return response()->json([
-                'message' => 'Only hosts can create bookings.'
-            ], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'package_id' => 'nullable|exists:packages,id',
-            'business_id' => 'required_without:package_id|exists:businesses,id',
-            'event_date' => 'required|date_format:d-m-Y',
-            'time_slot' => 'required|string',
-            'timezone' => 'required|string|timezone',
-            'guests' => 'nullable|integer|min:1',
-            'extra_services' => 'nullable|array',
-            'extra_services.*' => 'exists:services,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 400);
-        }
-
         try {
-            $result = $this->bookingService->createVenueBooking($host->id, $request->all());
+            // AUTH: Sanctum user
+            $host = auth()->user();
+            if (!$host || $host->role !== 'host') {
+                return response()->json([
+                    'message' => 'Only hosts can create bookings.'
+                ], 403);
+            }
+
+            // VALIDATION
+            $validator = Validator::make($request->all(), [
+                'package_id' => 'nullable|exists:packages,id',
+                'business_id' => 'required_without:package_id|exists:businesses,id',
+                'event_date' => 'required|string',
+                'time_slot' => 'required|string',
+                'timezone' => 'required|string|timezone',
+                'guests' => 'nullable|integer|min:1',
+                'extra_services' => 'nullable|array',
+                'extra_services.*' => 'exists:services,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            // Convert request → array and match express.js names
+            $data = [
+                'package_id' => $request->package_id,
+                'business_id' => $request->business_id,
+                'event_date' => $request->event_date,
+                'time_slot' => $request->time_slot,
+                'timezone' => $request->timezone,
+                'guests' => $request->guests,
+                'extra_services' => $request->extra_services,
+            ];
+
+            // IMPORTANT EXACT EXPRESS CHECK:
+            if (
+                empty($data['package_id']) &&
+                (empty($data['extra_services']) ||
+                    !is_array($data['extra_services']) ||
+                    count($data['extra_services']) === 0)
+            ) {
+                return response()->json([
+                    'message' =>
+                        'Either package_id or non-empty extra_services must be provided for venue bookings.',
+                ], 400);
+            }
+
+            // CALL BOOKING SERVICE (Same as Express logic)
+            $result = $this->bookingService->createVenueBooking($host->id, $data);
+
             return response()->json($result, 201);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Something went wrong',
+                'message' => 'Something went wrong.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Create a vendor booking (non-venue)
-     */
+    // Create a vendor booking (non-venue)
     public function createVendorBooking(Request $request)
     {
+        // Get authenticated host via Sanctum
         $host = auth()->user();
 
         if (!$host || $host->role !== 'host') {
@@ -76,32 +102,53 @@ class BookingController extends Controller
             ], 403);
         }
 
+        // Validate request
         $validator = Validator::make($request->all(), [
-            'package_id' => 'nullable|exists:packages,id',
-            'business_id' => 'required_without:package_id|exists:businesses,id',
-            'event_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'timezone' => 'required|string|timezone',
-            'extra_services' => 'nullable|array'
+            'package_id'     => 'nullable|exists:packages,id',
+            'business_id'    => 'required|exists:businesses,id',
+            'event_date'     => 'required|date_format:d-m-Y',
+            'start_time'     => 'required|string',
+            'end_time'       => 'required|string',
+            'timezone'       => 'required|string',
+            'extra_services' => 'nullable|array',
         ]);
-
         if ($validator->fails()) {
             return response()->json([
-                'errors' => $validator->errors()
+                'message' => $validator->errors()->first()
             ], 400);
         }
 
         try {
-            $result = $this->bookingService->createVendorBooking($host->id, $request->all());
-            return response()->json($result, 201);
-        } catch (\Exception $e) {
+            $bookingData = $request->only([
+                'package_id',
+                'business_id',
+                'event_date',
+                'start_time',
+                'end_time',
+                'timezone',
+                'extra_services',
+            ]);
+
+            // Use transaction for safety
+            $result = DB::transaction(function () use ($host, $bookingData) {
+                return $this->bookingService->createVendorBooking($host, $bookingData);
+            });
+
             return response()->json([
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
+                'message'       => 'Vendor booked successfully.',
+                'booking'       => $result['booking'],
+                'bookingId'     => $result['bookingId'],
+                'priceBreakdown'=> $result['priceBreakdown'],
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error('Vendor Booking Error: '.$e->getMessage());
+            return response()->json([
+                'message' => $e->getMessage() // show exact reason
             ], 500);
         }
     }
+
 
     /**
      * Get all bookings for authenticated host
@@ -185,8 +232,81 @@ class BookingController extends Controller
 
 
     //rject rejectVenueBooking
-    public function rejectVenueBooking(){
+    public function rejectVenueBooking(Request $request, $bookingId)
+    {
+        try {
+            $booking = Booking::with(['business', 'host', 'vendor'])->find($bookingId);
 
+            if (!$booking) {
+                return response()->json(['message' => 'Booking not found.'], 404);
+            }
+
+            // Update timings to mark slot as active
+            $timings = Timing::where('business_id', $booking->business->id)->first();
+            $updatedStatus = null;
+
+            if ($timings) {
+                $localMoment = Carbon::parse($booking->event_date);
+                $dayOfWeek = strtolower($localMoment->format('l'));
+
+                if (
+                    isset($timings->timings_venue[$dayOfWeek]) &&
+                    isset($timings->timings_venue[$dayOfWeek][$booking->time_slot])
+                ) {
+                    $timings->timings_venue[$dayOfWeek][$booking->time_slot]['status'] = 'active';
+                    $timings->save();
+                    $updatedStatus = $timings->timings_venue[$dayOfWeek][$booking->time_slot]['status'];
+                }
+            }
+
+            // Update booking status
+            $booking->status = 'rejected';
+            $booking->save();
+
+            // Send emails
+            try {
+                $fullTimeSlot = $booking->event_date . ' from ' .
+                    Carbon::parse($booking->start_time)->format('H:i') . ' to ' .
+                    Carbon::parse($booking->end_time)->format('H:i') .
+                    ' (' . $booking->timezone . ')';
+
+                // Host Email
+                if ($booking->host && $booking->host->email) {
+                    $hostEmailBody = $this->emailService->hostBookingCancelTemplate([
+                        'hostName' => $booking->host->full_name ?? $booking->host->email ?? 'Host',
+                        'serviceName' => $booking->vendor->company_name ?? $booking->vendor->full_name ?? $booking->business->company_name ?? 'Service',
+                        'timeDetails' => $fullTimeSlot
+                    ]);
+                    $this->emailService->sendEmail($booking->host->email, $hostEmailBody);
+                }
+
+                // Vendor Email
+                if ($booking->vendor && $booking->vendor->email) {
+                    $vendorEmailBody = $this->emailService->vendorBookingCancelTemplate([
+                        'vendorName' => $booking->vendor->full_name ?? $booking->vendor->company_name ?? 'Vendor',
+                        'vendorCompany' => $booking->vendor->company_name ?? $booking->business->company_name ?? 'Vendor',
+                        'timeDetails' => $fullTimeSlot,
+                        'hostName' => $booking->host->full_name ?? 'Host'
+                    ]);
+                    $this->emailService->sendEmail($booking->vendor->email, $vendorEmailBody);
+                }
+            } catch (Exception $e) {
+                \Log::warning("Failed to send rejection emails: " . $e->getMessage());
+            }
+
+            return response()->json([
+                'message' => 'Booking rejected successfully.',
+                'bookingId' => $bookingId,
+                'slotStatus' => $updatedStatus,
+            ], 200);
+
+        } catch (Exception $err) {
+            \Log::error("RejectVenueBooking Error: " . $err->getMessage());
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'error' => $err->getMessage()
+            ], 500);
+        }
     }
 
 
@@ -194,6 +314,7 @@ class BookingController extends Controller
     {
 
     }
+
     /**
      * Cancel a booking
      */

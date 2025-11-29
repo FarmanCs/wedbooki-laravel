@@ -4,6 +4,8 @@ namespace App\Models\Vendor;
 
 use App\Models\Host\Favorite;
 use App\Models\Host\Review;
+use App\Models\Services\ExtraService;
+use App\Models\SubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -59,12 +61,12 @@ class Business extends Model
 
     public function category()
     {
-        return $this->belongsTo(\App\Models\Models\Category::class, 'category_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     public function subcategory()
     {
-        return $this->belongsTo(\App\Models\Models\Subcategory::class, 'subcategory_id');
+        return $this->belongsTo(SubCategory::class, 'subcategory_id');
     }
 
     public function packages()
@@ -94,5 +96,10 @@ class Business extends Model
     public function favourites()
     {
         return $this->hasMany(Favorite::class, 'business_id');
+    }
+
+    public function extraServices()
+    {
+        return $this->hasMany(ExtraService::class);
     }
 }

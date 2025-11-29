@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Counter extends Model
 {
-    use HasFactory;
-
+    // Mass assignable fields
     protected $fillable = [
-        'type',
-        'value',
+        'name',
+        'seq',
     ];
 
-    protected $casts = [
-        'value' => 'integer',
-    ];
-
-    public $timestamps = false;
+    /**
+     * Example: If a counter is related to multiple bookings
+     * Uncomment this if you want to define a relationship
+     */
+    // public function bookings()
+    // {
+    //     return $this->hasMany(Booking::class, 'counter_id', 'id');
+    // }
 }

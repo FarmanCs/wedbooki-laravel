@@ -88,4 +88,23 @@ class EmailService
         Mail::to($user->email)->send(new AccountDeletionOtp($user->full_name ?? $user->name, $otp
         ));
     }
+
+    public function hostBookingCancelTemplate(array $data)
+    {
+        $hostName = $data['hostName'] ?? 'Host';
+        $serviceName = $data['serviceName'] ?? 'Service';
+        $timeDetails = $data['timeDetails'] ?? '';
+
+        return (new \App\Mail\Host\BookingCancelledMail($hostName, $serviceName, $timeDetails));
+    }
+
+    public function vendorBookingCancelTemplate(array $data)
+    {
+        $vendorName = $data['vendorName'] ?? 'Vendor';
+        $vendorCompany = $data['vendorCompany'] ?? 'Vendor Company';
+        $timeDetails = $data['timeDetails'] ?? '';
+        $hostName = $data['hostName'] ?? 'Host';
+
+        return (new \App\Mail\Vendor\BookingCancelledMail($vendorName, $vendorCompany, $timeDetails, $hostName));
+    }
 }

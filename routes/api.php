@@ -109,12 +109,7 @@ Route::prefix('/v1/host')->group(function () {
         //bookings
         Route::post('/book-venue/{id?}', [BookingController::class, 'createVenueBooking']);
 
-
-        //pending routes . . .  all booking
-        Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
-        Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
-
-        Route::post('/book-vendor/{id}', [BookingController::class, 'createVendorBooking']);
+        Route::post('/book-vendor/{id?}', [BookingController::class, 'createVendorBooking']);
         Route::put('/cancel-booking/{id}', [BookingController::class, 'cancelBooking']);
 
         Route::get('/my-bookings/{id?}', [BookingController::class, 'getAllBookings']);
@@ -122,6 +117,11 @@ Route::prefix('/v1/host')->group(function () {
         Route::get('/host-booking-detail/{id}', [BookingController::class, 'hostBookingDetail']);
 
         Route::patch('/get-booked-vendors', [BookingController::class, 'getBookedVendors']);
+
+
+        //pending routes
+        Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
+        Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
 
     });
     // ---------------------------

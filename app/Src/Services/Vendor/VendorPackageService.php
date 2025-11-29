@@ -2,7 +2,7 @@
 
 namespace App\Src\Services\Vendor;
 
-use App\Models\Service;
+use App\Models\services\Service;
 use App\Models\Vendor;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Package;
