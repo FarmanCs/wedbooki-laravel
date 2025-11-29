@@ -93,16 +93,12 @@ class BookingController extends Controller
     // Create a vendor booking (non-venue)
     public function createVendorBooking(Request $request)
     {
-        // Get authenticated host via Sanctum
         $host = auth()->user();
 
         if (!$host || $host->role !== 'host') {
-            return response()->json([
-                'message' => 'Only hosts can create bookings.'
-            ], 403);
+            return response()->json(['message'=>'Only hosts can create bookings.'], 403);
         }
 
-        // Validate request
         $validator = Validator::make($request->all(), [
             'package_id'     => 'nullable|exists:packages,id',
             'business_id'    => 'required|exists:businesses,id',
@@ -112,43 +108,58 @@ class BookingController extends Controller
             'timezone'       => 'required|string',
             'extra_services' => 'nullable|array',
         ]);
+
         if ($validator->fails()) {
-            return response()->json([
-                'message' => $validator->errors()->first()
-            ], 400);
+            return response()->json(['message'=>$validator->errors()->first()], 400);
         }
 
         try {
             $bookingData = $request->only([
-                'package_id',
-                'business_id',
-                'event_date',
-                'start_time',
-                'end_time',
-                'timezone',
-                'extra_services',
+                'package_id','business_id','event_date','start_time','end_time','timezone','extra_services'
             ]);
 
-            // Use transaction for safety
-            $result = DB::transaction(function () use ($host, $bookingData) {
+            $result = DB::transaction(function() use ($host, $bookingData) {
                 return $this->bookingService->createVendorBooking($host, $bookingData);
             });
 
             return response()->json([
-                'message'       => 'Vendor booked successfully.',
-                'booking'       => $result['booking'],
-                'bookingId'     => $result['bookingId'],
-                'priceBreakdown'=> $result['priceBreakdown'],
+                'message' => 'Vendor booked successfully.',
+                'booking' => $result['booking'],
+                'bookingId' => $result['bookingId'],
+                'priceBreakdown' => $result['priceBreakdown']
             ], 201);
 
         } catch (\Exception $e) {
             \Log::error('Vendor Booking Error: '.$e->getMessage());
             return response()->json([
-                'message' => $e->getMessage() // show exact reason
+                'message' => $e->getMessage() // show detailed error for debugging
             ], 500);
         }
     }
 
+
+
+    private function formatTime($time)
+    {
+        // Already in correct format
+        if (preg_match('/^\d{1,2}:\d{2}\s?(AM|PM)$/i', $time)) {
+            return $time;
+        }
+
+        // Convert 24-hour to 12-hour format
+        if (preg_match('/^\d{1,2}:\d{2}$/', $time)) {
+            try {
+                $carbon = \Carbon\Carbon::createFromFormat('H:i', $time);
+                return $carbon->format('h:i A');
+            } catch (\Exception $e) {
+                // If that fails, try with different format
+                $carbon = \Carbon\Carbon::createFromFormat('G:i', $time);
+                return $carbon->format('h:i A');
+            }
+        }
+
+        return $time;
+    }
 
     /**
      * Get all bookings for authenticated host

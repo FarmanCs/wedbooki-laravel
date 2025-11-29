@@ -110,6 +110,11 @@ Route::prefix('/v1/host')->group(function () {
         Route::post('/book-venue/{id?}', [BookingController::class, 'createVenueBooking']);
 
         Route::post('/book-vendor/{id?}', [BookingController::class, 'createVendorBooking']);
+
+
+        //pending routes
+        Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
+        Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
         Route::put('/cancel-booking/{id}', [BookingController::class, 'cancelBooking']);
 
         Route::get('/my-bookings/{id?}', [BookingController::class, 'getAllBookings']);
@@ -118,26 +123,13 @@ Route::prefix('/v1/host')->group(function () {
 
         Route::patch('/get-booked-vendors', [BookingController::class, 'getBookedVendors']);
 
-
-        //pending routes
-        Route::put('/reject-venue-booking/{bookingId}', [BookingController::class, 'rejectVenueBooking']);
-        Route::put('/cancel-venue-booking/{bookingId}', [BookingController::class, 'cancelVenueBooking']);
-
     });
-    // ---------------------------
-    // SESSIONS (RECENT ACTIVITY)
-    // ---------------------------
-//    Route::get('/sessions', [SessionController::class, 'getAllSessions']);
-//    Route::get('/session/{hostId}', [SessionController::class, 'getSessionByHostId']);
-//    Route::patch('/cancel-session/{hostId}', [SessionController::class, 'cancelSession']);
-
     //pending routes for the moments
     Route::post('/google-auth', [AuthController::class, 'googleLogin']);
     Route::post('/apple-auth', [AuthController::class, 'appleLogin']);
     Route::put('/email-change-otp/{id}', [ProfileController::class, 'verifyChangeEmailOtp']);
 
     Route::delete('/delete-account/{id?}', [AccountController::class, 'deleteAccount']);
-
 
 
 });
