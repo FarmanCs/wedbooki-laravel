@@ -10,12 +10,12 @@ class SignupOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $email;
+    public $name;
     public $otp;
 
-    public function __construct($email, $otp)
+    public function __construct($name, $otp)
     {
-        $this->email = $email;
+        $this->name = $name;
         $this->otp = $otp;
     }
 
@@ -24,8 +24,8 @@ class SignupOtpMail extends Mailable
         return $this->subject('Verify Your Email - OTP')
             ->view('emails.signup-otp')
             ->with([
-                'email' => $this->email,
-                'otp' => $this->otp
+                'name' => $this->name,
+                'otp'  => $this->otp,
             ]);
     }
 }

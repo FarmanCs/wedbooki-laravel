@@ -15,11 +15,10 @@
     </style>
 </head>
 <body>
-
 <h1>Hello {{ ucwords($name) }}!</h1>
 
-<p>You are receiving this email because you signed up as a Vendor on our platform.</p>
-<p>Please use the following One-Time Password (OTP) to verify your account:</p>
+<p>You are receiving this email because a request was made to reset your password.</p>
+<p>Use the following One-Time Password (OTP) to proceed:</p>
 
 <table class="panel" width="100%" cellpadding="0" cellspacing="0" role="presentation">
     <tr>
@@ -29,9 +28,8 @@
 
 <p>This OTP is valid for 10 minutes.</p>
 
-<p>If you did not request this, you can safely ignore this email.</p>
+<p>If you did not request this, you can ignore this email.</p>
 
 <p>Thanks,<br>{{ config('app.name') }}</p>
-
 </body>
 </html>

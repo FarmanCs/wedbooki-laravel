@@ -38,154 +38,122 @@ class VendorAuthService
     public function signup(Request $request)
     {
         // VALIDATION
-        $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:255',
-            'company_name' => 'required|string|max:255',
-            'category_id' => 'required|numeric:',
-            'sub_category' => 'nullable|numeric:',
-            'country' => 'required|string',
-            'city' => 'required|string',
-            'email' => 'required|email',
-            'phone_no' => 'required|numeric',
-            'country_code' => 'required|string',
-            'password' => 'required|string|min:8|regex:/[A-Z]/',
-            'business_registration' => 'nullable|string',
+        $validated = $request->validate([
+            'full_name'              => 'required|string|max:255',
+            'company_name'           => 'required|string|max:255',
+            'category_id'            => 'required|exists:categories,id',
+            'sub_category_id'        => 'nullable|exists:sub_categories,id',
+            'country'                => 'required|string',
+            'city'                   => 'required|string',
+            'email'                  => 'required|email|unique:vendors,email|unique:hosts,email',
+            'phone_no'               => 'required|numeric|unique:vendors,phone_no|unique:hosts,phone_no',
+            'country_code'           => 'required|string',
+            'password'               => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/[A-Z]/', // must contain uppercase
+            ],
+            'business_registration'   => 'nullable|string',
             'business_license_number' => 'nullable|string',
+        ], [
+            'category_id.exists'      => 'The selected category does not exist.',
+            'sub_category_id.exists'  => 'The selected sub category does not exist.',
+            'email.unique'            => 'This email is already registered.',
+            'phone_no.unique'         => 'This phone number is already registered.',
+            'password.regex'          => 'Password must contain at least one uppercase letter.',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => $validator->errors()->first()
-            ], 400);
-        }
-
         // LOWERCASE EMAIL
-        $email = strtolower($request->email);
-
-        // CHECK HOST TABLE (email OR phone)
-        $existingHost = Vendor::where('email', $email)
-            ->orWhere('phone_no', $request->phone_no)
-            ->first();
-
-        if ($existingHost) {
-
-            $message = $existingHost->email === $email
-                ? "This email is already registered as a Host. You cannot signup as a Vendor. Please use another email."
-                : "This phone number is already registered as a Host. You cannot signup as a Vendor. Please use another phone number.";
-
-            return response()->json(['message' => $message], 409);
-        }
-
-        // CHECK EXISTING VENDOR EMAIL
-        if (Vendor::where('email', $email)->exists()) {
-            return response()->json([
-                'message' => "Email already exists. Please use another."
-            ], 409);
-        }
-
-        // CHECK EXISTING VENDOR PHONE
-        if (Vendor::where('phone_no', $request->phone_no)->exists()) {
-            return response()->json([
-                'message' => "Phone number already exists. Please use another."
-            ], 409);
-        }
+        $email = strtolower($validated['email']);
 
         // VENDOR TYPE
-        $vendorType = strtolower($request->category) === 'venue' ? 'venue' : 'service';
+        $vendorType = (int)$validated['category_id'] === 1 ? 'venue' : 'service';
 
-        // CUSTOM VENDOR ID (Your Counter Service)
+        // CUSTOM ID
         $customVendorId = $this->counterService->getNextCounter('vendor_id', 'WB-V300');
 
-        // CATEGORY MAPPING
-        $busCategory = Category::where('category_id', $request->category)->first();
-        if (!$busCategory) {
-            return response()->json(['message' => 'Category not found.'], 404);
-        }
-
-        // BUSINESS PROFILE DATA
-        $businessData = [
-            'company_name' => $request->company_name,
-            'category_id' => $busCategory->id,
-            'business_registration' => $request->business_registration ?? null,
-            'business_license_number' => $request->business_license_number ?? null,
-            'vendor_type' => $vendorType,
-        ];
-
-        // SUBCATEGORY (Only if valid 24-character ID)
-        if (!empty($request->subcategory) && strlen($request->subcategory) === 24) {
-
-            $busSubCategory = SubCategory::where('category_id', $busCategory->id)
-                ->where('mongo_uid', $request->subcategory) // Mapped properly
-                ->first();
-
-            if (!$busSubCategory) {
-                return response()->json(['message' => 'Sub category not found.'], 404);
-            }
-
-            $businessData['sub_category_id'] = $busSubCategory->id;
-        }
-
         // CREATE BUSINESS PROFILE
-        $businessProfile = Business::create($businessData);
+        $businessProfile = Business::create([
+            'company_name'            => $validated['company_name'],
+            'category_id'             => $validated['category_id'],
+            'sub_category_id'         => $validated['sub_category_id'] ?? null,
+            'business_registration'   => $validated['business_registration'] ?? null,
+            'business_license_number' => $validated['business_license_number'] ?? null,
+            'vendor_type'             => $vendorType,
+        ]);
 
-        // OTP
+        // GENERATE OTP
         $otp = $this->generateOtp();
 
         // CREATE VENDOR
         $vendor = Vendor::create([
-            'full_name' => $request->full_name,
-            'country' => $request->country,
-            'city' => $request->city,
-            'email' => $email,
-            'phone_no' => $request->phone_no,
-            'country_code' => $request->country_code,
-            'category' => $request->category,
-            'password' => Hash::make($request->password),
+            'full_name'        => $validated['full_name'],
+            'country'          => $validated['country'],
+            'city'             => $validated['city'],
+            'email'            => $email,
+            'phone_no'         => $validated['phone_no'],
+            'country_code'     => $validated['country_code'],
+            'category'         => $validated['category_id'],
+            'password'         => Hash::make($validated['password']),
             'custom_vendor_id' => $customVendorId,
-            'business_id' => $businessProfile->id,
-            'otp' => $otp,
+            'business_id'      => $businessProfile->id,
+            'otp'              => $otp,
         ]);
 
         // SEND OTP EMAIL
-        Mail::to($email)->send(new SignupOtpMail($email, $otp));
+        Mail::to($email)->send(new SignupOtpMail($validated['full_name'], $otp));
 
         return response()->json([
             'success' => true,
-            'message' => 'User created successfully'
+            'message' => 'Vendor registered successfully. OTP has been sent to email.',
+            'vendor'  => $vendor,
         ], 201);
     }
 
-    public function verifySignup(array $data): JsonResponse
+    public function verifySignup(array $data)
     {
-        $validator = Validator::make($data, [
-            'email' => 'required|email',
-            'otp' => 'required|numeric',
+        $validated = Validator::make($data, [
+            'email' => [
+                'required',
+                'email',
+                'exists:vendors,email'
+            ],
+            'otp'   => 'required|numeric',
+        ], [
+            'email.required' => 'Email is required.',
+            'email.email'    => 'Please provide a valid email address.',
+            'email.exists'   => 'No vendor account found with this email.',
+            'otp.required'   => 'OTP is required.',
+            'otp.numeric'    => 'OTP must be a number.',
+        ])->validate();
+        $vendor = Vendor::where('email', strtolower($validated['email']))->firstOrFail();
+
+        Validator::make($validated, [
+            'otp' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) use ($vendor) {
+                    if ((int) $vendor->otp !== (int) $value) {
+                        $fail('Invalid OTP. Please try again.');
+                    }
+                },
+            ],
+        ])->validate();
+
+        // MARK VENDOR AS VERIFIED
+        $vendor->update([
+            'otp'            => null,
+            'email_verified' => true,
+            'is_verified'    => true,
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
-        }
-
-        $vendor = Vendor::where('email', $data['email'])->first();
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
-        if ((int)$vendor->otp !== (int)$data['otp']) {
-            return response()->json(['message' => 'OTP not matched'], 404);
-        }
-
-        $vendor->otp = null;
-        $vendor->email_verified = true;
-        $vendor->is_verified = true;
-        $vendor->save();
-
+        // ISSUE ACCESS TOKEN
         $token = $vendor->createToken('vendorAccessToken')->plainTextToken;
 
         return response()->json([
-            'success' => true,
-            'message' => 'OTP matched',
+            'success'           => true,
+            'message'           => 'OTP verified successfully.',
             'vendorAccessToken' => $token
         ], 200);
     }
@@ -341,65 +309,71 @@ class VendorAuthService
         }
     }
 
-    public function login(array $data): JsonResponse
+    public function VendorLogin(array $data)
     {
-        $validator = Validator::make($data, [
-            'auth' => 'required|string',
+        $validated = Validator::make($data, [
+            'auth'     => 'required|string',
             'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
-        }
-
-        $auth = $data['auth'];
+        ], [
+            'auth.required'     => 'Email or phone number is required.',
+            'password.required' => 'Password is required.',
+        ])->validate();
+        $auth = $validated['auth'];
+        // DETERMINE LOGIN FIELD
         $query = is_numeric($auth)
-            ? ['phone_no' => (int)$auth]
+            ? ['phone_no' => (int) $auth]
             : ['email' => strtolower($auth)];
+        // FETCH VENDOR WITH RELATIONS
+        $vendor = Vendor::where($query)
+            ->with(['category', 'business'])
+            ->first();
 
-        $vendor = Vendor::where($query)->with(['category', 'businessProfile'])->first();
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User does not exist'], 404);
+        // USER NOT FOUND OR SOFT DELETED
+        if (!$vendor || $vendor->account_soft_deleted) {
+            return response()->json([
+                'message' => 'User does not exist.'
+            ], 404);
         }
-
-        if ($vendor->account_soft_deleted) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
+        // ACCOUNT DEACTIVATED
         if ($vendor->account_deactivated) {
             $otp = $this->generateOtp();
-            $vendor->otp = $otp;
-            $vendor->save();
+            $vendor->update(['otp' => $otp]);
 
             Mail::to($vendor->email)->send(new ForgetPasswordMail($vendor->full_name, $otp));
 
             return response()->json([
-                'message' => 'Account is deactivated. OTP sent to email to reactivate.',
+                'message'       => 'Account is deactivated. OTP sent to email to reactivate.',
                 'isDeactivated' => true,
-                'userId' => $vendor->id
+                'userId'        => $vendor->id,
             ], 403);
         }
 
-        if (!Hash::check($data['password'], $vendor->password)) {
-            return response()->json(['message' => 'Invalid password'], 400);
+        // PASSWORD CHECK
+        if (!Hash::check($validated['password'], $vendor->password)) {
+            return response()->json([
+                'message' => 'Invalid password.'
+            ], 400);
         }
 
+        // CREATE ACCESS TOKEN
         $token = $vendor->createToken('vendorAccessToken')->plainTextToken;
-        $completedProfile = (bool)($vendor->category && $vendor->phone_no);
 
+        // CHECK IF PROFILE IS COMPLETED
+        $completedProfile = (bool) ($vendor->category && $vendor->phone_no);
+
+        // PREPARE VENDOR DATA (without password)
         $vendorData = $vendor->toArray();
         unset($vendorData['password']);
 
         return response()->json([
-            'message' => 'Logged in successfully',
+            'message'           => 'Logged in successfully.',
             'vendorAccessToken' => $token,
-            'user' => $vendorData,
-            'completedProfile' => $completedProfile
+            'user'              => $vendorData,
+            'completedProfile'  => $completedProfile,
         ], 200);
     }
 
-    public function forgetPassword(array $data): JsonResponse
+    public function VendorForgetPassword(array $data)
     {
         $validator = Validator::make($data, [
             'auth' => 'required|string',

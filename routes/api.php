@@ -137,9 +137,7 @@ Route::prefix('/v1/host')->group(function () {
 Route::prefix('v1/vendor')->group(function () {
     // Public Routes
     Route::post('/signup', [VendorController::class, 'VendorSignup']);
-    Route::post('/verify-signup', [VendorController::class, 'VerifyVendorSignup']);
-    Route::post('/google-auth', [VendorController::class, 'VendorGoogleSignupOrLogin']);
-    Route::post('/apple-auth', [VendorController::class, 'VendorAppleSignupOrLogin']);
+    Route::post('/verify-signup-otp', [VendorController::class, 'verifySignup']);
     Route::post('/login', [VendorController::class, 'VendorLogin']);
     Route::post('/forget-password', [VendorController::class, 'VendorForgetPassword']);
     Route::post('/verify-otp/{id}', [VendorController::class, 'VendorVerifyOtp']);
@@ -215,4 +213,8 @@ Route::prefix('v1/vendor')->group(function () {
     Route::get('/get-vendor-available-slots/{vendorId}', [VendorController::class, 'GetVendorAvailableSlots']);
     Route::post('/reactivate-verify', [VendorController::class, 'VendorReactivateVerify']);
 });
+
+//pending routes
+Route::post('/google-auth', [VendorController::class, 'VendorGoogleSignupOrLogin']);
+Route::post('/apple-auth', [VendorController::class, 'VendorAppleSignupOrLogin']);
 

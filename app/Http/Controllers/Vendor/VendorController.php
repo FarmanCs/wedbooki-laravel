@@ -52,7 +52,7 @@ class VendorController extends Controller
         return $this->vendorAuthService->signup($request);
     }
 
-    public function verifySignup(Request $request): JsonResponse
+    public function verifySignup(Request $request)
     {
         return $this->vendorAuthService->verifySignup($request->all());
     }
@@ -67,14 +67,14 @@ class VendorController extends Controller
         return $this->vendorAuthService->appleAuth($request->all());
     }
 
-    public function login(Request $request): JsonResponse
+    public function VendorLogin(Request $request)
     {
-        return $this->vendorAuthService->login($request->all());
+        return $this->vendorAuthService->VendorLogin($request->all());
     }
 
-    public function forgetPassword(Request $request): JsonResponse
+    public function VendorForgetPassword(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->forgetPassword($request->all());
+        return $this->vendorAuthService->VendorForgetPassword($request->all());
     }
 
     public function verifyOtp(Request $request): JsonResponse
