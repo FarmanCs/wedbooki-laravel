@@ -77,34 +77,34 @@ class VendorController extends Controller
         return $this->vendorAuthService->VendorForgetPassword($request->all());
     }
 
-    public function verifyOtp(Request $request): JsonResponse
+    public function VendorVerifyOtp(Request $request)
     {
-        return $this->vendorAuthService->verifyOtp($request->all());
+        return $this->vendorAuthService->VendorVerifyOtp($request->all());
     }
 
-    public function resendOtp(Request $request): JsonResponse
+    public function VendorResendOtp(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->resendOtp($request->all());
+        return $this->vendorAuthService->VendorResendOtp($request->all());
     }
 
-    public function resetPassword(Request $request): JsonResponse
+    public function VendorResetPassword(Request $request)
     {
-        return $this->vendorAuthService->resetPassword($request->all());
+        return $this->vendorAuthService->VendorResetPassword($request->all());
     }
 
-    public function updatePassword(Request $request, $id): JsonResponse
+    public function VendorUpdatePassword(Request $request, )
     {
-        return $this->vendorAuthService->updatePassword($id, $request->all());
+        return $this->vendorAuthService->VendorUpdatePassword( $request->all());
     }
 
-    public function changeEmail(Request $request, $id): JsonResponse
+    public function VendorChangeEmail(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->changeEmail($id, $request->all());
+        return $this->vendorAuthService->VendorChangeEmail( $request->all());
     }
 
-    public function verifyChangeEmailOtp(Request $request, $id): JsonResponse
+    public function VendorVerifyChangeEmailOtp(Request $request)
     {
-        return $this->vendorAuthService->verifyChangeEmailOtp($id, $request->all());
+        return $this->vendorAuthService->VendorVerifyChangeEmailOtp( $request->all());
     }
 
     public function passwordChangeRequest(Request $request, $id): JsonResponse

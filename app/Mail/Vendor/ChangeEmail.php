@@ -8,18 +8,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class UpdatePasswordMail extends Mailable
+class ChangeEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public string $name;
+    public string $otp;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(string $name)
+    public function __construct(string $name, string $otp)
     {
         $this->name = $name;
+        $this->otp = $otp;
     }
 
     /**
@@ -28,7 +30,7 @@ class UpdatePasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Password Has Been Updated',
+            subject: 'Confirm Your Email Change - OTP',
         );
     }
 
@@ -38,17 +40,16 @@ class UpdatePasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.vendor.update-password',
+            view: 'emails.vendor.change-email', // Blade view path
             with: [
                 'name' => $this->name,
+                'otp'  => $this->otp,
             ]
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {

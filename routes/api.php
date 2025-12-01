@@ -142,16 +142,14 @@ Route::prefix('v1/vendor')->group(function () {
     Route::post('/forget-password', [VendorController::class, 'VendorForgetPassword']);
     Route::post('/verify-otp/{id}', [VendorController::class, 'VendorVerifyOtp']);
     Route::post('/resend-otp', [VendorController::class, 'VendorResendOtp']);
-    Route::post('/reset-password/{id}', [VendorController::class, 'VendorResetPassword']);
 
     // Protected Routes - Sanctum
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/reset-password', [VendorController::class, 'VendorResetPassword']);
+        Route::post('/vendor-update-password', [VendorController::class, 'VendorUpdatePassword']);
 
-        Route::put('/complete-profile', [VendorController::class, 'ComplteteVendorProfile']);
-        Route::put('/vendor-update-password/{id}', [VendorController::class, 'VendorUpdatePassword']);
-
-        Route::put('/change-email/{id}', [VendorController::class, 'VendorChangeEmail']);
-        Route::put('/email-change-otp/{id}', [VendorController::class, 'VendorVerifyChangeEmailOtp']);
+        Route::post('/change-email', [VendorController::class, 'VendorChangeEmail']);
+        Route::patch('/email-change-otp', [VendorController::class, 'VendorVerifyChangeEmailOtp']);
 
         Route::post('/password-change-request/{id}', [VendorController::class, 'VendorPasswordChangeRequest']);
         Route::post('/password-change-verify/{id}', [VendorController::class, 'VendorPasswordChangeVerify']);
@@ -208,6 +206,8 @@ Route::prefix('v1/vendor')->group(function () {
         Route::get('/packages-performance/{id}', [VendorController::class, 'getPackagePerformance']);
     });
 
+
+
     // Public slot routes
     Route::get('/get-slots/{vendorId}/slots', [VendorController::class, 'GetSlotsForDate']);
     Route::get('/get-vendor-available-slots/{vendorId}', [VendorController::class, 'GetVendorAvailableSlots']);
@@ -217,4 +217,5 @@ Route::prefix('v1/vendor')->group(function () {
 //pending routes
 Route::post('/google-auth', [VendorController::class, 'VendorGoogleSignupOrLogin']);
 Route::post('/apple-auth', [VendorController::class, 'VendorAppleSignupOrLogin']);
+Route::put('/complete-profile', [VendorController::class, 'ComplteteVendorProfile']);
 
