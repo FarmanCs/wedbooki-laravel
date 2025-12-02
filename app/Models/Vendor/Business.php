@@ -57,6 +57,12 @@ class Business extends Model
         'last_login' => 'datetime',
     ];
 
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     // Relationships
 
     public function category()

@@ -161,7 +161,7 @@ Route::prefix('v1/vendor')->group(function () {
 
         Route::get('/get-business-profile', [VendorController::class, 'VendorBusinessProfile']);
         Route::post('/update-vendor-profile', [VendorController::class, 'VendorUpdateProfile']);
-        Route::get('/getvendor-personal-profile/{id}', [VendorController::class, 'GetVendorPersonalProfile']);
+        Route::get('/get-vendor-personal-profile', [VendorController::class, 'getVendorPersonalProfile']);
         Route::put('/update-business-profile/{id}', [VendorController::class, 'UpdateVendorBusinessProfile']);
         Route::put('/update-timings/{id}', [VendorController::class, 'UpdateVendorTimings']);
         Route::get('/service-timings/{id}', [VendorController::class, 'GetServiceVendorTimings']);

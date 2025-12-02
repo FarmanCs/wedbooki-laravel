@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,9 +15,7 @@ class Vendor extends Model
 
     protected $table = 'vendors';
 
-    /**
-     * The attributes that are mass assignable.
-     */
+    //The attributes that are mass assignable.
     protected $fillable = [
         'full_name',
         'email',
@@ -55,9 +54,7 @@ class Vendor extends Model
         'auto_hard_delete_after_days',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
+    //The attributes that should be cast.
     protected $casts = [
         'languages' => 'array',
         'specialties' => 'array',
@@ -66,6 +63,15 @@ class Vendor extends Model
         'account_soft_deleted' => 'boolean',
         'last_login' => 'datetime',
         'account_soft_deleted_at' => 'datetime',
+    ];
+
+    //hidden columns
+    protected $hidden = [
+        'password',
+        'otp',
+        'created_at',
+        'updated_at',
+        'email_verified_at',
     ];
 
     /**
@@ -84,13 +90,8 @@ class Vendor extends Model
         return $this->belongsTo(Business::class);
     }
 
-    // Example: Vendor has many reviews (if you have a VendorReview model)
-    public function reviews()
-    {
-        return $this->hasMany(VendorReview::class);
-    }
 
-    // Example: Vendor has many bookings (if you have a Booking model)
+    //  Vendor has many bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);

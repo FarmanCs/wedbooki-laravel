@@ -154,15 +154,15 @@ class VendorProfileService
         ], 200);
     }
 
-    public function getVendorPersonalProfile($id): JsonResponse
+    public function getVendorPersonalProfile(): JsonResponse
     {
-        $vendor = Vendor::select('*')->where('id', $id)->first();
+        $vendor = auth()->user();
 
-        if (!$vendor) {
-            return response()->json(['message' => 'Vendor not found'], 404);
-        }
+        $vendor=Vendor::with('business', 'bookings')->find($vendor->id);
 
-        return response()->json(['vendor' => $vendor], 200);
+        return response()->json([
+            'message'=>'Vendor profile',
+            'vendor' => $vendor], 200);
     }
 
     public function vendorBusinessProfile(): JsonResponse

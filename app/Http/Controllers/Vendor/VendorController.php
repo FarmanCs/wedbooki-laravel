@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendor\SignupRequest;
+use App\Http\Requests\Vendor\VendorProfileRequest;
 use App\Http\Requests\Vendor\VendorUpdateProfileRequest;
 use App\Src\Services\Vendor\VendorAuthService;
 use App\Src\Services\Vendor\VendorProfileService;
@@ -150,14 +151,9 @@ class VendorController extends Controller
         return $this->vendorProfileService->completeProfile($request->all());
     }
 
-    public function updateVendorProfile(Request $request, $id): JsonResponse
+    public function getVendorPersonalProfile(VendorProfileRequest $request): JsonResponse
     {
-        return $this->vendorProfileService->updateVendorProfile($id, $request->all(), $request->file('profileImage'));
-    }
-
-    public function getVendorPersonalProfile($id): JsonResponse
-    {
-        return $this->vendorProfileService->getVendorPersonalProfile($id);
+        return $this->vendorProfileService->getVendorPersonalProfile();
     }
 
     public function vendorBusinessProfile(): JsonResponse
