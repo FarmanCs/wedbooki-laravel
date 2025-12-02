@@ -11,6 +11,7 @@ use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Timing;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class VendorProfileService
@@ -164,77 +165,84 @@ class VendorProfileService
         return response()->json(['vendor' => $vendor], 200);
     }
 
-    public function vendorBusinessProfile($id): JsonResponse
+    public function vendorBusinessProfile(): JsonResponse
     {
-        $vendor = Vendor::with(['businessProfile.category'])->find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
-        if ($vendor->role !== 'vendor') {
-            return response()->json([
-                'success' => false,
-                'message' => 'You are not authorized to access this profile'
-            ], 400);
-        }
-
+        $vendor_id = auth()->id();
+       $vendor= Vendor::with('business')->where('id', $vendor_id)->first();
         return response()->json([
             'success' => true,
             'message' => 'User profile found',
-            'user' => $vendor
+            'vendor' => $vendor
         ], 200);
     }
 
-    public function updateVendorBusinessProfile($id, array $data): JsonResponse
+    public function updateVendorBusinessProfile($request): JsonResponse
     {
-        $business = Business::find($id);
 
-        if (!$business) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Business not found'
-            ], 404);
-        }
+        $vendor = auth()->user();
 
-        $allowedFields = [
-            'company_name',
-            'business_desc',
-            'features',
-            'businessEmail',
-            'businessPhone',
-            'country',
-            'city',
-            'zip',
-            'street_address',
-            'website',
-            'social_links',
-            'postal_code',
-            'capacity',
-            'services',
-            'addi_services',
-            'vendor_type',
-            'category',
-            'faqs',
-            'PaymentDaysAdvance',
-            'PaymentDaysFinal',
-            'ServicesRadius',
-            'advancePercentage',
-        ];
+        $updateFields = [];
 
-        $updateData = [];
-        foreach ($allowedFields as $field) {
-            if (isset($data[$field])) {
-                $updateData[$field] = $data[$field];
+        // Handle S3 file upload
+
+        if ($request->hasFile('profile_image')) {
+            try {
+                $file = $request->file('profile_image');
+                $path = $file->storePublicly('vendor/profile-image');
+
+                $updateFields['profile_image'] = Storage::disk('s3')->url($path);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Failed to upload file'], 500);
             }
         }
 
-        $business->update($updateData);
+        // Map fields from request
+        if ($request->filled('name')) {
+            $updateFields['full_name'] = $request->name;
+        }
+        if ($request->filled('years_of_experince')) {
+            $updateFields['years_of_experince'] = $request->years_of_experince;
+        }
+        if ($request->filled('team_members')) {
+            $updateFields['team_members'] = $request->team_members;
+        }
+        if ($request->filled('phone_no')) {
+            $updateFields['phone_no'] = $request->phone_no;
+        }
+        if ($request->filled('country_code')) {
+            $updateFields['country_code'] = $request->country_code;
+        }
+        if ($request->filled('country')) {
+            $updateFields['country'] = $request->country;
+        }
+        if ($request->filled('about')) {
+            $updateFields['about'] = $request->about;
+        }
+        if ($request->filled('city')) {
+            $updateFields['city'] = $request->city;
+        }
+
+        // Languages array or comma-separated string
+        if ($request->filled('languages')) {
+            $updateFields['languages'] = is_array($request->languages)
+                ? $request->languages
+                : array_map('trim', explode(',', $request->languages));
+        }
+
+        // Specialties array or comma-separated string
+        if ($request->filled('specialties')) {
+            $updateFields['specialties'] = is_array($request->specialties)
+                ? $request->specialties
+                : array_map('trim', explode(',', $request->specialties));
+        }
+
+        // Update vendor
+        $vendor->update($updateFields);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Business profile updated successfully',
-            'data' => $business->fresh()
+            'message' => 'Profile updated',
+            'vendor' => $vendor,
+            'ProfileImage' => $updateFields['profile_image'] ?? null,
         ], 200);
     }
 

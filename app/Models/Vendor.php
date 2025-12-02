@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Vendor\Business;
+use App\Models\Vendor\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

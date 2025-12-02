@@ -3,6 +3,8 @@
 namespace App\Src\Services\Vendor;
 
 use App\Mail\Vendor\ChangeEmail;
+use App\Mail\Vendor\VendorDeactivateMail;
+use App\Mail\Vendor\VendorDeleteMail;
 use App\Models\SubCategory;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Vendor;
@@ -37,38 +39,11 @@ class VendorAuthService
         return rand(1000, 9999);
     }
 
-    public function signup(Request $request)
+    public function signup($request)
     {
         // VALIDATION
-        $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'company_name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'sub_category_id' => 'nullable|exists:sub_categories,id',
-            'country' => 'required|string',
-            'city' => 'required|string',
-            'email' => 'required|email|unique:vendors,email|unique:hosts,email',
-            'phone_no' => 'required|numeric|unique:vendors,phone_no|unique:hosts,phone_no',
-            'country_code' => 'required|string',
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'regex:/[A-Z]/', // must contain uppercase
-            ],
-            'business_registration' => 'nullable|string',
-            'business_license_number' => 'nullable|string',
-        ], [
-            'category_id.exists' => 'The selected category does not exist.',
-            'sub_category_id.exists' => 'The selected sub category does not exist.',
-            'email.unique' => 'This email is already registered.',
-            'phone_no.unique' => 'This phone number is already registered.',
-            'password.regex' => 'Password must contain at least one uppercase letter.',
-        ]);
-
-        // LOWERCASE EMAIL
+        $validated = $request->validated();
         $email = strtolower($validated['email']);
-
         // VENDOR TYPE
         $vendorType = (int)$validated['category_id'] === 1 ? 'venue' : 'service';
 
@@ -109,7 +84,7 @@ class VendorAuthService
         return response()->json([
             'success' => true,
             'message' => 'Vendor registered successfully. OTP has been sent to email.',
-            'vendor' => $vendor,
+            'vendor' => $vendor->toArray(),
         ], 201);
     }
 
@@ -408,13 +383,11 @@ class VendorAuthService
         ], 200);
     }
 
-    public function VendorVerifyOtp(array $data): JsonResponse
+    public function VendorForgetPasswordVerify(array $data, $id ): JsonResponse
     {
         $validator = Validator::make($data, [
-            'email' => 'required|email',
             'otp' => 'required|numeric',
         ],[
-            'email.required' => 'Email is required.',
             'otp.required' => 'OTP is required.',
         ]);
 
@@ -422,7 +395,7 @@ class VendorAuthService
             return response()->json(['error' => $validator->errors()->first()], 400);
         }
 
-        $vendor = Vendor::where('email', $data['email'])->first();
+        $vendor = Vendor::find($id);
 
         if (!$vendor) {
             return response()->json(['message' => 'User not exist'], 404);
@@ -598,17 +571,9 @@ class VendorAuthService
         ], 200);
     }
 
-    public function passwordChangeRequest($id): JsonResponse
+    public function VendorPasswordChangeRequest():JsonResponse
     {
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
-        if ($vendor->account_soft_deleted) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+       $vendor = auth()->user();
 
         $otp = $this->generateOtp();
         $vendor->otp = $otp;
@@ -619,58 +584,43 @@ class VendorAuthService
         return response()->json(['message' => 'OTP sent to your email'], 200);
     }
 
-    public function passwordChangeVerify($id, array $data): JsonResponse
+    public function VendorPasswordChangeVerify(array $data): JsonResponse
     {
         $validator = Validator::make($data, [
             'otp' => 'required|numeric',
             'newPassword' => 'required|string|min:8|regex:/[A-Z]/',
+        ],[
+            'newPassword.required' => 'New password is required.',
+            'otp.required' => 'OTP is required.',
         ]);
-
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 400);
         }
-
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
-        if ($vendor->account_soft_deleted) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
+        $vendor = auth()->user();
         if ((int)$vendor->otp !== (int)$data['otp']) {
             return response()->json(['message' => 'OTP not matched'], 400);
         }
-
         $vendor->password = Hash::make($data['newPassword']);
         $vendor->otp = null;
         $vendor->save();
-
         Mail::to($vendor->email)->send(new ResetPasswordMail($vendor->full_name));
-
         return response()->json(['message' => 'Password changed successfully'], 200);
     }
 
-    public function deactivateRequest($id): JsonResponse
+    public function VendorDeactivateRequest(): JsonResponse
     {
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
+        $vendor = auth()->user();
         $otp = $this->generateOtp();
         $vendor->otp = $otp;
         $vendor->save();
 
-        Mail::to($vendor->email)->send(new ForgetPasswordMail($vendor->full_name, $otp));
+        Mail::to($vendor->email)->send(new VendorDeactivateMail($vendor->full_name, $otp));
+
 
         return response()->json(['message' => 'OTP sent to your email to confirm deactivation'], 200);
     }
 
-    public function deactivateVerify($id, array $data): JsonResponse
+    public function VendorDeactivateVerify( array $data): JsonResponse
     {
         $validator = Validator::make($data, [
             'otp' => 'required|numeric',
@@ -680,11 +630,7 @@ class VendorAuthService
             return response()->json(['error' => $validator->errors()->first()], 400);
         }
 
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
+        $vendor = auth()->user();
 
         if ((int)$vendor->otp !== (int)$data['otp']) {
             return response()->json(['message' => 'OTP not matched'], 400);
@@ -697,38 +643,31 @@ class VendorAuthService
         return response()->json(['message' => 'Account deactivated successfully'], 200);
     }
 
-    public function deleteRequest($id): JsonResponse
+    public function VendorDeleteRequest(): JsonResponse
     {
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
-
+        $vendor = auth()->user();
         $otp = $this->generateOtp();
         $vendor->otp = $otp;
         $vendor->save();
 
-        Mail::to($vendor->email)->send(new ForgetPasswordMail($vendor->full_name, $otp));
+        Mail::to($vendor->email)->send(new VendorDeleteMail($vendor->full_name, $otp));
 
         return response()->json(['message' => 'OTP sent to your email to confirm account deletion'], 200);
     }
 
-    public function deleteVerify($id, array $data): JsonResponse
+    public function VendorDeleteVerify( array $data): JsonResponse
     {
         $validator = Validator::make($data, [
             'otp' => 'required|numeric',
+        ],[
+            'otp.required' => 'OTP is required.',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 400);
         }
 
-        $vendor = Vendor::find($id);
-
-        if (!$vendor) {
-            return response()->json(['message' => 'User not exist'], 404);
-        }
+        $vendor = auth()->user();
 
         if ((int)$vendor->otp !== (int)$data['otp']) {
             return response()->json(['message' => 'OTP not matched'], 400);

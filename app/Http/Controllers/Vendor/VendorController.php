@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vendor\SignupRequest;
+use App\Http\Requests\Vendor\VendorUpdateProfileRequest;
 use App\Src\Services\Vendor\VendorAuthService;
 use App\Src\Services\Vendor\VendorProfileService;
 use App\Src\Services\Vendor\VendorTimingService;
@@ -46,7 +48,7 @@ class VendorController extends Controller
     }
 
     // Authentication Methods
-    public function VendorSignup(Request $request)
+    public function VendorSignup(SignupRequest $request)
     {
 
         return $this->vendorAuthService->signup($request);
@@ -77,9 +79,9 @@ class VendorController extends Controller
         return $this->vendorAuthService->VendorForgetPassword($request->all());
     }
 
-    public function VendorVerifyOtp(Request $request)
+    public function VendorForgetPasswordVerify(Request $request, $id)
     {
-        return $this->vendorAuthService->VendorVerifyOtp($request->all());
+        return $this->vendorAuthService->VendorForgetPasswordVerify($request->all(),$id);
     }
 
     public function VendorResendOtp(Request $request): JsonResponse
@@ -92,7 +94,7 @@ class VendorController extends Controller
         return $this->vendorAuthService->VendorResetPassword($request->all());
     }
 
-    public function VendorUpdatePassword(Request $request, )
+    public function VendorUpdatePassword(Request $request)
     {
         return $this->vendorAuthService->VendorUpdatePassword( $request->all());
     }
@@ -107,34 +109,34 @@ class VendorController extends Controller
         return $this->vendorAuthService->VendorVerifyChangeEmailOtp( $request->all());
     }
 
-    public function passwordChangeRequest(Request $request, $id): JsonResponse
+    public function VendorPasswordChangeRequest(Request $request)
     {
-        return $this->vendorAuthService->passwordChangeRequest($id);
+        return $this->vendorAuthService->VendorPasswordChangeRequest();
     }
 
-    public function passwordChangeVerify(Request $request, $id): JsonResponse
+    public function VendorPasswordChangeVerify(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->passwordChangeVerify($id, $request->all());
+        return $this->vendorAuthService->VendorPasswordChangeVerify( $request->all());
     }
 
-    public function deactivateRequest(Request $request, $id): JsonResponse
+    public function VendorDeactivateRequest( ): JsonResponse
     {
-        return $this->vendorAuthService->deactivateRequest($id);
+        return $this->vendorAuthService->VendorDeactivateRequest();
     }
 
-    public function deactivateVerify(Request $request, $id): JsonResponse
+    public function VendorDeactivateVerify(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->deactivateVerify($id, $request->all());
+        return $this->vendorAuthService->VendorDeactivateVerify( $request->all());
     }
 
-    public function deleteRequest(Request $request, $id): JsonResponse
+    public function VendorDeleteRequest(): JsonResponse
     {
-        return $this->vendorAuthService->deleteRequest($id);
+        return $this->vendorAuthService->VendorDeleteRequest();
     }
 
-    public function deleteVerify(Request $request, $id): JsonResponse
+    public function VendorDeleteVerify(Request $request): JsonResponse
     {
-        return $this->vendorAuthService->deleteVerify($id, $request->all());
+        return $this->vendorAuthService->VendorDeleteVerify( $request->all());
     }
 
     public function reactivateVerify(Request $request): JsonResponse
@@ -158,14 +160,14 @@ class VendorController extends Controller
         return $this->vendorProfileService->getVendorPersonalProfile($id);
     }
 
-    public function vendorBusinessProfile($id): JsonResponse
+    public function vendorBusinessProfile(): JsonResponse
     {
-        return $this->vendorProfileService->vendorBusinessProfile($id);
+        return $this->vendorProfileService->vendorBusinessProfile();
     }
 
-    public function updateVendorBusinessProfile(Request $request, $id): JsonResponse
+    public function VendorUpdateProfile(Request $request): JsonResponse
     {
-        return $this->vendorProfileService->updateVendorBusinessProfile($id, $request->all());
+        return $this->vendorProfileService->updateVendorBusinessProfile($request);
     }
 
     public function deleteVendorAndData($id): JsonResponse

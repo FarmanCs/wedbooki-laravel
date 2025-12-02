@@ -140,7 +140,7 @@ Route::prefix('v1/vendor')->group(function () {
     Route::post('/verify-signup-otp', [VendorController::class, 'verifySignup']);
     Route::post('/login', [VendorController::class, 'VendorLogin']);
     Route::post('/forget-password', [VendorController::class, 'VendorForgetPassword']);
-    Route::post('/verify-otp/{id}', [VendorController::class, 'VendorVerifyOtp']);
+    Route::post('/verify-forgot-password-otp/{id}', [VendorController::class, 'VendorForgetPasswordVerify']);
     Route::post('/resend-otp', [VendorController::class, 'VendorResendOtp']);
 
     // Protected Routes - Sanctum
@@ -151,16 +151,16 @@ Route::prefix('v1/vendor')->group(function () {
         Route::post('/change-email', [VendorController::class, 'VendorChangeEmail']);
         Route::patch('/email-change-otp', [VendorController::class, 'VendorVerifyChangeEmailOtp']);
 
-        Route::post('/password-change-request/{id}', [VendorController::class, 'VendorPasswordChangeRequest']);
-        Route::post('/password-change-verify/{id}', [VendorController::class, 'VendorPasswordChangeVerify']);
+        Route::get('/password-change-request', [VendorController::class, 'VendorPasswordChangeRequest']);
+        Route::patch('/password-change-verify', [VendorController::class, 'VendorPasswordChangeVerify']);
 
-        Route::post('/deactivate-request/{id}', [VendorController::class, 'VendorDeactivateRequest']);
-        Route::post('/deactivate-verify/{id}', [VendorController::class, 'VendorDeactivateVerify']);
-        Route::post('/delete-request/{id}', [VendorController::class, 'VendorDeleteRequest']);
-        Route::post('/delete-verify/{id}', [VendorController::class, 'VendorDeleteVerify']);
+        Route::get('/deactivate-request', [VendorController::class, 'VendorDeactivateRequest']);
+        Route::patch('/deactivate-verify', [VendorController::class, 'VendorDeactivateVerify']);
+        Route::get('/delete-request', [VendorController::class, 'VendorDeleteRequest']);
+        Route::post('/delete-verify', [VendorController::class, 'VendorDeleteVerify']);
 
-        Route::put('/update-vendor-profile/{id}', [VendorController::class, 'VendorUpdateProfile']);
-        Route::get('/get-business-profile/{id}', [VendorController::class, 'VendorBusinessProfile']);
+        Route::get('/get-business-profile', [VendorController::class, 'VendorBusinessProfile']);
+        Route::post('/update-vendor-profile', [VendorController::class, 'VendorUpdateProfile']);
         Route::get('/getvendor-personal-profile/{id}', [VendorController::class, 'GetVendorPersonalProfile']);
         Route::put('/update-business-profile/{id}', [VendorController::class, 'UpdateVendorBusinessProfile']);
         Route::put('/update-timings/{id}', [VendorController::class, 'UpdateVendorTimings']);
