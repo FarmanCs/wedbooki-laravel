@@ -8,6 +8,9 @@ use App\Http\Requests\Vendor\UpdateBusinessProfileRequest;
 use App\Http\Requests\Vendor\UpdateVendorTimingsRequest;
 use App\Http\Requests\Vendor\VendorProfileRequest;
 use App\Http\Requests\Vendor\VendorUpdateProfileRequest;
+use App\Models\Vendor;
+use App\Models\Vendor\Business;
+use App\Models\Vendor\Timing;
 use App\Src\Services\Vendor\VendorAuthService;
 use App\Src\Services\Vendor\VendorProfileService;
 use App\Src\Services\Vendor\VendorTimingService;
@@ -18,6 +21,7 @@ use App\Src\Services\Vendor\VendorReviewService;
 use App\Src\Services\Vendor\VendorStatsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
 {
@@ -196,19 +200,62 @@ class VendorController extends Controller
         return $this->vendorTimingService->GetVendorVenuTimings($id);
     }
 
-    public function addUnavailableDate(Request $request, $id): JsonResponse
+    public function AddUnavailableDate(Request $request, $businessid): JsonResponse
     {
-        return $this->vendorTimingService->addUnavailableDate($id, $request->all());
+        $business = Business::where('id', $businessid)->first();
+
+        if(!$business){
+            return response()->json(['message' => 'Business not found'], 404);
+        }
+
+        // Validate in controller (as you requested)
+        $validated = $request->validate([
+            'date' => 'required|date'
+        ]);
+
+
+        // Pass only validated data to service
+        return $this->vendorTimingService->addUnavailableDate($business->id, $validated);
     }
 
-    public function makeDateAvailable(Request $request, $id): JsonResponse
+    public function MakeDateAvailable(Request $request, $businessid): JsonResponse
     {
-        return $this->vendorTimingService->makeDateAvailable($id, $request->all());
+        // Validate the request
+        $validated = Validator::make($request->all(), [
+            'date' => 'required|date',
+        ]);
+
+        if ($validated->fails()) {
+            return response()->json([
+                'message' => $validated->errors()->first()
+            ], 400);
+        }
+
+        // Find the business
+        $business = Business::find($businessid);
+        if (!$business) {
+            return response()->json(['message' => 'Business not found'], 404);
+        }
+
+        // Find the vendor timing
+        $timing = Timing::where('business_id', $business->id)->first();
+        if (!$timing) {
+            return response()->json([
+                'message' => 'Vendor timings not found'
+            ], 404);
+        }
+
+        // Call the service to remove the unavailable date
+        return $this->vendorTimingService->makeDateAvailable($request->date,  $timing);
     }
 
-    public function getUnavailableDates($id): JsonResponse
+    public function GetUnavailableDates($businessid): JsonResponse
     {
-        return $this->vendorTimingService->getUnavailableDates($id);
+        $businessid=Business::where('id', $businessid)->first();
+        if(!$businessid){
+            return response()->json(['message' => 'Business not found'], 404);
+        }
+        return $this->vendorTimingService->getUnavailableDates($businessid);
     }
 
     public function deleteUnavailableDate(Request $request): JsonResponse
@@ -232,9 +279,9 @@ class VendorController extends Controller
     }
 
     // Media Methods
-    public function updateVendorPortfolioImages(Request $request, $id): JsonResponse
+    public function UpdateVendorPortfolioImages(Request $request, $id): JsonResponse
     {
-        return $this->vendorMediaService->updateVendorPortfolioImages($id, $request->allFiles());
+        return $this->vendorMediaService->updateVendorPortfolioImages($id, $request);
     }
 
     public function DeleteVendorPortfolioImage(Request $request, $id): JsonResponse

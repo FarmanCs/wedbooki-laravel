@@ -168,14 +168,13 @@ Route::prefix('v1/vendor')->group(function () {
         Route::get('/get-venue-timings/{id}', [VendorController::class, 'GetVendorVenuTimings']);
 
         Route::delete('/delete-portfolio-image/{id}', [VendorController::class, 'DeleteVendorPortfolioImage']);
-        Route::put('/update-images/{id}', [VendorController::class, 'UpdateVendorPortfolioImages']);
-        Route::put('/update-videos/{id}', [VendorController::class, 'UpdateVendorVideos']);
-        Route::delete('/delete-video/{id}', [VendorController::class, 'DeleteVendorVideo']);
+        Route::post('/update-images/{id}', [VendorController::class, 'UpdateVendorPortfolioImages']);
+
 
         // Unavailable Dates
-        Route::post('/add-unavailable-date/{id}', [VendorController::class, 'AddUnavailableDate']);
-        Route::put('/remove-unavailable-date/{id}', [VendorController::class, 'MakeDateAvailable']);
-        Route::get('/get-unavailable-dates/{id}', [VendorController::class, 'GetUnavailableDates']);
+        Route::post('/add-unavailable-date/{businessid}', [VendorController::class, 'AddUnavailableDate']);
+        Route::post('/remove-unavailable-date/{businessid}', [VendorController::class, 'MakeDateAvailable']);
+        Route::get('/get-unavailable-dates/{businessid}', [VendorController::class, 'GetUnavailableDates']);
         Route::delete('/delete-unavailable-date', [VendorController::class, 'DeleteUnavailableDate']);
         Route::put('/update-unavialable-dates', [VendorController::class, 'UpdateUnavailableDates']);
 
@@ -207,7 +206,6 @@ Route::prefix('v1/vendor')->group(function () {
     });
 
 
-
     // Public slot routes
     Route::get('/get-slots/{vendorId}/slots', [VendorController::class, 'GetSlotsForDate']);
     Route::get('/get-vendor-available-slots/{vendorId}', [VendorController::class, 'GetVendorAvailableSlots']);
@@ -219,3 +217,5 @@ Route::post('/google-auth', [VendorController::class, 'VendorGoogleSignupOrLogin
 Route::post('/apple-auth', [VendorController::class, 'VendorAppleSignupOrLogin']);
 Route::put('/complete-profile', [VendorController::class, 'ComplteteVendorProfile']);
 
+Route::put('/update-videos/{id}', [VendorController::class, 'UpdateVendorVideos']);
+Route::delete('/delete-video/{id}', [VendorController::class, 'DeleteVendorVideo']);

@@ -15,37 +15,49 @@ class VendorMediaService
         $this->s3Service = $s3Service;
     }
 
-    public function updateVendorPortfolioImages($businessId, array $files): JsonResponse
+    public function updateVendorPortfolioImages($businessId, $request): JsonResponse
     {
-        $business = Business::find($businessId);
+        try {
+            $business = Business::find($businessId);
 
-        if (!$business) {
-            return response()->json(['message' => 'Business not found'], 404);
-        }
+            if (!$business) {
+                return response()->json(['message' => 'Business not found'], 404);
+            }
 
-        $portfolioImages = $files['portfolio_images'] ?? [];
+            // Get uploaded files (Laravel style)
+            $portfolioImages = $request->file('portfolio_images', []);
 
-        if (count($portfolioImages) > 20) {
+            // Validate count < 20
+            if (count($portfolioImages) > 20) {
+                return response()->json([
+                    'message' => 'Portfolio images must be less than 20.'
+                ], 400);
+            }
+
+            // Upload each file to S3 (Laravel built in)
+            $newPortfolioImageUrls = [];
+            foreach ($portfolioImages as $file) {
+
+                // storePublicly ensures visibility = public
+                $path = $file->storePublicly("business/{$businessId}/portfolio_images", 's3');
+
+                // Convert to public S3 URL
+                $newPortfolioImageUrls[] = Storage::disk('s3')->url($path);
+            }
+
+            // Merge new + existing images (remove duplicates)
+            $existing = $business->portfolio_images ?? [];
+            $business->portfolio_images = array_values(array_unique(array_merge($existing, $newPortfolioImageUrls)));
+            $business->save();
+
             return response()->json([
-                'message' => 'Portfolio images must be less than 20.'
-            ], 400);
+                'message' => 'Images updated successfully',
+                'portfolio_images' => $newPortfolioImageUrls
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Please try again later'], 500);
         }
-
-        // Upload new images
-        $newPortfolioImageUrls = [];
-        foreach ($portfolioImages as $image) {
-            $newPortfolioImageUrls[] = $this->s3Service->uploadFile($image);
-        }
-
-        // Append to existing images
-        $existingImages = $business->portfolio_images ?? [];
-        $business->portfolio_images = array_unique(array_merge($existingImages, $newPortfolioImageUrls));
-        $business->save();
-
-        return response()->json([
-            'message' => 'Images updated successfully',
-            'portfolio_images' => $newPortfolioImageUrls
-        ], 200);
     }
 
     public function deleteVendorPortfolioImage($businessId, $request): JsonResponse

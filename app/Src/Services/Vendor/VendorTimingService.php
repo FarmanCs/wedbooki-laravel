@@ -42,12 +42,12 @@ class VendorTimingService
             return response()->json(['message' => 'Invalid timing data'], 400);
         }
 
-        // 📅 Handle unavailable dates
+        //  Handle unavailable dates
         if ($request->has('unavailable_dates') && is_array($request->input('unavailable_dates'))) {
             $updateData['unavailable_dates'] = $request->input('unavailable_dates');
         }
 
-        // 💾 Update or create timing
+        //  Update or create timing
         $timing = Timing::updateOrCreate(
             ['business_id' => $businessId],
             $updateData
@@ -94,27 +94,35 @@ class VendorTimingService
         ], 200);
     }
 
-    public function addUnavailableDate($businessId, array $data): JsonResponse
+    public function     addUnavailableDate($businessId, array $data): JsonResponse
     {
-        $validator = Validator::make($data, ['date' => 'required|date']);
+        $date = $data['date'];
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
-        }
-
+        // Find timing record
         $timing = Timing::where('business_id', $businessId)->first();
 
+
+
         if (!$timing) {
-            return response()->json(['message' => 'Vendor timings not found'], 404);
+            return response()->json([
+                'message' => 'Vendor timings not found'
+            ], 404);
         }
 
+        // Ensure it's an array
         $unavailableDates = $timing->unavailable_dates ?? [];
 
-        if (in_array($data['date'], $unavailableDates)) {
-            return response()->json(['message' => 'Date already marked as unavailable'], 400);
+        // Date already exists
+        if (in_array($date, $unavailableDates)) {
+            return response()->json([
+                'message' => 'Date already marked as unavailable'
+            ], 400);
         }
 
-        $unavailableDates[] = $data['date'];
+        // Add new date
+        $unavailableDates[] = $date;
+
+        // Save DB
         $timing->unavailable_dates = $unavailableDates;
         $timing->save();
 
@@ -124,37 +132,41 @@ class VendorTimingService
         ], 200);
     }
 
-    public function makeDateAvailable($businessId, array $data): JsonResponse
+
+    public function makeDateAvailable(string $date, $timing): JsonResponse
     {
-        $validator = Validator::make($data, ['date' => 'required|date']);
+        try {
+            $unavailableDates = $timing->unavailable_dates ?? [];
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
+            // Check if the date exists in unavailable_dates
+            if (!in_array($date, $unavailableDates)) {
+                return response()->json([
+                    'message' => 'Date not found in unavailable list'
+                ], 404);
+            }
+
+            // Remove the date
+            $unavailableDates = array_filter(
+                $unavailableDates,
+                fn($d) => $d !== $date
+            );
+
+            $timing->unavailable_dates = array_values($unavailableDates);
+            $timing->save();
+
+            return response()->json([
+                'message' => 'Date made available successfully',
+                'data' => $timing->unavailable_dates
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Error removing unavailable date: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Server error'
+            ], 500);
         }
-
-        $timing = Timing::where('business_id', $businessId)->first();
-
-        if (!$timing) {
-            return response()->json(['message' => 'Vendor timings not found'], 404);
-        }
-
-        $unavailableDates = $timing->unavailable_dates ?? [];
-        $key = array_search($data['date'], $unavailableDates);
-
-        if ($key === false) {
-            return response()->json(['message' => 'Date not found in unavailable list'], 404);
-        }
-
-        unset($unavailableDates[$key]);
-        $timing->unavailable_dates = array_values($unavailableDates);
-        $timing->save();
-
-        return response()->json([
-            'message' => 'Date made available successfully',
-            'data' => $timing->unavailable_dates
-        ], 200);
     }
-
     public function getUnavailableDates($businessId): JsonResponse
     {
         $timing = Timing::where('business_id', $businessId)->first();
