@@ -4,6 +4,7 @@ namespace App\Src\Services\Vendor;
 
 use App\Models\Vendor\Business;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class VendorMediaService
 {
@@ -47,31 +48,31 @@ class VendorMediaService
         ], 200);
     }
 
-    public function deleteVendorPortfolioImage($businessId, array $data): JsonResponse
+    public function deleteVendorPortfolioImage($businessId, $request): JsonResponse
     {
-        if (!isset($data['imageUrl'])) {
+        if (!isset($request['imageUrl'])) {
             return response()->json(['message' => 'Image URL is required.'], 400);
         }
-
         $business = Business::find($businessId);
-
         if (!$business) {
             return response()->json(['message' => 'Vendor not found.'], 404);
         }
-
         $currentImages = $business->portfolio_images ?? [];
-
-        if (!in_array($data['imageUrl'], $currentImages)) {
+        if (!in_array($request['imageUrl'], $currentImages)) {
             return response()->json(['message' => 'Image not found in vendor portfolio.'], 404);
         }
-
+        // Convert URL to S3 path
+        $s3Path = parse_url($request['imageUrl'], PHP_URL_PATH);
+        $s3Path = ltrim($s3Path, '/');
         // Delete from S3
-        $this->s3Service->deleteByUrl($data['imageUrl']);
-
+        if (Storage::disk('s3')->exists($s3Path)) {
+            Storage::disk('s3')->delete($s3Path);
+        }
         // Remove from array
-        $business->portfolio_images = array_values(array_filter($currentImages, function($img) use ($data) {
-            return $img !== $data['imageUrl'];
+        $business->portfolio_images = array_values(array_filter($currentImages, function($img) use ($request) {
+            return $img !== $request['imageUrl'];
         }));
+
         $business->save();
 
         return response()->json([

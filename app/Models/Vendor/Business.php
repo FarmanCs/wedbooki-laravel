@@ -14,37 +14,14 @@ class Business extends Model
     use HasFactory;
 
     protected $fillable = [
-        'company_name',
-        'business_desc',
-        'category_id',
-        'subcategory_id',
-        'venue_type',
-        'member_type',
-        'business_registration',
-        'business_license_number',
-        'rating',
-        'is_featured',
-        'business_type',
-        'website',
-        'social_links',
-        'postal_code',
-        'businessEmail',
-        'businessPhone',
-        'features',
-        'profile_verification',
-        'services',
-        'faqs',
-        'portfolio_images',
-        'videos',
-        'street_address',
-        'capacity',
-        'view_count',
-        'social_count',
-        'last_login',
-        'payment_days_advance',
-        'payment_days_final',
-        'services_radius',
-        'advance_percentage',
+        'company_name', 'business_desc', 'category_id', 'subcategory_id', 'venue_type',
+        'member_type', 'business_registration', 'business_license_number', 'rating',
+        'is_featured', 'business_type', 'website', 'social_links', 'postal_code',
+        'businessEmail', 'businessPhone', 'features', 'profile_verification', 'services',
+        'faqs', 'portfolio_images', 'videos', 'street_address', 'capacity',
+        'payment_days_advance', 'payment_days_final', 'services_radius',
+        'advance_percentage', 'profile_image', 'cover_image', 'chat_image',
+        'chat_video', 'chat_document'
     ];
 
     protected $casts = [
@@ -54,7 +31,13 @@ class Business extends Model
         'faqs' => 'array',
         'portfolio_images' => 'array',
         'videos' => 'array',
-        'last_login' => 'datetime',
+        'is_featured' => 'boolean',
+        'rating' => 'float',
+        'payment_days_advance' => 'integer',
+        'payment_days_final' => 'integer',
+        'services_radius' => 'integer',
+        'advance_percentage' => 'float',
+        'lastLogin' => 'datetime',
     ];
 
 
@@ -99,6 +82,7 @@ class Business extends Model
     {
         return $this->hasMany(Review::class, 'business_id');
     }
+
     public function favourites()
     {
         return $this->hasMany(Favorite::class, 'business_id');

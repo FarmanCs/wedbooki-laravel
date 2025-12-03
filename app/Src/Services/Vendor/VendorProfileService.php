@@ -154,6 +154,77 @@ class VendorProfileService
         ], 200);
     }
 
+    public function updateVendorBusinessProfile($request, $id): JsonResponse {
+        $business = Business::find($id);
+
+        if (!$business) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Business not found'], 404);
+        }
+
+
+        // Allowed fields according to your model + migration
+        $allowedFields = [
+            'company_name', 'business_desc', 'category_id', 'sub_category_id',
+            'venue_type', 'member_type', 'business_registration',
+            'business_license_number', 'rating', 'is_featured', 'business_type',
+            'website', 'social_links', 'postal_code', 'businessEmail', 'businessPhone',
+            'features', 'profile_verification', 'services', 'faqs', 'street_address',
+            'capacity', 'payment_days_advance', 'payment_days_final',
+            'services_radius', 'advance_percentage'
+        ];
+
+        $updateData = [];
+
+        foreach ($allowedFields as $field) {
+            if ($request->has($field)) {
+                $updateData[$field] = $request->input($field);
+            }
+        }
+
+        // Single file upload fields
+        $singleUploads = [
+            'profile_image',
+            'cover_image',
+            'chat_image',
+            'chat_video',
+            'chat_document'
+        ];
+
+        foreach ($singleUploads as $field) {
+            if ($request->hasFile($field)) {
+                $filePath = $request->file($field)->storePubicly("business/{$id}/{$field}");
+                $updateData[$field] = Storage::disk('s3')->url($filePath);
+            }
+        }
+        // portfolio_images[] (JSON)
+        if ($request->hasFile('portfolio_images')) {
+            $portfolioPaths = [];
+            foreach ($request->file('portfolio_images') as $file) {
+                $path = $file->storePublicly("business/{$id}/portfolio_images");
+                $portfolioPaths[] = Storage::disk('s3')->url($path);
+            }
+            $updateData['portfolio_images'] = $portfolioPaths;
+        }
+        // videos[] (JSON)
+        if ($request->hasFile('videos')) {
+            $videoPaths = [];
+            foreach ($request->file('videos') as $file) {
+                $v = $file->storePublicly("business/{$id}/videos");
+                $videoPaths[] = Storage::disk('s3')->url($v);
+            }
+            $updateData['videos'] = $videoPaths;
+        }
+        // UPDATE IN DATABASE
+        $business->update($updateData);
+        return response()->json([
+            'success' => true,
+            'message' => 'Business profile updated successfully',
+            'data'    => $business,
+        ]);
+    }
+
     public function getVendorPersonalProfile(): JsonResponse
     {
         $vendor = auth()->user();
@@ -176,15 +247,11 @@ class VendorProfileService
         ], 200);
     }
 
-    public function updateVendorBusinessProfile($request): JsonResponse
+    public function VendorUpdateProfile($request): JsonResponse
     {
-
         $vendor = auth()->user();
-
         $updateFields = [];
-
         // Handle S3 file upload
-
         if ($request->hasFile('profile_image')) {
             try {
                 $file = $request->file('profile_image');
@@ -195,7 +262,6 @@ class VendorProfileService
                 return response()->json(['message' => 'Failed to upload file'], 500);
             }
         }
-
         // Map fields from request
         if ($request->filled('name')) {
             $updateFields['full_name'] = $request->name;
@@ -221,24 +287,20 @@ class VendorProfileService
         if ($request->filled('city')) {
             $updateFields['city'] = $request->city;
         }
-
         // Languages array or comma-separated string
         if ($request->filled('languages')) {
             $updateFields['languages'] = is_array($request->languages)
                 ? $request->languages
                 : array_map('trim', explode(',', $request->languages));
         }
-
         // Specialties array or comma-separated string
         if ($request->filled('specialties')) {
             $updateFields['specialties'] = is_array($request->specialties)
                 ? $request->specialties
                 : array_map('trim', explode(',', $request->specialties));
         }
-
         // Update vendor
         $vendor->update($updateFields);
-
         return response()->json([
             'message' => 'Profile updated',
             'vendor' => $vendor,

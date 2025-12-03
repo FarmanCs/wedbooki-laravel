@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('businessPhone')->nullable();
             $table->json('features')->nullable();
             $table->enum('profile_verification', ['under_review', 'rejected', 'verified'])->default('verified');
-            $table->json('services')->nullable();
+            $table->string('services')->nullable();
             $table->json('faqs')->nullable();
             $table->json('portfolio_images')->nullable();
             $table->json('videos')->nullable();

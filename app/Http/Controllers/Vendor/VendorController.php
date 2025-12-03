@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Vendor\SignupRequest;
+use App\Http\Requests\Vendor\UpdateBusinessProfileRequest;
+use App\Http\Requests\Vendor\UpdateVendorTimingsRequest;
 use App\Http\Requests\Vendor\VendorProfileRequest;
 use App\Http\Requests\Vendor\VendorUpdateProfileRequest;
 use App\Src\Services\Vendor\VendorAuthService;
@@ -161,9 +163,16 @@ class VendorController extends Controller
         return $this->vendorProfileService->vendorBusinessProfile();
     }
 
+    public function updateVendorBusinessProfile(UpdateBusinessProfileRequest $request, $id)
+    {
+        $result = $this->vendorProfileService->updateVendorBusinessProfile($request, $id);
+
+        return response()->json($result, $result['success'] ? 200 : 400);
+    }
+
     public function VendorUpdateProfile(Request $request): JsonResponse
     {
-        return $this->vendorProfileService->updateVendorBusinessProfile($request);
+        return $this->vendorProfileService->VendorUpdateProfile($request);
     }
 
     public function deleteVendorAndData($id): JsonResponse
@@ -172,9 +181,9 @@ class VendorController extends Controller
     }
 
     // Timing Methods
-    public function updateVendorTimings(Request $request, $id): JsonResponse
+    public function updateVendorTimings(UpdateVendorTimingsRequest $request, $id): JsonResponse
     {
-        return $this->vendorTimingService->updateVendorTimings($id, $request->all());
+        return $this->vendorTimingService->updateVendorTimings($id, $request);
     }
 
     public function getServiceVendorTimings($id): JsonResponse
@@ -182,9 +191,9 @@ class VendorController extends Controller
         return $this->vendorTimingService->getServiceVendorTimings($id);
     }
 
-    public function getVenueVendorTimings($id): JsonResponse
+    public function GetVendorVenuTimings($id): JsonResponse
     {
-        return $this->vendorTimingService->getVenueVendorTimings($id);
+        return $this->vendorTimingService->GetVendorVenuTimings($id);
     }
 
     public function addUnavailableDate(Request $request, $id): JsonResponse
@@ -228,9 +237,9 @@ class VendorController extends Controller
         return $this->vendorMediaService->updateVendorPortfolioImages($id, $request->allFiles());
     }
 
-    public function deleteVendorPortfolioImage(Request $request, $id): JsonResponse
+    public function DeleteVendorPortfolioImage(Request $request, $id): JsonResponse
     {
-        return $this->vendorMediaService->deleteVendorPortfolioImage($id, $request->all());
+        return $this->vendorMediaService->deleteVendorPortfolioImage($id, $request);
     }
 
     public function updateVendorVideos(Request $request, $id): JsonResponse

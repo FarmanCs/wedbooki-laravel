@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class VendorTimingService
 {
-    public function updateVendorTimings($businessId, array $data): JsonResponse
+    public function updateVendorTimings($businessId, $request): JsonResponse
     {
         // Validate business exists
         $business = Business::with('category')->find($businessId);
@@ -21,41 +21,45 @@ class VendorTimingService
         }
 
         $category = Category::find($business->category_id);
+
         $updateData = ['business_id' => $businessId];
 
-        // Handle venue timings
-        if ($category->type === 'venue' && isset($data['timings_venue'])) {
-            $updateData['timings_venue'] = $this->cleanTimingsVenue($data['timings_venue']);
+        // 🧠 Handle Venue Category Timings
+        if ($category?->type === 'venue' && $request->has('timings_venue')) {
+            $updateData['timings_venue'] = $this->cleanTimingsVenue($request->input('timings_venue'));
         }
-        // Handle service timings
-        elseif ($category->type !== 'venue' && isset($data['working_hours']) && isset($data['slot_duration'])) {
-            $updateData['working_hours'] = $data['working_hours'];
-            $updateData['slot_duration'] = $data['slot_duration'];
+        // 🛠 Handle Service Vendor Timings
+        elseif ($category?->type !== 'venue'
+            && $request->has(['working_hours', 'slot_duration'])) {
+
+            $updateData['working_hours'] = $request->input('working_hours');
+            $updateData['slot_duration'] = $request->input('slot_duration');
             $updateData['timings_service_weekly'] = $this->generateWeeklyServiceSlots(
-                $data['working_hours'],
-                $data['slot_duration']
+                $request->input('working_hours'),
+                $request->input('slot_duration')
             );
         } else {
             return response()->json(['message' => 'Invalid timing data'], 400);
         }
 
-        // Handle unavailable dates
-        if (isset($data['unavailable_dates']) && is_array($data['unavailable_dates'])) {
-            $updateData['unavailable_dates'] = $data['unavailable_dates'];
+        // 📅 Handle unavailable dates
+        if ($request->has('unavailable_dates') && is_array($request->input('unavailable_dates'))) {
+            $updateData['unavailable_dates'] = $request->input('unavailable_dates');
         }
 
-        // Update or create timing
+        // 💾 Update or create timing
         $timing = Timing::updateOrCreate(
             ['business_id' => $businessId],
             $updateData
         );
 
         return response()->json([
-            'message' => 'Vendor timings updated successfully',
+            'message' => $timing->wasRecentlyCreated
+                ? 'Vendor timings created successfully'
+                : 'Vendor timings updated successfully',
             'data' => $timing
         ], 200);
     }
-
     public function getServiceVendorTimings($businessId): JsonResponse
     {
         $timing = Timing::where('business_id', $businessId)
@@ -76,11 +80,9 @@ class VendorTimingService
         ], 200);
     }
 
-    public function getVenueVendorTimings($businessId): JsonResponse
+    public function GetVendorVenuTimings($businessId): JsonResponse
     {
-        $timing = Timing::where('business_id', $businessId)
-            ->select('timings_venue')
-            ->first();
+        $timing = Timing::where('business_id', $businessId)->first();
 
         if (!$timing || !$timing->timings_venue) {
             return response()->json(['message' => 'Venue timings not found'], 404);

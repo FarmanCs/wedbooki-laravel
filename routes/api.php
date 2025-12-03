@@ -159,13 +159,13 @@ Route::prefix('v1/vendor')->group(function () {
         Route::get('/delete-request', [VendorController::class, 'VendorDeleteRequest']);
         Route::post('/delete-verify', [VendorController::class, 'VendorDeleteVerify']);
 
-        Route::get('/get-business-profile', [VendorController::class, 'VendorBusinessProfile']);
+        Route::get('/get-business-profile', [VendorController::class, 'vendorBusinessProfile']);
         Route::post('/update-vendor-profile', [VendorController::class, 'VendorUpdateProfile']);
         Route::get('/get-vendor-personal-profile', [VendorController::class, 'getVendorPersonalProfile']);
-        Route::put('/update-business-profile/{id}', [VendorController::class, 'UpdateVendorBusinessProfile']);
-        Route::put('/update-timings/{id}', [VendorController::class, 'UpdateVendorTimings']);
-        Route::get('/service-timings/{id}', [VendorController::class, 'GetServiceVendorTimings']);
-        Route::get('/venue-timings/{id}', [VendorController::class, 'GetVenueVendorTimings']);
+        Route::post('/update-business-profile/{id}', [VendorController::class, 'updateVendorBusinessProfile']);
+        Route::post('/update-timings/{id}', [VendorController::class, 'updateVendorTimings']);
+        Route::get('/get-service-timings/{id}', [VendorController::class, 'GetServiceVendorTimings']);
+        Route::get('/get-venue-timings/{id}', [VendorController::class, 'GetVendorVenuTimings']);
 
         Route::delete('/delete-portfolio-image/{id}', [VendorController::class, 'DeleteVendorPortfolioImage']);
         Route::put('/update-images/{id}', [VendorController::class, 'UpdateVendorPortfolioImages']);
