@@ -89,4 +89,6 @@ class Host extends Authenticatable
     {
         return $this->hasMany(Checklist::class, 'host_id', 'id');
     }
+
+
 }
