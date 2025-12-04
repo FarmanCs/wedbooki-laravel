@@ -2,11 +2,11 @@
 
 namespace App\Src\Services\Vendor;
 
-use App\Mail\HostBookingCancelMail;
-use App\Mail\HostBookingMail;
-use App\Mail\VendorBookingCancelMail;
-use App\Mail\VendorBookingMail;
-use App\Models\Host;
+use App\Mail\Host\HostBookingCancelMail;
+use App\Mail\Host\HostBookingMail;
+use App\Mail\Vendor\VendorBookingCancelMail;
+use App\Mail\Vendor\VendorBookingMail;
+use App\Models\Host\Host;
 use App\Models\Vendor\Booking;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -14,44 +14,33 @@ use Illuminate\Support\Facades\Mail;
 
 class VendorBookingService
 {
+
     public function getVendorBookings($businessId): JsonResponse
     {
-        $bookings = Booking::where('business_id', $businessId);
-
-//        dd($bookings);
-
-
+        // Check your hosts table structure and only select existing columns
+        $bookings = Booking::select(['id', 'host_id', 'package_id', 'business_id'])->with([
+            'host:id,email,full_name,country,phone_no,category', // Removed 'phone' since it doesn't exist
+            'package:id,name,price,discount,discount_percentage',
+            'business:id,business_email',
+            'business.extraServices:id,business_id,name,price'
+        ])
+            ->where('business_id', $businessId)
+            ->paginate(2);
+//dd($bookings->toArray());
         if ($bookings->isEmpty()) {
             return response()->json(['message' => 'No bookings found.'], 404);
         }
 
-        $formattedBookings = $bookings->map(function ($booking) {
-            return [
-                '_id' => $booking->id,
-                'host' => $booking->host,
-                'package' => $booking->package,
-                'custom_booking_id' => $booking->custom_booking_id,
-                'amount' => $booking->amount,
-                'extra_services' => $booking->extra_services,
-                'payment_status' => $booking->payment_status,
-                'status' => $booking->status,
-                'start_time' => Carbon::parse($booking->start_time)->format('h:i A'),
-                'end_time' => Carbon::parse($booking->end_time)->format('h:i A'),
-                'date' => Carbon::parse($booking->event_date)->format('d M Y'),
-                'time_range' => Carbon::parse($booking->start_time)->format('h:i A') . ' - ' . Carbon::parse($booking->end_time)->format('h:i A'),
-                'createdAt' => $booking->created_at
-            ];
-        });
-
         return response()->json([
             'message' => 'Bookings found',
-            'bookings' => $formattedBookings
+            'bookings' => $bookings->items(),
+            "total_records" => $bookings->total()
         ], 200);
     }
 
     public function vendorSingleBooking($bookingId): JsonResponse
     {
-        $booking = Booking::with('host:id,full_name,email,profile_image')
+        $booking = Booking::with('host:id,full_name,email,phone_no,profile_image')
             ->find($bookingId);
 
         if (!$booking) {

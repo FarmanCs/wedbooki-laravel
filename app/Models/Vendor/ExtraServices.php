@@ -35,4 +35,5 @@ class ExtraService extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
 }

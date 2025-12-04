@@ -179,7 +179,7 @@ Route::prefix('v1/vendor')->group(function () {
         Route::post('/update-unavialable-dates', [VendorController::class, 'UpdateUnavailableDates']);
 
         // Bookings
-        Route::get('/vendor-bookings/{id}', [VendorController::class, 'GetVendorBookings']);
+        Route::get('/vendor-all-bookings/{id}', [VendorController::class, 'GetVendorBookings']);
         Route::get('/vendor-booking-detail/{id}', [VendorController::class, 'VendorSingleBooking']);
         Route::put('/accept-booking/{id}', [VendorController::class, 'AcceptBooking']);
         Route::put('/reject-booking/{id}', [VendorController::class, 'RejectBooking']);

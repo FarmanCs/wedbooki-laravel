@@ -318,17 +318,21 @@ class VendorController extends Controller
     // Booking Methods
     public function GetVendorBookings($id): JsonResponse
     {
+        $business = Business::where('id', $id)->first();
+        if(!$business){
+            return response()->json(['message' => 'Business not found'], 404);
+        }
         return $this->vendorBookingService->getVendorBookings($id);
     }
 
-    public function vendorSingleBooking($id): JsonResponse
+    public function VendorSingleBooking($id): JsonResponse
     {
         return $this->vendorBookingService->vendorSingleBooking($id);
     }
 
-    public function acceptBooking(Request $request, $id): JsonResponse
+    public function AcceptBooking(Request $request, $id): JsonResponse
     {
-        return $this->vendorBookingService->acceptBooking($id, $request->all());
+        return $this->vendorBookingService->acceptBooking($id, $request);
     }
 
     public function rejectBooking(Request $request, $id): JsonResponse
