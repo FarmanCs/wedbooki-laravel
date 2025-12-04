@@ -183,14 +183,48 @@ class VendorTimingService
 
     public function deleteUnavailableDate(array $data): JsonResponse
     {
-        // Implementation for deleting specific unavailable date
-        // Similar to makeDateAvailable
+        $timings = Timing::where('business_id', $data['business_id'])->first();
+
+        if (!$timings) {
+            return response()->json([
+                'message' => 'Vendor timings not found',
+            ], 404);
+        }
+
+        // Remove the date from the array
+        $timings->unavailable_dates = array_filter(
+            $timings->unavailable_dates ?? [],
+            fn ($d) => $d !== $data['date']
+        );
+
+        $timings->save();
+
+        return response()->json([
+            'message' => 'Unavailable date removed successfully',
+            'data'    => array_values($timings->unavailable_dates),
+        ], 200);
     }
 
     public function updateUnavailableDates(array $data): JsonResponse
     {
-        // Implementation for bulk updating unavailable dates
+        $timings = Timing::where('business_id', $data['business_id'])->first();
+
+        if (!$timings) {
+            return response()->json([
+                'message' => 'Vendor timings not found',
+            ], 404);
+        }
+
+        // Update unavailable dates directly (same as Node.js)
+        $timings->unavailable_dates = $data['unavailable_dates'];
+        $timings->save();
+
+        return response()->json([
+            'message' => 'Unavailable dates updated successfully',
+            'data'    => $timings->unavailable_dates,
+        ], 200);
     }
+
 
     public function getSlotsForDate($vendorId): JsonResponse
     {

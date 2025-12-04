@@ -176,7 +176,7 @@ Route::prefix('v1/vendor')->group(function () {
         Route::post('/remove-unavailable-date/{businessid}', [VendorController::class, 'MakeDateAvailable']);
         Route::get('/get-unavailable-dates/{businessid}', [VendorController::class, 'GetUnavailableDates']);
         Route::delete('/delete-unavailable-date', [VendorController::class, 'DeleteUnavailableDate']);
-        Route::put('/update-unavialable-dates', [VendorController::class, 'UpdateUnavailableDates']);
+        Route::post('/update-unavialable-dates', [VendorController::class, 'UpdateUnavailableDates']);
 
         // Bookings
         Route::get('/vendor-bookings/{id}', [VendorController::class, 'GetVendorBookings']);

@@ -16,10 +16,10 @@ class VendorBookingService
 {
     public function getVendorBookings($businessId): JsonResponse
     {
-        $bookings = Booking::where('business_id', $businessId)
-            ->with(['host:id,full_name,email,profile_image', 'package:id,name,price,discount,discount_percentage'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $bookings = Booking::where('business_id', $businessId);
+
+//        dd($bookings);
+
 
         if ($bookings->isEmpty()) {
             return response()->json(['message' => 'No bookings found.'], 404);

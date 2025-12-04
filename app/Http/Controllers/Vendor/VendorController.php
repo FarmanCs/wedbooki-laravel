@@ -260,12 +260,28 @@ class VendorController extends Controller
 
     public function deleteUnavailableDate(Request $request): JsonResponse
     {
-        return $this->vendorTimingService->deleteUnavailableDate($request->all());
+        // Validate the request in the controller
+        $validated = $request->validate([
+            'business_id' => 'required|integer|exists:businesses,id',
+            'date'        => 'required|date',
+        ]);
+
+        return $this->vendorTimingService->deleteUnavailableDate($validated);
     }
 
-    public function updateUnavailableDates(Request $request): JsonResponse
+    public function UpdateUnavailableDates(Request $request): JsonResponse
     {
-        return $this->vendorTimingService->updateUnavailableDates($request->all());
+        // Validate request in controller before passing to service
+        $validated = $request->validate([
+            'business_id'        => 'required|integer|exists:businesses,id',
+            'unavailable_dates'  => 'required|array',
+            'unavailable_dates.*'=> 'date', // each item must be a date
+        ],[
+            'business_id'=>'business id is required',
+            'unavailable_dates.*'=>'at least one date should be there to update',
+        ]);
+
+        return $this->vendorTimingService->updateUnavailableDates($validated);
     }
 
     public function getSlotsForDate($vendorId): JsonResponse
@@ -300,7 +316,7 @@ class VendorController extends Controller
     }
 
     // Booking Methods
-    public function getVendorBookings($id): JsonResponse
+    public function GetVendorBookings($id): JsonResponse
     {
         return $this->vendorBookingService->getVendorBookings($id);
     }
