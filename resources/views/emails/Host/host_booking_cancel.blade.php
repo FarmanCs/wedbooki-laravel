@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Cancelled</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+
+<h2>Hello {{ $booking->host->full_name ?? 'Host' }},</h2>
+
+<p>
+    Unfortunately, your booking for
+    <strong>{{ $booking->business->company_name ?? 'the selected business' }}</strong>
+    has been <strong>cancelled/rejected</strong>.
+</p>
+
+<p>
+    <strong>Time Slot:</strong><br>
+    {{ $timeDetails['formatted_event_date'] ?? '' }} <br>
+    From {{ $timeDetails['formatted_start_time'] ?? '' }}
+    to {{ $timeDetails['formatted_end_time'] ?? '' }} ({{ $booking->timezone ?? '' }})
+</p>
+
+<p>Please contact the vendor or platform for more information.</p>
+
+<p>Regards,<br>Team Booking Management</p>
+
+</body>
+</html>

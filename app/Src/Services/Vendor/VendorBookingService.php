@@ -10,6 +10,8 @@ use App\Mail\Vendor\VendorBookingMail;
 use App\Models\Host\Host;
 use App\Models\Host\HostPersonalizedChecklist;
 use App\Models\Vendor\Booking;
+use App\Models\Vendor\Business;
+use App\Models\Vendor\Timing;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
@@ -86,62 +88,62 @@ class VendorBookingService
         return response()->json(['message' => 'Booking accepted successfully.'], 200);
     }
 
+
     public function rejectBooking($hostId, array $data): JsonResponse
     {
         $host = Host::find($hostId);
-
         if (!$host) {
             return response()->json(['message' => 'Host not found.'], 404);
         }
 
-        $booking = Booking::with(['package', 'venue', 'host', 'business'])
+        $booking = Booking::with(['package', 'vendor', 'host', 'business'])
             ->find($data['bookingId']);
 
         if (!$booking) {
             return response()->json(['message' => 'Booking not found.'], 404);
         }
 
+        // Update status
         $booking->status = 'rejected';
         $booking->save();
 
-        // Free the slot
+        // Free the booking slot
         $this->freeBookingSlot($booking);
 
-        // Send emails
+        // Send cancellation emails
         $this->sendBookingEmails($booking, 'rejected');
 
-        return response()->json(['message' => 'Booking rejected successfully and slot freed.'], 200);
+        return response()->json([
+            'message' => 'Booking rejected successfully and slot freed.'
+        ], 200);
     }
+
 
     private function sendBookingEmails($booking, $status)
     {
         $timeDetails = $this->formatBookingTime($booking);
 
         if ($status === 'accepted') {
-//dd($booking->host->email);
             if ($booking->host && $booking->host->email) {
                 Mail::to($booking->host->email)
                     ->send(new HostBookingMail($booking, $timeDetails));
             }
-//dd($booking->vendor->email);
             if ($booking->vendor && $booking->vendor->email) {
                 Mail::to($booking->vendor->email)
                     ->send(new VendorAcceptBookingMail($booking, $timeDetails));
             }
-
-        } else {
-
+        } else { // rejected
             if ($booking->host && $booking->host->email) {
                 Mail::to($booking->host->email)
                     ->send(new HostBookingCancelMail($booking, $timeDetails));
             }
-
-            if ($booking->venue && $booking->venue->email) {
+            if ($booking->vendor && $booking->vendor->email) {
                 Mail::to($booking->vendor->email)
                     ->send(new VendorBookingCancelMail($booking, $timeDetails));
             }
         }
     }
+
 
 //
 
@@ -161,8 +163,49 @@ class VendorBookingService
 
     private function freeBookingSlot($booking)
     {
-        // Implementation to mark slot as available again
+        $business = Business::with('category')->find($booking->business_id);
+        if (!$business) return;
+
+        $timings = Timing::where('business_id', $business->id)->first();
+        if (!$timings) return;
+
+        $dayOfWeek = strtolower(Carbon::parse($booking->event_date)
+            ->setTimezone($booking->timezone)
+            ->format('l'));
+
+        // If venue type booking
+        if ($business->category_id && $booking->time_slot) {
+
+            $timingsVenue = $timings->timings_venue; // <-- FIX
+
+            if (isset($timingsVenue[$dayOfWeek][$booking->time_slot])) {
+                $timingsVenue[$dayOfWeek][$booking->time_slot]['status'] = 'active';
+                $timings->timings_venue = $timingsVenue; // <-- FIX
+                $timings->save();
+            }
+
+        }
+        // If service type booking
+        elseif (isset($timings->timings_service_weekly[$dayOfWeek])) {
+
+            $slots = $timings->timings_service_weekly; // <-- FIX
+            $daySlots = $slots[$dayOfWeek];
+
+            foreach ($daySlots as &$slot) {
+                if (
+                    Carbon::parse($slot['start'])->equalTo(Carbon::parse($booking->start_time)) &&
+                    Carbon::parse($slot['end'])->equalTo(Carbon::parse($booking->end_time))
+                ) {
+                    $slot['status'] = 'active';
+                }
+            }
+
+            $slots[$dayOfWeek] = $daySlots;
+            $timings->timings_service_weekly = $slots; // <-- FIX
+            $timings->save();
+        }
     }
+
 
     private function createPaymentChecklist($booking)
     {
@@ -195,7 +238,7 @@ class VendorBookingService
                 'host_id' => $hostId,
                 'check_list_title' => 'Process Advance Payment',
                 'check_list_category' => 'Payment',
-                'check_list_description' => "Pay your advance of {$advanceAmount} by ".$advanceDueDate->format('d M Y')." to confirm your booking.",
+                'check_list_description' => "Pay your advance of {$advanceAmount} by " . $advanceDueDate->format('d M Y') . " to confirm your booking.",
                 'check_list_due_date' => $advanceDueDate->toDateString(),
                 'checklist_status' => 'pending',
                 'check_list_item_linked_with' => $businessName,
@@ -216,7 +259,7 @@ class VendorBookingService
                 'host_id' => $hostId,
                 'check_list_title' => 'Pay Final Payment',
                 'check_list_category' => 'Payment',
-                'check_list_description' => "Complete your remaining payment of {$remainingAmount} by ".$finalDueDate->format('d M Y')." to keep your booking confirmed.",
+                'check_list_description' => "Complete your remaining payment of {$remainingAmount} by " . $finalDueDate->format('d M Y') . " to keep your booking confirmed.",
                 'check_list_due_date' => $finalDueDate->toDateString(),
                 'checklist_status' => 'pending',
                 'check_list_item_linked_with' => $businessName,

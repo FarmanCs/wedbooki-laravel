@@ -335,7 +335,7 @@ class VendorController extends Controller
         return $this->vendorBookingService->acceptBooking($id, $request->all());
     }
 
-    public function rejectBooking(Request $request, $id): JsonResponse
+    public function RejectBooking(Request $request, $id): JsonResponse
     {
         return $this->vendorBookingService->rejectBooking($id, $request->all());
     }

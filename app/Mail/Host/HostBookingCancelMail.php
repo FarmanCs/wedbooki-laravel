@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Mail\Vendor;
+namespace App\Mail\Host;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,12 +12,16 @@ class HostBookingCancelMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $booking;
+    public $timeDetails;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($booking, $timeDetails)
     {
-        //
+        $this->booking = $booking;
+        $this->timeDetails = $timeDetails;
     }
 
     /**
@@ -27,7 +30,7 @@ class HostBookingCancelMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Host Booking Cancel Mail',
+            subject: 'Your Booking Has Been Cancelled'
         );
     }
 
@@ -37,14 +40,12 @@ class HostBookingCancelMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.host.host_booking_cancel'
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {
