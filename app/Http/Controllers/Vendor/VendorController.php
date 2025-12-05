@@ -341,7 +341,7 @@ class VendorController extends Controller
     }
 
     // Package Methods
-    public function createPackage(Request $request, $id): JsonResponse
+    public function CreatePackage(Request $request, $id): JsonResponse
     {
 
         return $this->vendorPackageService->createPackage($id, $request->all());
@@ -352,12 +352,12 @@ class VendorController extends Controller
         return $this->vendorPackageService->updatePackage($id, $request->all());
     }
 
-    public function deletePackage(Request $request, $id): JsonResponse
+    public function DeletePackage(Request $request, $id): JsonResponse
     {
-        return $this->vendorPackageService->deletePackage($id, $request->all());
+        return $this->vendorPackageService->deletePackage($id, $request);
     }
 
-    public function getAllPackages($id): JsonResponse
+    public function GetAllPackages($id): JsonResponse
     {
         return $this->vendorPackageService->getAllPackages($id);
     }

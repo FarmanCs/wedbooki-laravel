@@ -14,11 +14,9 @@ class VendorPackageService
     public function createPackage($businessId, array $data): JsonResponse
     {
         $business = Business::find($businessId);
-
         if (!$business) {
             return response()->json(['message' => 'Vendor not found'], 404);
         }
-
         $validator = Validator::make($data, [
             'name' => 'required|string',
             'price' => 'required|numeric',
@@ -27,16 +25,13 @@ class VendorPackageService
             'features' => 'nullable|array',
             'is_popular' => 'nullable|boolean',
         ]);
-
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 400);
         }
-
         $discountPercentage = 0;
         if (isset($data['discount']) && $data['discount']) {
             $discountPercentage = (($data['price'] - $data['discount']) / $data['price']) * 100;
         }
-
         $package = Package::create([
             'business_id' => $business->id,
             'name' => $data['name'],
@@ -47,13 +42,6 @@ class VendorPackageService
             'features' => $data['features'] ?? [],
             'is_popular' => $data['is_popular'] ?? true,
         ]);
-
-        // Add to business packages
-        $packages = $business->packages ?? [];
-        $packages[] = $package->id;
-        $business->packages = $packages;
-        $business->save();
-
         return response()->json([
             'message' => 'Package created',
             'newPackage' => $package
@@ -94,20 +82,12 @@ class VendorPackageService
         ], 200);
     }
 
-    public function deletePackage($businessId, array $data): JsonResponse
+    public function deletePackage($businessId, $request): JsonResponse
     {
-        $package = Package::find($data['packageId']);
-
+        $package = Package::where('id', $request['id'])->where('business_id', $businessId)->first();
         if (!$package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
-
-        // Remove from business packages
-        $business = Business::find($businessId);
-        $packages = $business->packages ?? [];
-        $packages = array_filter($packages, fn($id) => $id !== $data['packageId']);
-        $business->packages = array_values($packages);
-        $business->save();
 
         $package->delete();
 
@@ -116,13 +96,15 @@ class VendorPackageService
 
     public function getAllPackages($businessId): JsonResponse
     {
-        $business = Business::with('packagesRelation')->find($businessId);
+        $packages = Package::with('business')->where('business_id', $businessId)->get();
 
-        if (!$business) {
-            return response()->json(['message' => 'Vendor not found'], 404);
+        if (!$packages || count($packages) === 0) {
+            return response()->json(['message' => 'now package found for this business'], 404);
         }
-
-        return response()->json(['packages' => $business->packagesRelation], 200);
+        return response()->json([
+            'status'=>'success',
+            "message"=>'packages found successfully',
+            'packages' => $packages], 200);
     }
 
     public function createService($userId, array $data): JsonResponse
