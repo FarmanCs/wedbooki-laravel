@@ -181,7 +181,7 @@ Route::prefix('v1/vendor')->group(function () {
         // Bookings
         Route::get('/vendor-all-bookings/{id}', [VendorController::class, 'GetVendorBookings']);
         Route::get('/vendor-booking-detail/{id}', [VendorController::class, 'VendorSingleBooking']);
-        Route::put('/accept-booking/{id}', [VendorController::class, 'AcceptBooking']);
+        Route::post('/accept-booking/{id}', [VendorController::class, 'AcceptBooking']);
         Route::put('/reject-booking/{id}', [VendorController::class, 'RejectBooking']);
 
         // Packages & Services

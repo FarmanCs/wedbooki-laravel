@@ -4,6 +4,7 @@ namespace App\Models\Host;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Host; // Make sure Host model namespace is correct
 
 class HostPersonalizedChecklist extends Model
 {
@@ -28,13 +29,15 @@ class HostPersonalizedChecklist extends Model
     ];
 
     protected $casts = [
-        'check_list_due_date' => 'date',
+        'check_list_due_date' => 'datetime',
         'is_custom' => 'boolean',
         'is_edited' => 'boolean',
         'lock_to_wedding_date' => 'boolean',
     ];
 
-    // 🔥 Checklist belongs to a host
+    /**
+     * Each checklist belongs to one Host
+     */
     public function host()
     {
         return $this->belongsTo(Host::class, 'host_id');
