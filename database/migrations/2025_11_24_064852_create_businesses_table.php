@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('company_name');
             $table->text('business_desc')->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
-            $table->foreignId('subcategory_id')->nullable()->constrained('subcategories')->onDelete('set null');
+            $table->foreignId('subcategory_id')->nullable()->constrained('sub_categories')->onDelete('set null');
             $table->string('venue_type')->nullable();
             $table->enum('member_type', ['general', 'premium'])->default('general');
             $table->string('business_registration')->nullable();

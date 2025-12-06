@@ -220,3 +220,38 @@ Route::put('/complete-profile', [VendorController::class, 'ComplteteVendorProfil
 
 Route::put('/update-videos/{id}', [VendorController::class, 'UpdateVendorVideos']);
 Route::delete('/delete-video/{id}', [VendorController::class, 'DeleteVendorVideo']);
+
+
+//global routes
+Route::prefix('/v1/global')->group(function () {
+
+    // PUBLIC ROUTES
+    Route::get('/all-vendors', [GlobalController::class, 'GetAllVendors']);
+    Route::get('/search-vendors', [GlobalController::class, 'SearchAllVendors']);
+    Route::get('/search-vendors-by-category', [GlobalController::class, 'SearchVendorsByCategory']);
+    Route::get('/single-vendor/{id}', [GlobalController::class, 'SingleVendor']);
+
+    // CATEGORY ROUTES
+    Route::get('/get-categories', [AdminController::class, 'GetAllCategories']);
+    Route::get('/get-single-category', [AdminController::class, 'GetSingleCategory']);
+    Route::patch('/get-sub-categories', [AdminController::class, 'GetSubCategories']);
+
+    // STATS / PROFILE VIEWS
+    Route::post('/view-profile', [GlobalController::class, 'ViewProfile']);
+    Route::post('/social-click', [GlobalController::class, 'TrackSocialClick']);
+
+    // SUPPORT
+    Route::put('/support-query', [GlobalController::class, 'submitQuery']);
+
+    // VENDOR AVAILABILITY
+    Route::get('/search-vendors-by-category-and-date', [HostController::class, 'GetAvailableVendors']);
+
+    // TOP-RATED VENDORS
+    Route::get('/get-top-rated-vendors', [GlobalController::class, 'GetTopRatedVendors']);
+
+    // COUNTRIES
+    Route::post('/add-country', [GlobalController::class, 'addCountry']);
+    Route::get('/get-countries', [GlobalController::class, 'getCountries']);
+    Route::delete('/delete-country/{name}', [GlobalController::class, 'deleteCountry']);
+
+});
