@@ -4,7 +4,7 @@ namespace App\Models\Vendor;
 
 use App\Models\Host\Favorite;
 use App\Models\Host\Review;
-use App\Models\Services\ExtraService;
+use App\Models\services\ExtraService;
 use App\Models\SubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
