@@ -48,36 +48,51 @@ class VendorPackageService
         ], 200);
     }
 
-    public function updatePackage($id, array $data): JsonResponse
+    public function updatePackage($business_id, array $data): JsonResponse
     {
-        if (!isset($data['id'])) {
-            return response()->json(['message' => 'Package ID (_id) is required'], 400);
-        }
-
-        $package = Package::find($data['id']);
+        // Validate package belongs to this business
+        $package = Package::where('business_id', $business_id)
+            ->where('id', $data['package_id'])
+            ->first();
 
         if (!$package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
 
-        unset($data['_id']);
+        // Remove package_id from update data
+        unset($data['package_id']);
 
-        // Handle discount calculation
+        //Discount Logic (Same as Node.js)
         if (isset($data['price'])) {
+
             if (!isset($data['discount'])) {
+                // If only price updated → discount = price
                 $data['discount'] = $data['price'];
                 $data['discount_percentage'] = 0;
             } else {
-                $data['discount_percentage'] = (($data['price'] - $data['discount']) / $data['price']) * 100;
+                // price + discount provided → calculate %
+                $data['discount_percentage'] =
+                    (($data['price'] - $data['discount']) / $data['price']) * 100;
             }
+
         } elseif (isset($data['discount'])) {
-            $data['discount_percentage'] = (($package->price - $data['discount']) / $package->price) * 100;
+
+            // Only discount updated → use DB price
+            $price = $package->price;
+
+            if ($price == 0) {
+                return response()->json(['message' => 'Price cannot be zero'], 400);
+            }
+
+            $data['discount_percentage'] =
+                (($price - $data['discount']) / $price) * 100;
         }
 
+        // Update the package
         $package->update($data);
 
         return response()->json([
-            'message' => 'Package updated',
+            'message'        => 'Package updated',
             'updatedPackage' => $package->fresh()
         ], 200);
     }
@@ -88,9 +103,7 @@ class VendorPackageService
         if (!$package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
-
         $package->delete();
-
         return response()->json(['message' => 'Package deleted'], 200);
     }
 
@@ -107,46 +120,101 @@ class VendorPackageService
             'packages' => $packages], 200);
     }
 
-    public function createService($userId, array $data): JsonResponse
+    public function createService(array $data): JsonResponse
     {
-        $vendor = Vendor::find($userId);
+        try {
+            // Get authenticated vendor
+            $vendor = auth()->user();
 
-        if (!$vendor || $vendor->role !== 'vendor') {
-            return response()->json(['message' => 'Unauthorized or user not found.'], 403);
+            if (!$vendor || $vendor->role !== 'vendor') {
+                return response()->json([
+                    'message' => 'Unauthorized or vendor not found.'
+                ], 403);
+            }
+
+            // Create service
+            $service = Service::create([
+                'name'        => $data['name'],
+                'description' => $data['description'],
+                'price'       => $data['price'],
+                'category'    => $data['category'],
+                'vendor_id'   => $vendor->id,
+            ]);
+
+            // Attach service to vendor relationship (optional)
+            $vendor->services()->save($service);
+
+            return response()->json([
+                'message' => 'Service created successfully',
+                'service' => $service
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Please try again later.',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        $validator = Validator::make($data, [
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'category' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 400);
-        }
-
-        $service = Service::create([
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'],
-            'category' => $data['category'],
-            'vendor_id' => $vendor->id,
-        ]);
-
-        // Add to vendor services
-        $services = $vendor->services ?? [];
-        $services[] = $service->id;
-        $vendor->services = $services;
-        $vendor->save();
-
-        return response()->json(['message' => 'Service created successfully'], 201);
     }
 
-    public function updateService($userId, array $data): JsonResponse
+    public function updateService($request): JsonResponse
     {
-        // Implementation for updating service
+        try {
+            // Get authenticated vendor
+            $vendor = auth()->user();
+
+            if (!$vendor || $vendor->role !== 'vendor') {
+                return response()->json([
+                    'message' => 'Unauthorized or vendor not found.'
+                ], 403);
+            }
+
+            // Validate request
+            $validated = $request->validate([
+                'service_id'  => 'required|integer|exists:services,id',
+                'title'       => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'category'    => 'required|string|max:255',
+                'price'       => 'required|numeric|min:0',
+            ]);
+
+            // Find service
+            $service = Service::find($validated['service_id']);
+
+            if (!$service) {
+                return response()->json([
+                    'message' => 'Service does not exist'
+                ], 404);
+            }
+
+            // Check ownership
+            if ($service->vendor_id !== $vendor->id) {
+                return response()->json([
+                    'message' => 'Not authorized to update this service'
+                ], 401);
+            }
+
+            // Update service fields
+            $service->update([
+                'name'        => $validated['title'],
+                'description' => $validated['description'] ?? $service->description,
+                'category'    => $validated['category'],
+                'price'       => $validated['price'],
+            ]);
+
+            return response()->json([
+                'message' => 'Service updated successfully',
+                'service' => $service->fresh()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Please try again later.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function deleteService($vendorId, array $data): JsonResponse
     {

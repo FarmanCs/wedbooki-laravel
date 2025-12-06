@@ -185,12 +185,13 @@ Route::prefix('v1/vendor')->group(function () {
         Route::put('/reject-booking/{id}', [VendorController::class, 'RejectBooking']);
 
         // Packages & Services
-        Route::post('/create-package/{id}', [VendorController::class, 'CreatePackage']);
-        Route::put('/update-package/{id}', [VendorController::class, 'UpdatePackage']);
-        Route::delete('/delete-package/{id}', [VendorController::class, 'DeletePackage']);
-        Route::get('/all-packages/{id}', [VendorController::class, 'GetAllPackages']);
-        Route::post('/create-service/{id}', [VendorController::class, 'CreateService']);
-        Route::put('/update-service/{id}', [VendorController::class, 'UpdateService']);
+        Route::post('/create-package/{business_id}', [VendorController::class, 'CreatePackage']);
+        Route::post('/update-package/{business_id}', [VendorController::class, 'UpdatePackage']);
+        Route::delete('/delete-package/{business_id}', [VendorController::class, 'DeletePackage']);
+        Route::get('/all-packages/{business_id}', [VendorController::class, 'GetAllPackages']);
+
+        Route::post('/create-service', [VendorController::class, 'CreateService']);
+        Route::post('/update-service', [VendorController::class, 'UpdateService']);
 
         // Reviews
         Route::get('/get-all-reviews/{id}', [VendorController::class, 'GetAllMyReviews']);

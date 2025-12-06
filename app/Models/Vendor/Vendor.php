@@ -2,6 +2,7 @@
 
 namespace App\Models\Vendor;
 
+use App\Models\services\Service;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Booking;
@@ -94,5 +95,10 @@ class Vendor extends Authenticatable
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'vendor_id');
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class, 'vendor_id');
     }
 }

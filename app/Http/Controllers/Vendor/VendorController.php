@@ -347,10 +347,26 @@ class VendorController extends Controller
         return $this->vendorPackageService->createPackage($id, $request->all());
     }
 
-    public function updatePackage(Request $request, $id): JsonResponse
+    public function UpdatePackage(Request $request, $business_id): JsonResponse
     {
-        return $this->vendorPackageService->updatePackage($id, $request->all());
+        // Ensure business exists
+        if (!Business::where('id', $business_id)->exists()) {
+            return response()->json(['message' => 'Business not found'], 404);
+        }
+
+        // Validate input
+        $validated = $request->validate([
+            'package_id'    => 'required|integer|exists:packages,id',
+            'name'  => 'nullable|string',
+            'price'         => 'nullable|numeric|min:0',
+            'discount'      => 'nullable|numeric|min:0',
+        ],[
+            'package_id.required' => 'package_id is required',
+        ]);
+
+        return $this->vendorPackageService->updatePackage($business_id, $validated);
     }
+
 
     public function DeletePackage(Request $request, $id): JsonResponse
     {
@@ -363,15 +379,26 @@ class VendorController extends Controller
     }
 
     // Service Methods
-    public function createService(Request $request, $id): JsonResponse
+    public function CreateService(Request $request): JsonResponse
     {
-        return $this->vendorPackageService->createService($id, $request->all());
+        // Validate input
+        $validated = $request->validate([
+            'name'        => 'required|string|max:255',
+            'description' => 'required|string',
+            'price'       => 'required|numeric|min:0',
+            'category'    => 'required|string|max:255',
+        ]);
+
+        // Call service layer and pass validated data
+        return $this->vendorPackageService->createService($validated);
     }
 
-    public function updateService(Request $request, $id): JsonResponse
+
+    public function UpdateService(Request $request): JsonResponse
     {
-        return $this->vendorPackageService->updateService($id, $request->all());
+        return $this->vendorPackageService->updateService($request);
     }
+
 
     public function deleteService(Request $request, $id): JsonResponse
     {
@@ -379,7 +406,7 @@ class VendorController extends Controller
     }
 
     // Review Methods
-    public function getAllMyReviews($id): JsonResponse
+    public function GetAllMyReviews($id): JsonResponse
     {
         return $this->vendorReviewService->getAllMyReviews($id);
     }
