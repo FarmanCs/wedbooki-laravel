@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // Controllers
 use App\Http\Controllers\Host\AuthController;
+use \App\Http\Controllers\Global\GlobalController;
 use App\Http\Controllers\Host\ProfileController;
 use App\Http\Controllers\Host\BookingController;
 use App\Http\Controllers\Host\ReviewController;
@@ -14,16 +15,19 @@ use App\Http\Controllers\Host\GoogleCalendarController;
 use App\Http\Controllers\Host\AccountController;
 use App\Http\Controllers\Vendor\VendorController;
 
+use App\Http\Controllers\Admin\AdminController;
+
 //use App\Http\Controllers\Host\SessionController;
 Route::prefix('/v1/host')->group(function () {
 
     // AUTHENTICATION
     Route::post('/signup', [AuthController::class, 'signup']);
     Route::post('/host-verify-signup', [AuthController::class, 'verifySignup']);
-    Route::get('/resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
+    Route::post('/resend-signup-otp', [AuthController::class, 'resendSignupOtp']);
 
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/forget-password', [AuthController::class, 'forgetPassword']);
+
 
 
     //need authentication
@@ -222,11 +226,34 @@ Route::put('/update-videos/{id}', [VendorController::class, 'UpdateVendorVideos'
 Route::delete('/delete-video/{id}', [VendorController::class, 'DeleteVendorVideo']);
 
 
+Route::prefix('v1/admin')->group(function () {
+
+    Route::post('/signup', [AdminController::class, 'signup']);
+    Route::post('/login', [AdminController::class, 'login']);
+    Route::post('/verify2fa', [AdminController::class, 'verify2fa']);
+
+    Route::get('/get-all-hosts', [AdminController::class, 'getAllHosts']);
+    Route::get('/get-all-bookings', [AdminController::class, 'getAllBookings']);
+    Route::patch('/update-host-status/{id}', [AdminController::class, 'updateHostStatus']);
+
+    Route::get('/get-all-vendors', [AdminController::class, 'getAllVendors']);
+    Route::patch('/update-vendor-status/{vendorId}', [AdminController::class, 'updateVendorStatus']);
+
+    Route::get('/get-host-by-id/{id}', [AdminController::class, 'getHostById']);
+    Route::get('/get-vendor-by-id/{id}', [AdminController::class, 'getVendorById']);
+    Route::delete('/delete-vendor-by-id/{id}', [AdminController::class, 'deleteVendorById']);
+
+    Route::post('/create-vendor-package', [AdminController::class, 'createVendorPackage']);
+    Route::post('/create-category', [AdminController::class, 'createCategory']);
+    Route::put('/update-category/{id}', [AdminController::class, 'updateCategory']);
+    Route::post('/create-sub-category', [AdminController::class, 'createSubCategory']);
+});
+
 //global routes
 Route::prefix('/v1/global')->group(function () {
 
     // PUBLIC ROUTES
-    Route::get('/all-vendors', [GlobalController::class, 'GetAllVendors']);
+    Route::get('/all-vendors', [\App\Http\Controllers\Global\GlobalController::class, 'GetAllVendors']);
     Route::get('/search-vendors', [GlobalController::class, 'SearchAllVendors']);
     Route::get('/search-vendors-by-category', [GlobalController::class, 'SearchVendorsByCategory']);
     Route::get('/single-vendor/{id}', [GlobalController::class, 'SingleVendor']);
@@ -244,7 +271,7 @@ Route::prefix('/v1/global')->group(function () {
     Route::put('/support-query', [GlobalController::class, 'submitQuery']);
 
     // VENDOR AVAILABILITY
-    Route::get('/search-vendors-by-category-and-date', [HostController::class, 'GetAvailableVendors']);
+    Route::get('/search-vendors-by-category-and-date', [\App\Http\Controllers\Host\HostController::class, 'GetAvailableVendors']);
 
     // TOP-RATED VENDORS
     Route::get('/get-top-rated-vendors', [GlobalController::class, 'GetTopRatedVendors']);

@@ -11,24 +11,26 @@ class Admin extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // Mass assignable fields
     protected $fillable = [
         'first_name',
         'email',
         'password',
         'role',
-        'twoFactorCode',
-        'twoFactorCodeExpires',
+        'two_factor_code',
+        'two_factor_code_expires',
     ];
 
+    // Hidden fields for arrays / JSON
     protected $hidden = [
         'password',
-        'twoFactorCode',
+        'two_factor_code',
     ];
 
+    // Attribute casting
     protected $casts = [
-        'twoFactorCodeExpires' => 'datetime',
+        'two_factor_code_expires' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 }
-
