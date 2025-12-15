@@ -40,7 +40,7 @@ Route::prefix('/v1/host')->group(function () {
         Route::post('/password-change-verify/{id}', [AuthController::class, 'passwordChangeVerify']);
 
         // PROFILE
-        Route::put('/update-profile', [ProfileController::class, 'updateProfile']);
+        Route::post('/update-profile', [ProfileController::class, 'updateProfile']);
         Route::get('/profile', [ProfileController::class, 'getProfile']);
 
         // BUDGET
