@@ -21,19 +21,10 @@ class SubCategory extends Model
         'image',
     ];
 
-    /**
-     * Relationship: SubCategory belongs to a Category
-     */
+    //Relationship: SubCategory belongs to a Category
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Example: If a subcategory has many items (optional)
-     * public function items()
-     * {
-     *      return $this->hasMany(Item::class);
-     * }
-     */
 }

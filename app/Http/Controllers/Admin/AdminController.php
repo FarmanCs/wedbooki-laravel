@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\Admin\AdminTwoFactorCode;
+use App\Models\SubCategory;
+use App\Models\Vendor\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Admin;
@@ -15,8 +18,6 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     // Admin SignUp
-
-
     public function signup(Request $request)
     {
         // Validate input
@@ -61,7 +62,6 @@ class AdminController extends Controller
             return response()->json(['message' => 'Please try again later.'], 500);
         }
     }
-
 
     // Admin Login
     public function login(Request $request)
@@ -113,7 +113,6 @@ class AdminController extends Controller
         }
     }
 
-
     // Verify 2FA
     public function verify2fa(Request $request)
     {
@@ -121,7 +120,7 @@ class AdminController extends Controller
             // Validate email + code
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
-                'code'  => 'required|numeric'
+                'code' => 'required|numeric'
             ]);
 
             if ($validator->fails()) {
@@ -152,7 +151,7 @@ class AdminController extends Controller
 
             // Clear fields
             $admin->update([
-                'two_factor_code'         => null,
+                'two_factor_code' => null,
                 'two_factor_code_expires' => null,
             ]);
 
@@ -230,29 +229,115 @@ class AdminController extends Controller
     // Create Category (with file upload)
     public function createCategory(Request $request)
     {
-        // Handle file upload
+        $request->validate([
+            'type' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $imageUrl = null;
+
+        // Handle file upload to S3
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $file->store('categories', 'public');
+            $path = $request->file('image')->storePublicly('categories');
+            $imageUrl = Storage::disk('s3')->url($path);
         }
 
-        return response()->json(['message' => 'Category created']);
+        Category::create([
+            'type' => strtolower($request->type),
+            'description' => $request->description,
+            'image' => $imageUrl,
+        ]);
+
+        return response()->json([
+            'message' => 'Category created successfully'
+        ], 201);
+    }
+
+
+    public function GetAllCategories()
+    {
+        $categories = Category::all();
+
+        return response()->json([
+            'categories' => $categories
+        ], 200);
     }
 
     // Update Category
     public function updateCategory(Request $request, $id)
     {
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $file->store('categories', 'public');
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
         }
 
-        return response()->json(['message' => "Category $id updated"]);
+        if ($request->has('type')) {
+            $category->type = strtolower($request->type);
+        }
+
+        if ($request->has('description')) {
+            $category->description = $request->description;
+        }
+
+        // Handle image upload (S3)
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('categories', 's3');
+            $category->image = Storage::disk('s3')->url($path);
+        }
+
+        $category->save();
+
+        return response()->json([
+            'message' => 'Category updated',
+            'category' => $category
+        ], 200);
     }
+
 
     // Create Sub Category
     public function createSubCategory(Request $request)
     {
-        return response()->json(['message' => 'Sub category created']);
+        if (!$request->type) {
+            return response()->json(['message' => 'Sub category type is required'], 400);
+        }
+
+        $exists = SubCategory::where('type', strtolower($request->type))->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'Sub category already exists'], 400);
+        }
+
+        $imageUrl = null;
+
+        // Optional image upload to S3
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('sub-categories', 's3');
+            $imageUrl = Storage::disk('s3')->url($path);
+        }
+
+        $subCategory = SubCategory::create([
+            'type' => strtolower($request->type),
+            'category_id' => $request->category_id, // matches your model
+            'description' => $request->description,
+            'image' => $imageUrl,
+        ]);
+
+        return response()->json([
+            'message' => 'Sub category created successfully',
+            'subCategory' => $subCategory
+        ], 201);
+    }
+
+
+    public function GetSingleCategory()
+    {
+
+    }
+
+    public function GetSubCategories()
+    {
+
     }
 }
