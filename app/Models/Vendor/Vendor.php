@@ -6,13 +6,14 @@ use App\Models\services\Service;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Booking;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 
 class Vendor extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, SoftDeletes;
 
 
     protected $fillable = [

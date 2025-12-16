@@ -45,7 +45,10 @@ return new class extends Migration
             $table->boolean('account_soft_deleted')->default(false);
             $table->timestamp('account_soft_deleted_at')->nullable();
             $table->integer('auto_hard_delete_after_days')->default(30);
+            $table->softDeletes();
             $table->timestamps();
+
+
 
 
         });
