@@ -102,4 +102,7 @@ class Vendor extends Authenticatable
     {
         return $this->hasMany(Service::class, 'vendor_id');
     }
+
+
+
 }

@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
-
-
+use App\Models\Host\Host;
 class AdminController extends Controller
 {
     // Admin SignUp
@@ -172,11 +171,82 @@ class AdminController extends Controller
     }
 
     // Get All Hosts
-    public function getAllHosts()
+
+
+    public function getAllHosts(Request $request)
     {
-        // Fetch hosts
-        return response()->json(['hosts' => []]);
+        try {
+            // Query params with defaults
+            $search = $request->query('search');
+            $status = $request->query('status');
+            $page   = (int) $request->query('page', 1);
+            $limit  = (int) $request->query('limit', 10);
+
+            // Base query
+            $query = Host::query()->where('role', 'host');
+
+            // Search filter
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('full_name', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // Status filter
+            if (!empty($status)) {
+                $query->where('status', $status);
+            }
+
+            // Stats
+            $totalHostsCount = Host::where('role', 'host')->count();
+            $activeHostsCount = Host::where('role', 'host')->where('status', 'Approved')->count();
+            $rejectedHostsCount = Host::where('role', 'host')->where('status', 'Banned')->count();
+            $pendingHostsCount = Host::where('role', 'host')->where('status', 'Pending')->count();
+
+            // Pagination
+            $hosts = $query
+                ->select([
+                    'id',
+                    'full_name',
+                    'email',
+                    'profile_image',
+                    'status',
+                    'created_at',
+                ])
+                ->orderBy('created_at', 'desc')
+                ->paginate($limit, ['*'], 'page', $page);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hosts fetched successfully',
+                'stats' => [
+                    'totalHostsCount'   => $totalHostsCount,
+                    'activeHostsCount'  => $activeHostsCount,
+                    'rejectedHostsCount'=> $rejectedHostsCount,
+                    'pendingHostsCount' => $pendingHostsCount,
+                ],
+                'pagination' => [
+                    'page'          => $hosts->currentPage(),
+                    'limit'         => $hosts->perPage(),
+                    'totalFiltered' => $hosts->total(),
+                    'totalPages'    => $hosts->lastPage(),
+                ],
+                'data' => $hosts->items(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in getAllHosts', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred. Please try again later.',
+            ], 500);
+        }
     }
+
 
     // Get All Vendors
     public function getAllVendors()
