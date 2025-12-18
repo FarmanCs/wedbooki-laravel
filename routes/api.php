@@ -243,7 +243,7 @@ Route::prefix('v1/admin')->group(function () {
     Route::get('/get-vendor-by-id/{id}', [AdminController::class, 'getVendorById']);
     Route::delete('/delete-vendor-by-id/{id}', [AdminController::class, 'deleteVendorById']);
 
-    Route::post('/create-vendor-package', [AdminController::class, 'createVendorPackage']);
+    Route::post('/create-package', [AdminController::class, 'adminCreatePackage']);
     Route::post('/create-category', [AdminController::class, 'createCategory']);
     Route::put('/update-category/{id}', [AdminController::class, 'updateCategory']);
     Route::post('/create-sub-category', [AdminController::class, 'createSubCategory']);

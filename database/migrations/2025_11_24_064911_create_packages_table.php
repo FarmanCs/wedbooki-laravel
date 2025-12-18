@@ -19,6 +19,7 @@ return new class extends Migration
             $table->json('features')->nullable();
             $table->boolean('is_popular')->default(true);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('business_id');
         });

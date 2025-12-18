@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Hosts\Tables;
+namespace App\Filament\Resources\Packages\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,32 +8,20 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class HostsTable
+class PackagesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                ImageColumn::make('profile_image')->circular()->imageSize(40),
-                TextColumn::make('full_name')->label('Name'),
-                TextColumn::make('email')->label('Email'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->label('Status')
-                    ->color(function ($state): string {
-                        return match (strtolower($state)) {
-                            'pending' => 'info',
-                            'approved' => 'success',
-                            'blocked' => 'error',
-                            default => 'warning',
-                        };
-                    }),
-                TextColumn::make('created_at')->label('Wedding Date'),
+                TextColumn::make('id')->label('ID'),
+                TextColumn::make('name')->label('Name'),
+                TextColumn::make('price')->label('Price'),
+
             ])
             ->filters([
                 TrashedFilter::make(),

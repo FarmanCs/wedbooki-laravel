@@ -27,22 +27,21 @@ class VendorsTable
                 TextColumn::make('created_at')->label('Joining Date')->date(),
                 TextColumn::make('phone_no')
                     ->label('Phone Number')
-                ->formatStateUsing(function($record){
-                    return $record->country_code . ' ' . $record->phone_no;
-                }),
+                    ->formatStateUsing(function ($record) {
+                        return $record->country_code . ' ' . $record->phone_no;
+                    }),
                 TextColumn::make('profile_verification')
                     ->badge()
                     ->label('Verified')
-                ->color(function ($state) : string {
-                    return match ($state) {
-                        'approved' => 'success',
-                        'under_review' => 'info',
-                        'rejected' => 'warning',
-                        'banned' => 'danger',
-                    };
-
-                })
-                    ->icon(function ($state) : string {
+                    ->color(function ($state): string {
+                        return match ($state) {
+                            'approved' => 'success',
+                            'under_review' => 'info',
+                            'rejected' => 'warning',
+                            'banned' => 'danger',
+                        };
+                    })
+                    ->icon(function ($state): string {
                         return match ($state) {
                             'approved' => 'heroicon-o-check',
                             'under_review' => 'heroicon-o-clock',

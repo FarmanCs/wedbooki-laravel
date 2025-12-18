@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\Admin\AdminTwoFactorCode;
 use App\Models\SubCategory;
+use App\Models\Vendor\Business;
 use App\Models\Vendor\Category;
+use App\Models\Vendor\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +16,8 @@ use App\Models\Admin;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Models\Host\Host;
+use Illuminate\Http\JsonResponse;
+
 class AdminController extends Controller
 {
     // Admin SignUp
@@ -179,8 +183,8 @@ class AdminController extends Controller
             // Query params with defaults
             $search = $request->query('search');
             $status = $request->query('status');
-            $page   = (int) $request->query('page', 1);
-            $limit  = (int) $request->query('limit', 10);
+            $page = (int)$request->query('page', 1);
+            $limit = (int)$request->query('limit', 10);
 
             // Base query
             $query = Host::query()->where('role', 'host');
@@ -221,16 +225,16 @@ class AdminController extends Controller
                 'success' => true,
                 'message' => 'Hosts fetched successfully',
                 'stats' => [
-                    'totalHostsCount'   => $totalHostsCount,
-                    'activeHostsCount'  => $activeHostsCount,
-                    'rejectedHostsCount'=> $rejectedHostsCount,
+                    'totalHostsCount' => $totalHostsCount,
+                    'activeHostsCount' => $activeHostsCount,
+                    'rejectedHostsCount' => $rejectedHostsCount,
                     'pendingHostsCount' => $pendingHostsCount,
                 ],
                 'pagination' => [
-                    'page'          => $hosts->currentPage(),
-                    'limit'         => $hosts->perPage(),
+                    'page' => $hosts->currentPage(),
+                    'limit' => $hosts->perPage(),
                     'totalFiltered' => $hosts->total(),
-                    'totalPages'    => $hosts->lastPage(),
+                    'totalPages' => $hosts->lastPage(),
                 ],
                 'data' => $hosts->items(),
             ], 200);
@@ -291,10 +295,53 @@ class AdminController extends Controller
     }
 
     // Create Vendor Package
-    public function createVendorPackage(Request $request)
+    public function adminCreatePackage(Request $request): JsonResponse
     {
-        return response()->json(['message' => 'Vendor package created']);
+        try {
+            // 1️⃣ Validate request (matches fillable exactly)
+            $validated = $request->validate([
+                'business_id'          => ['required', 'exists:businesses,id'],
+                'name'                 => 'required|string|max:255',
+                'price'                => 'required|numeric|min:0',
+                'discount'             => 'nullable|numeric|min:0',
+                'discount_percentage'  => 'nullable|numeric|min:0|max:100',
+                'description'          => 'nullable|string',
+                'features'             => 'nullable|array',
+                'features.*'           => 'string',
+                'is_popular'           => 'nullable|boolean',
+            ]);
+
+            // 2️⃣ Find business
+            $business = Business::findOrFail($validated['business_id']);
+
+            // 3️⃣ Prevent duplicate package per business
+            $exists = $business->packages()
+                ->where('name', $validated['name'])
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'message' => 'This package already exists for the selected business.',
+                ], 409);
+            }
+
+            // 4️⃣ Create package (business_id included — since it is fillable)
+            $package = Package::create($validated);
+
+            // 5️⃣ Success response
+            return response()->json([
+                'message' => 'Package created successfully!',
+                'data'    => $package,
+            ], 201);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
+
 
     // Create Category (with file upload)
     public function createCategory(Request $request)
