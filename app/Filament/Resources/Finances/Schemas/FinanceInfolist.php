@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\CMS\Schemas;
+namespace App\Filament\Resources\Finances\Schemas;
 
 use Filament\Schemas\Schema;
 
-class CMSForm
+class FinanceInfolist
 {
     public static function configure(Schema $schema): Schema
     {

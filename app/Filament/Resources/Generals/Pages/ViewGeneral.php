@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\CMS\Pages;
+namespace App\Filament\Resources\Generals\Pages;
 
-use App\Filament\Resources\CMS\CMSResource;
+use App\Filament\Resources\Generals\GeneralResource;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewCMS extends ViewRecord
+class ViewGeneral extends ViewRecord
 {
-    protected static string $resource = CMSResource::class;
+    protected static string $resource = GeneralResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -26,6 +26,9 @@ class HostResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Host';
 
+    protected static ?int $navigationSort = 3;
+
+
     public static function form(Schema $schema): Schema
     {
         return HostForm::configure($schema);

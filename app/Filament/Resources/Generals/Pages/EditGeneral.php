@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Filament\Resources\CMS\Pages;
+namespace App\Filament\Resources\Generals\Pages;
 
-use App\Filament\Resources\CMS\CMSResource;
+use App\Filament\Resources\Generals\GeneralResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditCMS extends EditRecord
+class EditGeneral extends EditRecord
 {
-    protected static string $resource = CMSResource::class;
+    protected static string $resource = GeneralResource::class;
 
     protected function getHeaderActions(): array
     {

@@ -26,6 +26,8 @@ class VendorResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'full_name';
 
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return VendorForm::configure($schema);

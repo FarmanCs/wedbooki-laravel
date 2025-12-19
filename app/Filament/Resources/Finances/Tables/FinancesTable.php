@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CMS\Tables;
+namespace App\Filament\Resources\Finances\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -11,7 +11,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class CMSTable
+class FinancesTable
 {
     public static function configure(Table $table): Table
     {

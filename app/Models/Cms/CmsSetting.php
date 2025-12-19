@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Models\CMS;
+namespace App\Models\Cms;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class cms_setting extends Model
+class CmsSetting extends Model
 {
-    use HasFactory,SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+
     protected $fillable = [
         'is_in_maintenance_mode',
         'privacy_policy',

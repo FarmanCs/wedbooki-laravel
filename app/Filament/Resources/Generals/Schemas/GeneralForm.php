@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\CMS\Schemas;
+namespace App\Filament\Resources\Generals\Schemas;
 
 use Filament\Schemas\Schema;
 
-class CMSInfolist
+class GeneralForm
 {
     public static function configure(Schema $schema): Schema
     {
