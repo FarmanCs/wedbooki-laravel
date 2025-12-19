@@ -11,11 +11,14 @@ class BookingStats extends StatsOverviewWidget
     protected function getStats(): array
     {
         $booking = Booking::count();
+        $accpted_booking = Booking::where('status', 'Accepted')->count();
+        $pending_booking = Booking::where('status', 'Pending')->count();
+        $paid_booking = Booking::where('status', 'confirm')->count();
         return [
             Stat::make('Total Bookings', $booking),
-            Stat::make('active_hosts', '343'),
-            Stat::make('active_hosts', '344'),
-            Stat::make('active_hosts', '345'),
+            Stat::make('Accepted Bookings', $accpted_booking),
+            Stat::make('Pending Bookings', $pending_booking),
+            Stat::make('Paid Booking', $paid_booking),
         ];
     }
 }

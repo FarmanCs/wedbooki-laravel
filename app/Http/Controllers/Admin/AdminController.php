@@ -4,19 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\Admin\AdminTwoFactorCode;
+use App\Models\Admin\Admin;
+use App\Models\Host\Host;
 use App\Models\SubCategory;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Package;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Admin;
-use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
-use App\Models\Host\Host;
-use Illuminate\Http\JsonResponse;
 
 class AdminController extends Controller
 {

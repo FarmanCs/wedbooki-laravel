@@ -21,7 +21,7 @@ class VendorsTable
             ->columns([
                 ImageColumn::make('profile_image')
                     ->label('Image')->circular()->imageSize(40),
-                TextColumn::make('full_name')->label('Name'),
+                TextColumn::make('full_name')->label('Name')->searchable()->sortable(),
                 TextColumn::make('category.type')->label('Category'),
                 TextColumn::make('country')->label('Location'),
                 TextColumn::make('created_at')->label('Joining Date')->date(),
