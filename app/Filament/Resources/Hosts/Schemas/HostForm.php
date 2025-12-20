@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Hosts\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,61 +17,78 @@ class HostForm
     {
         return $schema
             ->components([
-                FileUpload::make('profile_image')
-                    ->label('Profile Image')
-                    ->image()
-                    ->previewable(true)
-                    ->imageEditor()
-                    ->visibility('public')
-                    ->circleCropper()
-                    ->afterStateHydrated(function (FileUpload $component, $state) {
-                        if (blank($state)) return;
 
-                        // Build the base URL from your existing filesystem configuration
-                        $bucket = config('filesystems.disks.s3.bucket');
-                        $region = config('filesystems.disks.s3.region');
+                Section::make('Profile')
+                    ->icon('heroicon-o-user-circle')
+                    ->iconColor('primary')
+                    ->schema([
+                        FileUpload::make('profile_image')
+                            ->label('Profile Image')
+                            ->image()
+                            ->avatar()
+                            ->directory('hosts/profile-images')
+                            ->visibility('public')
+                            ->imageEditor()
+                            ->maxSize(2048),
+                    ]),
 
-                        // Pattern: bucket.s3.region.amazonaws.com
-                        $baseUrl = "https://{$bucket}.s3.{$region}.amazonaws.com/";
+                Section::make('Basic Information')
+                    ->icon('heroicon-o-identification')
+                    ->iconColor('primary')
+                    ->columns(2)
+                    ->schema([
 
-                        // Escape special characters for the regex pattern
-                        $escapedBaseUrl = preg_quote($baseUrl, '/');
+                        TextInput::make('full_name')
+                            ->label('Full Name')
+                            ->required()
+                            ->maxLength(255),
 
-                        $path = preg_replace('/' . $escapedBaseUrl . '/', '', $state);
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->required()
+                            ->unique(ignoreRecord: true),
+                    ]),
 
-                        $component->state($path);
-                    })
-                    ->saveUploadedFileUsing(function ($file, callable $set) {
-                        $path = $file->storePublicly('');
-                        $url = Storage::url($path);
-                        return $url;
-                    })
-                    ->maxSize(2048),
+                Section::make('Event Information')
+                    ->icon('heroicon-o-calendar')
+                    ->iconColor('primary')
+                    ->columns(2)
+                    ->schema([
 
-                TextInput::make('full_name')
-                    ->label('Full Name')
-                    ->required()
-                    ->maxLength(255),
+                        TextInput::make('event_type')
+                            ->label('Event Type')
+                            ->placeholder('Wedding, Engagement, Birthday')
+                            ->required(),
 
-                TextInput::make('email')
-                    ->label('Email')
-                    ->email()
-                    ->required()
-                    ->unique(ignoreRecord: true),
+                        DatePicker::make('wedding_date')
+                            ->label('Event Date')
+                            ->required(),
 
-                Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'blocked' => 'Blocked',
-                    ])
-                    ->required(),
+                        TextInput::make('event_budget')
+                            ->label('Event Budget')
+                            ->numeric()
+                            ->prefix('PKR'),
 
-//                Toggle::make('is_active')
-//                    ->label('Active')
-//                    ->default(true),
+                        TextInput::make('estimated_guests')
+                            ->label('Estimated Guests')
+                            ->numeric(),
+                    ]),
 
+                Section::make('Account Status')
+                    ->icon('heroicon-o-shield-check')
+                    ->iconColor('primary')
+                    ->schema([
+                        Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'pending' => 'Pending',
+                                'approved' => 'Approved',
+                                'blocked' => 'Blocked',
+                            ])
+                            ->required()
+                            ->native(false),
+                    ]),
             ]);
     }
 }

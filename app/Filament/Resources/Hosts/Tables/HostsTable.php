@@ -20,8 +20,17 @@ class HostsTable
         return $table
             ->columns([
                 ImageColumn::make('profile_image')->circular()->imageSize(40),
-                TextColumn::make('full_name')->label('Name'),
-                TextColumn::make('email')->label('Email'),
+                TextColumn::make('full_name')->label('Name')
+                ->searchable()
+                ->sortable(),
+                TextColumn::make('email')->label('Email')
+                ->searchable()
+                ->sortable(),
+                TextColumn::make('event_type')->label('Event Type'),
+                TextColumn::make('wedding_date')->label('Event Date')
+                ->date(),
+                TextColumn::make('event_budget')->label('Event Budget'),
+                TextColumn::make('estimated_guests')->label('Estimated Guests'),
                 TextColumn::make('status')
                     ->badge()
                     ->label('Status')
@@ -33,7 +42,6 @@ class HostsTable
                             default => 'warning',
                         };
                     }),
-                TextColumn::make('created_at')->label('Wedding Date'),
             ])
             ->filters([
                 TrashedFilter::make(),

@@ -10,6 +10,8 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -38,6 +40,7 @@ class VendorsTable
                             'approved' => 'success',
                             'under_review' => 'info',
                             'rejected' => 'warning',
+                            'pending' => 'info',
                             'banned' => 'danger',
                         };
                     })
@@ -46,6 +49,7 @@ class VendorsTable
                             'approved' => 'heroicon-o-check',
                             'under_review' => 'heroicon-o-clock',
                             'rejected' => 'heroicon-o-x-circle',
+                            'pending' => 'heroicon-o-check',
                             'banned' => 'heroicon-o-x-circle',
                         };
 
@@ -53,7 +57,11 @@ class VendorsTable
 
             ])
             ->filters([
-                TrashedFilter::make(),
+                SelectFilter::make('category')
+                    ->label('Category')
+                    ->relationship('category', 'type')
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 ViewAction::make(),

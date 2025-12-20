@@ -15,12 +15,12 @@ class ListVendors extends ListRecords
 {
     protected static string $resource = VendorResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-//            CreateAction::make(),
-        ];
-    }
+//    protected function getHeaderActions(): array
+//    {
+//        return [
+////            CreateAction::make(),
+//        ];
+//    }
 
     protected function getHeaderWidgets(): array
     {
@@ -39,11 +39,12 @@ class ListVendors extends ListRecords
         return [
             'all' => Tab::make(),
             'active' => Tab::make()
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('account_deactivated', false)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', 1)),
             'inactive' => Tab::make()
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('account_deactivated', true)),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', 0)),
         ];
     }
+
 
 
 }

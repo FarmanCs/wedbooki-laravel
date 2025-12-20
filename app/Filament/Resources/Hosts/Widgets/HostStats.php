@@ -26,8 +26,8 @@ class HostStats extends StatsOverviewWidget
             ->description('Active hosts')
             ->icon('heroicon-s-users')
             ->color('success'),
-            Stat::make('Pending Hosts ', $pending_host)
-            ->label('Pending Hosts')
+            Stat::make('Pending Approval ', $pending_host)
+            ->label('Pending Approval')
             ->color('warning')
             ->description('Pending hosts')
             ->icon('heroicon-s-users')

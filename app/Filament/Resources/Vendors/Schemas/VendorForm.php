@@ -56,7 +56,7 @@ class VendorForm
                             ->image()
                             ->imageEditor()
                             ->circleCropper()
-                            ->maxSize(200)
+                            ->maxSize(2000)
                             ->preserveFilenames(),
                         TextInput::make('full_name')
                             ->label('Full Name')
