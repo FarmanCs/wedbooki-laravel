@@ -26,4 +26,10 @@ class CreditPlan extends Model
         'discounted_percentage' => 'integer',
         'no_of_credits' => 'integer',
     ];
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'credit_plan_id');
+    }
+
 }

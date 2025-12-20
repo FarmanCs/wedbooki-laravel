@@ -17,6 +17,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\CreditPlans\RelationManagers\TransactionsRelationManager;
+
 
 class CreditPlanResource extends Resource
 {
@@ -46,13 +48,6 @@ class CreditPlanResource extends Resource
         return CreditPlansTable::configure($table);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
@@ -70,4 +65,13 @@ class CreditPlanResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+
+    public static function getRelations(): array
+    {
+        return [
+            TransactionsRelationManager::class,
+        ];
+    }
+
 }
