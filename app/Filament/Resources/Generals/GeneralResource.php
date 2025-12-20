@@ -22,7 +22,7 @@ class GeneralResource extends Resource
 {
     protected static ?string $model = CmsSetting::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog8Tooth;
 
     protected  static ?string $modelLabel = 'General';
     protected static string|null|\UnitEnum $navigationGroup = 'Settings';

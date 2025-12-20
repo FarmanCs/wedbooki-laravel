@@ -22,9 +22,12 @@ class CreditPlanResource extends Resource
 {
     protected static ?string $model = CreditPlan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static ?string $recordTitleAttribute = 'CreditPlan';
+
+    protected static ?int $navigationSort = 4;
+
 
     protected static ?string $navigationLabel = 'Credit Management';
 
