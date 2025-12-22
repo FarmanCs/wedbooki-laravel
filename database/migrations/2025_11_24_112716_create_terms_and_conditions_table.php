@@ -22,6 +22,8 @@ return new class extends Migration
 
             // If you also want created_at, you can add this manually:
             $table->timestamp('created_at')->useCurrent();
+            $table->softDeletes();
+
         });
     }
 

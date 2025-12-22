@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->integer('seq')->default(3000);
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

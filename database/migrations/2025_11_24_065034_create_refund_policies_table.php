@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('refund_policies', function (Blueprint $table) {
             $table->id();
             $table->longText('refund_policy');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

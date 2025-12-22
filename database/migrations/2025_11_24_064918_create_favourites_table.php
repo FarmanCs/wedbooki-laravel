@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('host_id')->constrained('hosts')->onDelete('cascade');
             $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

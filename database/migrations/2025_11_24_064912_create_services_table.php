@@ -16,6 +16,7 @@ return new class extends Migration
             $table->json('img')->nullable();
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->string('category');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('vendor_id');

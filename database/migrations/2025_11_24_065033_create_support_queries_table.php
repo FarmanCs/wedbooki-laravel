@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('message');
             $table->json('attachments')->nullable();
             $table->enum('status', ['pending', 'resolved', 'rejected'])->default('pending');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('status');

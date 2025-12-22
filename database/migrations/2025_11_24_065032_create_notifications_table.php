@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('send_mode', ['Send Immediately', 'Schedule', 'Save as draft'])->default('Send Immediately');
             $table->timestamp('scheduled_at')->nullable();
             $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('status');

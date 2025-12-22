@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
             $table->integer('points')->default(1);
             $table->text('text');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

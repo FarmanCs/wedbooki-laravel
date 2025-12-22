@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('zipcode')->nullable();
             $table->enum('is_joining', ['Pending', 'Accepted', 'Rejected'])->default('Pending');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('email');

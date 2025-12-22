@@ -17,9 +17,9 @@ class CreditPlanInfolist
                     ->schema([
                         ImageEntry::make('image')
                             ->label('Plan Image')
-                            ->disk('s3') // ✅ Laravel filesystem abstraction
+                            ->disk('s3')
                             ->visibility('public')
-                            ->height(200)
+                            ->imageSize(200)
                             ->columnSpanFull(),
                     ]),
 

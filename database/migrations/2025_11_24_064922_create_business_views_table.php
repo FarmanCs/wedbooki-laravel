@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
             $table->string('device_id');
             $table->timestamp('viewed_at')->useCurrent();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['business_id', 'device_id']);

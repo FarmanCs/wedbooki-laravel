@@ -27,6 +27,7 @@ return new class extends Migration
             $table->text('package_description')->nullable();
             $table->json('prices'); // stores durationType and price
             $table->json('package_features')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('vendor_type');

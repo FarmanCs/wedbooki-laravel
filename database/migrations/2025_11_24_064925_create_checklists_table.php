@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('host_id')->nullable()->constrained('hosts')->onDelete('cascade');
             $table->date('wedding_date')->nullable();
             $table->json('checklist_items')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

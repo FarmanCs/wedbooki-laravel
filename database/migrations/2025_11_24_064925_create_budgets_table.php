@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('host_id')->nullable()->constrained('hosts')->onDelete('cascade');
             $table->decimal('total_budget', 15, 2)->nullable();
             $table->json('breakdown')->nullable(); // stores categoryId and amount
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

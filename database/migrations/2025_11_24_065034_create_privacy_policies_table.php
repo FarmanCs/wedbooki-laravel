@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('privacy_policies', function (Blueprint $table) {
             $table->id();
             $table->longText('privacy_policy');
+            $table->softDeletes();
             $table->timestamp('updated_at')->useCurrent();
         });
     }

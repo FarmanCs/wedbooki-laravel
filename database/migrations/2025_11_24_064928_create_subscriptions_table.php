@@ -1,8 +1,5 @@
 <?php
 
-// ======================
-// SUBSCRIPTIONS (PACKAGES)
-// ======================
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,19 +10,24 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->text('description')->nullable();
-            $table->string('badge')->nullable();
-            $table->decimal('monthly_price', 15, 2)->nullable();
-            $table->decimal('yearly_price', 15, 2)->nullable();
-            $table->enum('package_type', ['monthly', 'yearly'])->default('monthly');
-            $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
-            $table->boolean('is_active')->default(true);
-            $table->boolean('is_deleted')->default(false);
-            $table->timestamps();
 
-            $table->index('category_id');
-            $table->index('is_active');
+            $table->string('name')->default('Basic');
+
+            $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
+            $table->foreignId('plan_id')->constrained('plans')->onDelete('cascade');
+
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->enum('subscription_type', ['monthly', 'quarterly', 'yearly']);
+            $table->integer('credits')->default(0);
+            $table->timestamp('last_credit_date')->useCurrent();
+            $table->timestamp('last_reminder_sent')->nullable();
+            $table->timestamp('last_renewal_attempt')->nullable();
+            $table->decimal('amount', 10, 2)->default(0);
+            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
+
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

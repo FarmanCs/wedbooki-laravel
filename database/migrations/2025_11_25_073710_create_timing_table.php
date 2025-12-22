@@ -29,6 +29,7 @@ return new class extends Migration
             // Unavailable dates
             $table->json('unavailable_dates')->nullable();
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

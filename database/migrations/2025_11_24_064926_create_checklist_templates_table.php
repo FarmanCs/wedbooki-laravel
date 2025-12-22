@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('event_type')->index();
             $table->json('checklist_items')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

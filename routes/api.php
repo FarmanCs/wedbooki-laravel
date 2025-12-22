@@ -14,8 +14,9 @@ use App\Http\Controllers\Host\FavouriteController;
 use App\Http\Controllers\Host\GoogleCalendarController;
 use App\Http\Controllers\Host\AccountController;
 use App\Http\Controllers\Vendor\VendorController;
-
 use App\Http\Controllers\Admin\AdminController;
+
+use  App\Http\Controllers\Subscription\SubscriptionController;
 
 //use App\Http\Controllers\Host\SessionController;
 Route::prefix('/v1/host')->group(function () {
@@ -280,5 +281,43 @@ Route::prefix('/v1/global')->group(function () {
     Route::post('/add-country', [GlobalController::class, 'addCountry']);
     Route::get('/get-countries', [GlobalController::class, 'getCountries']);
     Route::delete('/delete-country/{name}', [GlobalController::class, 'deleteCountry']);
+
+});
+
+
+//subscriptions
+Route::prefix('v1/subscription')->group(function () {
+
+    Route::get('plan-payment/success', [SubscriptionController::class, 'handlePlanPaymentSuccess']);
+    Route::get('plan-payment/fail', [SubscriptionController::class, 'handlePlanPaymentFailure']);
+
+    Route::get('credits-payment/success', [SubscriptionController::class, 'handleCreditsPaymentSuccess']);
+    Route::get('credits-payment/fail', [SubscriptionController::class, 'handleCreditsPaymentFailure']);
+
+    //Authenticated Vendor Routes
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::post('checkout-session/plan', [SubscriptionController::class, 'createPlanCheckoutSession']);
+        Route::post('checkout-session/credits', [SubscriptionController::class, 'createCreditsCheckoutSession']);
+
+        Route::post('boost-profile', [SubscriptionController::class, 'boostProfile']);
+        Route::post('cancel-plan-subscription', [SubscriptionController::class, 'cancelPlanSubscription']);
+
+        Route::get('plans', [SubscriptionController::class, 'getAllPlans']);
+        Route::get('subscriptions', [SubscriptionController::class, 'getAllSubscriptions']);
+        Route::get('plans/details', [SubscriptionController::class, 'getAllDetailsOfPlan']);
+
+        Route::get('transactions/ad-credits', [SubscriptionController::class, 'getAllAdCreditsTransactions']);
+        Route::get('transactions/bookings', [SubscriptionController::class, 'getAllBookingsTransactions']);
+
+        //Ad Credits Packages (Admin / Vendor)
+
+        Route::post('ad-credits-packages', [SubscriptionController::class, 'storeAdCreditsPackage']);
+        Route::post('ad-credits-packages/{package}', [SubscriptionController::class, 'updateAdCreditsPackage']);
+        Route::get('ad-credits-packages/{package}', [SubscriptionController::class, 'showAdCreditsPackage']);
+        Route::get('ad-credits-packages', [SubscriptionController::class, 'getAllAdCreditsPackages']);
+        Route::delete('ad-credits-packages/{package}', [SubscriptionController::class, 'deleteAdCreditsPackage']);
+    });
 
 });

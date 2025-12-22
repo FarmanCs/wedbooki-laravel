@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('group_name');
             $table->foreignId('host_id')->constrained('hosts')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

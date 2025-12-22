@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->json('countries')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

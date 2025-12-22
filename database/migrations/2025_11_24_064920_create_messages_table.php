@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('chat_video_url')->nullable();
             $table->string('chat_document_url')->nullable();
             $table->json('seen_by')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('chat_id');

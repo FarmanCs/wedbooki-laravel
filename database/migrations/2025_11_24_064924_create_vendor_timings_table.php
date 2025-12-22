@@ -16,6 +16,7 @@ return new class extends Migration
             $table->json('working_hours')->nullable(); // stores Map structure
             $table->json('timings_service_weekly')->nullable(); // stores weekly service timings
             $table->json('unavailable_dates')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('business_id');

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->text('question');
             $table->text('answer');
             $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('status');

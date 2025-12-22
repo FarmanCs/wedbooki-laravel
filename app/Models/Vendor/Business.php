@@ -2,6 +2,7 @@
 
 namespace App\Models\Vendor;
 
+use App\Models\Admin\CreditTransaction;
 use App\Models\Host\Favorite;
 use App\Models\Host\Review;
 use App\Models\services\ExtraService;
@@ -91,5 +92,13 @@ class Business extends Model
     public function extraServices()
     {
         return $this->hasMany(ExtraService::class);
+    }
+
+    public function creditTransactions()
+    {
+        return $this->hasMany(
+            CreditTransaction::class,
+            'business_id'
+        );
     }
 }

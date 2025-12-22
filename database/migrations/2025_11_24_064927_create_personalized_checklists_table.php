@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('is_custom')->default(false);
             $table->boolean('is_edited')->default(false);
             $table->boolean('lock_to_wedding_date')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

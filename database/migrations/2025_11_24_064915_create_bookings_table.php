@@ -57,6 +57,7 @@ return new class extends Migration
 
             $table->boolean('is_synced_with_calendar')->default(false);
 
+            $table->softDeletes();
             $table->timestamps();
 
             // Indexes

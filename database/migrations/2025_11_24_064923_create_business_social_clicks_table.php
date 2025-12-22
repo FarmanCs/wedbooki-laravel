@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('platform');
             $table->string('device_id');
             $table->timestamp('clicked_at')->useCurrent();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['business_id', 'device_id', 'platform']);

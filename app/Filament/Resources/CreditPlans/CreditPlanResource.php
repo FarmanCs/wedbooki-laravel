@@ -6,9 +6,11 @@ use App\Filament\Resources\CreditPlans\Pages\CreateCreditPlan;
 use App\Filament\Resources\CreditPlans\Pages\EditCreditPlan;
 use App\Filament\Resources\CreditPlans\Pages\ListCreditPlans;
 use App\Filament\Resources\CreditPlans\Pages\ViewCreditPlan;
+use App\Filament\Resources\CreditPlans\RelationManagers\CreditTransectionsRelationManager;
 use App\Filament\Resources\CreditPlans\Schemas\CreditPlanForm;
 use App\Filament\Resources\CreditPlans\Schemas\CreditPlanInfolist;
 use App\Filament\Resources\CreditPlans\Tables\CreditPlansTable;
+use App\Filament\Resources\CreditPlans\Widgets\CreditTransactionsTable;
 use App\Models\Admin\CreditPlan;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -17,7 +19,6 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\CreditPlans\RelationManagers\TransactionsRelationManager;
 
 
 class CreditPlanResource extends Resource
@@ -67,10 +68,11 @@ class CreditPlanResource extends Resource
     }
 
 
-    public static function getRelations(): array
+
+    public static function getHeaderWidgets(): array
     {
         return [
-            TransactionsRelationManager::class,
+            CreditTransactionsTable::class,
         ];
     }
 

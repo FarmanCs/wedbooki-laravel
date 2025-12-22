@@ -14,6 +14,7 @@ return new class extends Migration
             $table->enum('session_status', ['Initiated', 'Started', 'Completed', 'Cancelled'])->default('Initiated');
             $table->json('params')->nullable();
             $table->timestamp('started_at')->useCurrent();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('host_id');

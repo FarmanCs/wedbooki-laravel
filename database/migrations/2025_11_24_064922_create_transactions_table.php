@@ -35,6 +35,7 @@ return new class extends Migration
             $table->json('click_pay_response')->nullable();
             $table->json('click_pay_callback')->nullable();
             $table->timestamp('paid_at')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('booking_id');

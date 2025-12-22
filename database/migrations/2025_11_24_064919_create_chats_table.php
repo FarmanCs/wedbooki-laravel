@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->json('participants'); // stores userId, userModel
             $table->unsignedBigInteger('last_message_id')->nullable(); // Don't add foreign key yet
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('last_message_id');

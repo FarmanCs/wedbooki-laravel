@@ -47,6 +47,7 @@ return new class extends Migration
             $table->timestamp('account_soft_deleted_at')->nullable();
             $table->integer('auto_hard_delete_after_days')->default(30);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('email');
             $table->index('google_id');

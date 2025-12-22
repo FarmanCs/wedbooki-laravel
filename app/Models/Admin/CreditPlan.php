@@ -2,6 +2,7 @@
 
 namespace App\Models\Admin;
 
+use App\Models\Vendor\Business;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,7 +30,12 @@ class CreditPlan extends Model
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'credit_plan_id');
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function businesses()
+    {
+        return $this->hasMany(Business::class);
     }
 
 }

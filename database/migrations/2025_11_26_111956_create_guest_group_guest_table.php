@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('guest_group_id')->constrained('guest_groups')->onDelete('cascade');
             $table->foreignId('guest_id')->constrained('guests')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['guest_group_id', 'guest_id']);

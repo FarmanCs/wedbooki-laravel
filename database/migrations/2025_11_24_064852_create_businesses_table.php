@@ -42,6 +42,8 @@ return new class extends Migration
             $table->integer('services_radius')->default(50);
             $table->decimal('advance_percentage', 5, 2)->default(10);
             $table->timestamps();
+            $table->softDeletes();
+
         });
     }
 

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('business_id')->nullable()->constrained('businesses')->onDelete('cascade');
             $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->text('text');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('review_id');

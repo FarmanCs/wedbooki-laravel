@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('capacity');
             $table->json('available_dates')->nullable();
             $table->enum('status', ['pending', 'rejected', 'active'])->default('pending');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('vendor_id');

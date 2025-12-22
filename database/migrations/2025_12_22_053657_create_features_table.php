@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('features', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('name');
+            $table->string('key')->unique();
+
+            $table->string('silver')->nullable();
+            $table->string('gold')->nullable();
+            $table->string('platinum')->nullable();
+
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('categories')
+                ->nullOnDelete();
+
+            $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('features');
+    }
+};
