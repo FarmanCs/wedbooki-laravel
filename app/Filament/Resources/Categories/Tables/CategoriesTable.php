@@ -20,7 +20,7 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                ImageColumn::make('image')->label('Image')->circular()->size(50),
+                ImageColumn::make('image')->label('Image')->circular(),
                 TextColumn::make('type')->label('Name')->searchable()->sortable(),
                 TextColumn::make('description')->label('Description')
                     ->limit(50)

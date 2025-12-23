@@ -13,11 +13,10 @@ class CreditPlanForm
     {
         return $schema
             ->components([
-
                 FileUpload::make('image')
                     ->label('Plan Image')
                     ->image()
-                    ->disk('s3') //
+                    ->disk('s3')
                     ->directory('credit-plans')
                     ->visibility('public')
                     ->imageEditor()

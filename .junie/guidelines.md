@@ -416,12 +416,16 @@ $delete = fn(Product $product) => $product->delete();
 <!-- HTML / UI Here -->
 </code-snippet>
 
+
+
 <code-snippet name="Real-Time Search With Volt" lang="php">
     <flux:input
         wire:model.live.debounce.300ms="search"
         placeholder="Search..."
     />
 </code-snippet>
+
+
 
 <code-snippet name="Loading States With Volt" lang="php">
     <flux:button wire:click="save" wire:loading.attr="disabled">
@@ -529,6 +533,8 @@ it('may reset the password', function () {
     Notification::assertSent(ResetPassword::class);
 });
 </code-snippet>
+
+
 
 <code-snippet name="Pest Smoke Testing Example" lang="php">
 $pages = visit(['/', '/about', '/contact']);

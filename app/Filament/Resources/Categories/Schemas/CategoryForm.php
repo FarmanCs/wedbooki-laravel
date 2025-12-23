@@ -8,6 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryForm
 {
@@ -15,39 +16,31 @@ class CategoryForm
     {
         return $schema
             ->components([
-                Section::make('Image')
-                    ->icon('heroicon-o-rectangle-stack')
-                    ->iconColor('primary')
-                    ->schema([
-                        FileUpload::make('image')
-                            ->disk('s3')
-                            ->directory('categories')
-                            ->visibility('public')
-                            ->image()
-                            ->avatar()
-                            ->imageEditor()
-                            ->maxSize(2048)
-                            ->preserveFilenames()
-                            ->helperText('Upload a new image to replace the existing one.')
+                FileUpload::make('image')
+                    ->label('Image')
+                    ->image()
+                    ->disk('s3')  // Set S3 as the disk
+                    ->directory('categories')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->maxSize(2048)
+                    ->getUploadedFileNameForStorageUsing(
+                        fn($file) => uniqid() . '.' . $file->getClientOriginalExtension()
+                    )->afterStateUpdated()
+                ,
 
-                    ]),
-                Section::make('Categories Information')
-                    ->icon('heroicon-o-book-open')
-                    ->iconColor('primary')
-                    ->schema([
-                        TextInput::make('type')
-                            ->label('Category Name')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true)
-                            ->placeholder('Photography, Catering'),
+                TextInput::make('type')
+                    ->label('Category Name')
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true)
+                    ->placeholder('Photography, Catering'),
 
-                        Textarea::make('description')
-                            ->label('Description')
-                            ->rows(4)
-                            ->placeholder('Brief description of the category'),
+                Textarea::make('description')
+                    ->label('Description')
+                    ->rows(2)
+                    ->placeholder('Brief description of the category'),
 
-                    ])
             ]);
     }
 }
