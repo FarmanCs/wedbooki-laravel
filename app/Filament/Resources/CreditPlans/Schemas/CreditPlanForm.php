@@ -6,6 +6,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class CreditPlanForm
 {
@@ -21,6 +22,10 @@ class CreditPlanForm
                     ->visibility('public')
                     ->imageEditor()
                     ->maxSize(2048)
+                    ->saveUploadedFileUsing(function ($file){
+                        $path = $file->storepublicly('categories', 's3');
+                        return Storage::disk('s3')->url($path);
+                    })
                     ->columnSpanFull(),
 
                 TextInput::make('name')

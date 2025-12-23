@@ -19,22 +19,22 @@ class CategoryForm
                 FileUpload::make('image')
                     ->label('Image')
                     ->image()
-                    ->disk('s3')  // Set S3 as the disk
+                    ->disk('s3')
                     ->directory('categories')
                     ->visibility('public')
                     ->imageEditor()
-                    ->maxSize(2048)
-                    ->getUploadedFileNameForStorageUsing(
-                        fn($file) => uniqid() . '.' . $file->getClientOriginalExtension()
-                    )->afterStateUpdated()
-                ,
-
+                    ->saveUploadedFileUsing(function ($file) {
+                        $path = $file->storePublicly('categories', 's3');
+                        return Storage::disk('s3')->url($path);
+                    }),
                 TextInput::make('type')
                     ->label('Category Name')
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true)
                     ->placeholder('Photography, Catering'),
+
+                TextInput::make('image_url'),
 
                 Textarea::make('description')
                     ->label('Description')

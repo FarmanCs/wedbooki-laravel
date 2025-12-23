@@ -10,10 +10,19 @@ class ViewBooking extends ViewRecord
 {
     protected static string $resource = BookingResource::class;
 
+
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Eager load relationships
+        $this->record->load(['host', 'business', 'vendor', 'package', 'extra_services']);
+
+        return $data;
+    }
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+//            EditAction::make(),
         ];
     }
 }

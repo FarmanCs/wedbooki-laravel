@@ -26,7 +26,9 @@ class CategoriesTable
                     ->limit(50)
                     ->wrap()
                     ->tooltip(fn($state) => $state),
-                TextColumn::make('created_at')->label('Created at'),
+                TextColumn::make('created_at')
+                    ->label('Created at')
+                    ->time('d M Y'),
             ])
             ->filters([
                 TrashedFilter::make(),

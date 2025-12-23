@@ -23,16 +23,20 @@ class BookingsTable
                 TextColumn::make('amount')->label('Amount'),
 
                 TextColumn::make('host.full_name')
-                    ->label('Host Name'),
+                    ->label('Host Name')
+                    ->searchable()
+                ,
 
                 TextColumn::make('host.email')
-                    ->label('Host Email'),
+                    ->label('Host Email')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('payment_status')
                     ->badge()
                     ->label('Payment Status')
                     ->icon('heroicon-s-currency-dollar')
-                    ->color(function ($state) : string {
+                    ->color(function ($state): string {
                         return match ($state) {
                             'unpaid' => 'danger',
                             'advancePaid' => 'success',
@@ -54,7 +58,7 @@ class BookingsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+//                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

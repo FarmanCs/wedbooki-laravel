@@ -67,4 +67,5 @@ class BookingResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
 }

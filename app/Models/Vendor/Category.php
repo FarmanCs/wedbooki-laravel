@@ -3,6 +3,7 @@
 namespace App\Models\Vendor;
 
 use App\Models\SubCategory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,7 +21,16 @@ class Category extends Model
         'image',
     ];
 
-    protected $appends = ['image_url'];
+
+    //when we add virtual attributes or column to form existing colum names
+//    protected $appends = ['image_url'];
+//
+//    public function ImageUrl(): Attribute
+//    {
+//        return Attribute::make(
+//            get: function () {return 'asdf';},
+//        );
+//    }
 
 
     // If each category has many subcategories
@@ -36,16 +46,4 @@ class Category extends Model
     }
 
 
-    // Accessor: Get full S3 URL when accessing $category->image_url
-    public function getImageUrlAttribute()
-    {
-        return $this->image ? Storage::disk('s3')->url($this->image) : null;
-    }
-
-    // Mutator: Automatically convert to full URL when saving
-    // WARNING: Only use this if you want to store full URLs in database
-    public function setImageAttribute($value)
-    {
-        $this->attributes['image'] = $value ? Storage::disk('s3')->url($value) : null;
-    }
 }

@@ -16,7 +16,7 @@ class Booking extends Model
     protected $fillable = [
         'host_id',
         'business_id',
-        'vendor_id',       // corresponds to venue_id in migration
+        'vendor_id',
         'package_id',
         'amount',
         'advance_percentage',
