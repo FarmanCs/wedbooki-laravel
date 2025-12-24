@@ -9,7 +9,8 @@ use App\Filament\Resources\Subscriptions\Pages\ViewSubscriptions;
 use App\Filament\Resources\Subscriptions\Schemas\SubscriptionsForm;
 use App\Filament\Resources\Subscriptions\Schemas\SubscriptionsInfolist;
 use App\Filament\Resources\Subscriptions\Tables\SubscriptionsTable;
-//use App\Models\Subscriptions;
+
+use App\Models\Admin\AdminPackage;
 use App\Models\Vendor\Subscription;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,13 +22,13 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SubscriptionsResource extends Resource
 {
-    protected static ?string $model = Subscription::class;
+    protected static ?string $model = AdminPackage::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static ?string $recordTitleAttribute = 'Subscriptions';
 
-    protected static  ?int $navigationSort=4;
+    protected static ?int $navigationSort = 4;
 
 
     public static function form(Schema $schema): Schema
@@ -69,4 +70,5 @@ class SubscriptionsResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Subscriptions\Pages;
 
 use App\Filament\Resources\Subscriptions\SubscriptionsResource;
-use Filament\Actions\EditAction;
+use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewSubscriptions extends ViewRecord
@@ -13,7 +13,8 @@ class ViewSubscriptions extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            Actions\EditAction::make(),
+            Actions\DeleteAction::make(),
         ];
     }
 }

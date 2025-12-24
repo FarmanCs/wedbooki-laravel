@@ -3,13 +3,14 @@
 namespace App\Models\Admin;
 
 use App\Models\Vendor\Category;
+use App\Models\Vendor\Package;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Feature extends Model
 {
-    use HasFactory, softDeletes;
+    use  softDeletes;
 
     protected $fillable = [
         'name',
@@ -25,10 +26,7 @@ class Feature extends Model
         'is_active' => 'boolean',
     ];
 
-    /* =======================
-     | Relationships
-     ======================= */
-
+    // Relationships
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -37,5 +35,10 @@ class Feature extends Model
     public function plans()
     {
         return $this->belongsToMany(Plan::class);
+    }
+
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class);
     }
 }

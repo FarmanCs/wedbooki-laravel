@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Subscriptions\Pages;
 
 use App\Filament\Resources\Subscriptions\SubscriptionsResource;
-use Filament\Actions\CreateAction;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSubscriptions extends ListRecords
@@ -13,7 +13,9 @@ class ListSubscriptions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Create Package Bundle')
+                ->icon('heroicon-o-plus-circle'),
         ];
     }
 }
