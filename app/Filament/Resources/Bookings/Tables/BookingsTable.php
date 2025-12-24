@@ -24,8 +24,7 @@ class BookingsTable
 
                 TextColumn::make('host.full_name')
                     ->label('Host Name')
-                    ->searchable()
-                ,
+                    ->searchable(),
 
                 TextColumn::make('host.email')
                     ->label('Host Email')

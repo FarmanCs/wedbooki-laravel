@@ -10,7 +10,7 @@ class SubscriptionsForm
     {
         return $schema
             ->components([
-                //
+
             ]);
     }
 }

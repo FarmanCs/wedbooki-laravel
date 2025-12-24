@@ -70,29 +70,16 @@ class Vendor extends Authenticatable
         'last_login' => 'datetime',
     ];
 
-    // -------------------------
-    //      RELATIONSHIPS
-    // -------------------------
-
-    /**
-     * Vendor belongs to a business
-     */
+    //Relationships
     public function business()
     {
         return $this->belongsTo(Business::class, 'business_id');
     }
-
-    /**
-     * Vendor belongs to a category
-     */
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    /**
-     * Vendor has many bookings (vendor_id)
-     */
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'vendor_id');

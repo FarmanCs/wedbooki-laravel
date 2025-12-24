@@ -53,35 +53,27 @@ class Booking extends Model
         'is_synced_with_calendar' => 'boolean',
     ];
 
-    /**
-     * Relationships
-     */
-
-    // Vendor (venue) relationship
+    // Relations ship models
     public function vendor()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id'); // migration column is venue_id
+        return $this->belongsTo(Vendor::class, 'vendor_id');
     }
 
-    // Business relationship
     public function business()
     {
         return $this->belongsTo(Business::class, 'business_id');
     }
 
-    // Package relationship
     public function package()
     {
         return $this->belongsTo(Package::class, 'package_id');
     }
 
-    // Host relationship
     public function host()
     {
         return $this->belongsTo(Host::class, 'host_id');
     }
 
-    // Extra services linked to this booking
     public function extra_services()
     {
         return $this->hasMany(ExtraService::class, 'booking_id');

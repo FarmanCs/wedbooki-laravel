@@ -35,10 +35,8 @@ class BookingStats extends StatsOverviewWidget
                 ->icon('heroicon-o-clock'),
 
             Stat::make('Paid Bookings', function () {
-                $advanceCount = Booking::where('payment_status', 'advancePaid')->count();
-                $fullyCount = Booking::where('payment_status', 'fullyPaid')->count();
+                return   Booking::whereIn('payment_status', ['advancePaid','fullyPaid'])->count();
 
-                return $advanceCount + $fullyCount;
             })
                 ->description('Total paid bookings')
                 ->color('success')

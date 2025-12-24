@@ -6,6 +6,8 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 
 class BookingInfolist
 {
@@ -13,254 +15,150 @@ class BookingInfolist
     {
         return $schema
             ->components([
-                // 🎫 Booking Overview
-                Section::make('Booking Overview')
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->iconColor('indigo')
-                    ->columns(3)
-                    ->schema([
-                        TextEntry::make('custom_booking_id')
-                            ->label('Booking ID')
-                            ->icon('heroicon-o-hashtag')
-                            ->iconColor('indigo')
-                            ->badge()
-                            ->color('indigo')
-                            ->copyable()
-                            ->copyMessage('Booking ID copied!')
-                            ->size('lg')
-                            ->weight('bold'),
 
-                        TextEntry::make('status')
-                            ->label('Booking Status')
-                            ->icon('heroicon-o-signal')
-                            ->badge()
-                            ->size('lg')
-                            ->color(fn(string $state): string => match ($state) {
-                                'pending' => 'warning',
-                                'accepted' => 'success',
-                                'rejected' => 'danger',
-                                'cancelled' => 'gray',
-                                'confirmed' => 'info',
-                                'completed' => 'success',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn(string $state): string => ucfirst($state)),
+                Grid::make(3)->schema([
+                    TextEntry::make('custom_booking_id')
+                        ->label('Booking ID')
+                        ->icon('heroicon-o-hashtag')
+                        ->iconColor('yellow')
+                        ->badge()
+                        ->color('indigo')
+                        ->copyable()
+                        ->size('sm')
+                        ->weight('bold'),
 
-                        TextEntry::make('payment_status')
-                            ->label('Payment Status')
-                            ->icon('heroicon-o-credit-card')
-                            ->badge()
-                            ->size('lg')
-                            ->color(fn(string $state): string => match ($state) {
-                                'unpaid' => 'warning',
-                                'advancePaid' => 'info',
-                                'fullyPaid' => 'success',
-                                'refunded' => 'gray',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn(string $state): string => match ($state) {
-                                'advancePaid' => 'Advance Paid',
-                                'fullyPaid' => 'Fully Paid',
-                                'unpaid' => 'Unpaid',
-                                'refunded' => 'Refunded',
-                                default => $state,
-                            }),
+                    TextEntry::make('status')
+                        ->label('Status')
+                        ->icon('heroicon-o-signal')
+                        ->badge()
+                        ->size('sm')
+                        ->color(fn(string $state) => match ($state) {
+                            'pending' => 'warning',
+                            'accepted', 'completed' => 'success',
+                            'rejected' => 'danger',
+                            default => 'gray',
+                        }),
 
-                        TextEntry::make('approved_at')
-                            ->label('Approved At')
-                            ->icon('heroicon-o-check-circle')
-                            ->iconColor('success')
-                            ->dateTime('M d, Y h:i A')
-                            ->placeholder('Not approved yet')
-                            ->color('success'),
+                    TextEntry::make('payment_status')
+                        ->label('Payment')
+                        ->icon('heroicon-o-credit-card')
+                        ->badge()
+                        ->size('sm')
+                        ->color(fn(string $state) => match ($state) {
+                            'unpaid' => 'warning',
+                            'advancePaid' => 'info',
+                            'fullyPaid' => 'success',
+                            default => 'gray',
+                        }),
+                ]),
 
-                        TextEntry::make('payment_completed_at')
-                            ->label('Payment Completed')
-                            ->icon('heroicon-o-banknotes')
-                            ->iconColor('green')
-                            ->dateTime('M d, Y h:i A')
-                            ->placeholder('Payment not completed')
-                            ->color('success'),
+                Grid::make(4)->schema([
+                    TextEntry::make('event_date')
+                        ->label('Event Date')
+                        ->icon('heroicon-o-calendar')
+                        ->date('D, d M Y')
+                        ->weight('bold')
+                        ->color('cyan'),
 
-                        IconEntry::make('is_synced_with_calendar')
-                            ->label('Calendar Synced')
-                            ->boolean()
-                            ->trueIcon('heroicon-o-check-circle')
-                            ->falseIcon('heroicon-o-x-circle')
-                            ->trueColor('success')
-                            ->falseColor('danger'),
-                    ]),
+                    TextEntry::make('time_slot')
+                        ->label('Slot')
+                        ->icon('heroicon-o-clock')
+                        ->badge()
+                        ->color('blue'),
 
-                // 📅 Event Details
-                Section::make('Event Details')
-                    ->icon('heroicon-o-calendar-days')
-                    ->iconColor('cyan')
-                    ->columns(3)
-                    ->schema([
-                        TextEntry::make('event_date')
-                            ->label('Event Date')
-                            ->icon('heroicon-o-calendar')
-                            ->iconColor('cyan')
-                            ->date('l, F d, Y')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->color('cyan'),
+                    TextEntry::make('start_time')
+                        ->label('Start')
+                        ->icon('heroicon-o-play-circle')
+                        ->dateTime('h:i A')
+                        ->color('success'),
 
-                        TextEntry::make('time_slot')
-                            ->label('Time Slot')
-                            ->icon('heroicon-o-clock')
-                            ->iconColor('blue')
-                            ->badge()
-                            ->color('blue')
-                            ->size('lg')
-                            ->formatStateUsing(fn(string $state): string => ucfirst($state)),
+                    TextEntry::make('end_time')
+                        ->label('End')
+                        ->icon('heroicon-o-stop-circle')
+                        ->dateTime('h:i A')
+                        ->color('danger'),
+                ]),
+                Grid::make(3)->schema([
+                    TextEntry::make('amount')
+                        ->label('Total')
+                        ->money('PKR')
+                        ->icon('heroicon-o-banknotes')
+                        ->size('xl')
+                        ->weight('bold')
+                        ->color('success'),
 
-                        TextEntry::make('timezone')
-                            ->label('Timezone')
-                            ->icon('heroicon-o-globe-alt')
-                            ->iconColor('slate')
-                            ->placeholder('UTC'),
+                    TextEntry::make('advance_amount')
+                        ->label('Advance')
+                        ->money('PKR')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('info'),
 
-                        TextEntry::make('start_time')
-                            ->label('Start Time')
-                            ->icon('heroicon-o-play-circle')
-                            ->iconColor('green')
-                            ->dateTime('h:i A')
-                            ->color('success')
-                            ->weight('bold'),
+                    TextEntry::make('final_amount')
+                        ->label('Final')
+                        ->money('PKR')
+                        ->icon('heroicon-o-receipt-percent')
+                        ->color('success'),
+                ]),
+                Grid::make(4)->schema([
+                    IconEntry::make('advance_paid')
+                        ->label('Advance Paid')
+                        ->boolean(),
 
-                        TextEntry::make('end_time')
-                            ->label('End Time')
-                            ->icon('heroicon-o-stop-circle')
-                            ->iconColor('red')
-                            ->dateTime('h:i A')
-                            ->color('danger')
-                            ->weight('bold'),
+                    IconEntry::make('final_paid')
+                        ->label('Final Paid')
+                        ->boolean(),
 
-                        TextEntry::make('guests')
-                            ->label('Number of Guests')
-                            ->icon('heroicon-o-user-group')
-                            ->iconColor('purple')
-                            ->suffix(' guests')
-                            ->numeric()
-                            ->size('lg')
-                            ->color('purple'),
-                    ]),
+                    TextEntry::make('advance_due_date')
+                        ->label('Advance Due')
+                        ->date('d M Y')
+                        ->color(fn($state) => $state?->isPast() ? 'danger' : 'success'),
 
-                // 💰 Payment Information
-                Section::make('Payment Information')
-                    ->icon('heroicon-o-currency-dollar')
-                    ->iconColor('emerald')
-                    ->columns(4)
-                    ->schema([
-                        TextEntry::make('amount')
-                            ->label('Total Amount')
-                            ->icon('heroicon-o-banknotes')
-                            ->iconColor('emerald')
-                            ->money('PKR')
-                            ->size('xl')
-                            ->weight('bold')
-                            ->color('success')
-                            ->columnSpan(2),
+                    TextEntry::make('final_due_date')
+                        ->label('Final Due')
+                        ->date('d M Y')
+                        ->color(fn($state) => $state?->isPast() ? 'danger' : 'success'),
+                ]),
+                Grid::make(4)->schema([
+                    IconEntry::make('advance_paid')
+                        ->label('Advance Paid')
+                        ->boolean(),
 
-                        TextEntry::make('final_amount')
-                            ->label('Final Amount')
-                            ->icon('heroicon-o-receipt-percent')
-                            ->iconColor('green')
-                            ->money('PKR')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->color('success')
-                            ->columnSpan(2),
+                    IconEntry::make('final_paid')
+                        ->label('Final Paid')
+                        ->boolean(),
 
-                        TextEntry::make('advance_percentage')
-                            ->label('Advance Percentage')
-                            ->icon('heroicon-o-calculator')
-                            ->iconColor('blue')
-                            ->suffix('%')
-                            ->numeric()
-                            ->color('info'),
+                    TextEntry::make('advance_due_date')
+                        ->label('Advance Due')
+                        ->date('d M Y')
+                        ->color(fn($state) => $state?->isPast() ? 'danger' : 'success'),
 
-                        TextEntry::make('advance_amount')
-                            ->label('Advance Amount')
-                            ->icon('heroicon-o-currency-dollar')
-                            ->iconColor('blue')
-                            ->money('PKR')
-                            ->weight('bold')
-                            ->color('info'),
+                    TextEntry::make('final_due_date')
+                        ->label('Final Due')
+                        ->date('d M Y')
+                        ->color(fn($state) => $state?->isPast() ? 'danger' : 'success'),
+                ]),
+                Grid::make(4)->schema([
+                    TextEntry::make('host.full_name')
+                        ->label('Host')
+                        ->icon('heroicon-o-user')
+                        ->weight('bold'),
 
-                        IconEntry::make('advance_paid')
-                            ->label('Advance Payment Status')
-                            ->boolean()
-                            ->trueIcon('heroicon-o-check-circle')
-                            ->falseIcon('heroicon-o-x-circle')
-                            ->trueColor('success')
-                            ->falseColor('danger'),
+                    TextEntry::make('vendor.full_name')
+                        ->label('Vendor')
+                        ->icon('heroicon-o-user-circle')
+                        ->weight('bold'),
 
-                        IconEntry::make('final_paid')
-                            ->label('Final Payment Status')
-                            ->boolean()
-                            ->trueIcon('heroicon-o-check-circle')
-                            ->falseIcon('heroicon-o-x-circle')
-                            ->trueColor('success')
-                            ->falseColor('danger'),
+                    TextEntry::make('business.company_name')
+                        ->label('Business')
+                        ->icon('heroicon-o-building-storefront')
+                        ->weight('bold'),
 
-                        TextEntry::make('advance_due_date')
-                            ->label('Advance Due Date')
-                            ->icon('heroicon-o-calendar-days')
-                            ->iconColor('amber')
-                            ->date('M d, Y')
-                            ->color(fn($state) => $state && $state->isPast() ? 'danger' : 'success')
-                            ->weight(fn($state) => $state && $state->isPast() ? 'bold' : 'normal'),
-
-                        TextEntry::make('final_due_date')
-                            ->label('Final Due Date')
-                            ->icon('heroicon-o-calendar-days')
-                            ->iconColor('orange')
-                            ->date('M d, Y')
-                            ->color(fn($state) => $state && $state->isPast() ? 'danger' : 'success')
-                            ->weight(fn($state) => $state && $state->isPast() ? 'bold' : 'normal'),
-                    ]),
-
-                // 🏢 Related Information
-                Section::make('Related Information')
-                    ->icon('heroicon-o-building-office-2')
-                    ->iconColor('slate')
-                    ->columns(2)
-                    ->schema([
-                        TextEntry::make('host.full_name')
-                            ->label('Host')
-                            ->icon('heroicon-o-user')
-                            ->iconColor('violet')
-                            ->formatStateUsing(fn($record) => $record->host?->full_name ?? 'No host assigned')
-                            ->color('violet')
-                            ->weight('bold'),
-
-                        TextEntry::make('business_id')
-                            ->label('Business')
-                            ->icon('heroicon-o-building-storefront')
-                            ->iconColor('blue')
-                            ->formatStateUsing(fn($record) => $record->business?->name ?? 'No business assigned')
-                            ->color('blue')
-                            ->weight('bold'),
-
-                        TextEntry::make('vendor_id')
-                            ->label('Vendor')
-                            ->icon('heroicon-o-user-circle')
-                            ->iconColor('indigo')
-                            ->formatStateUsing(fn($record) => $record->vendor?->name ?? 'No vendor assigned')
-                            ->color('indigo')
-                            ->weight('bold'),
-
-                        TextEntry::make('package_id')
-                            ->label('Package')
-                            ->icon('heroicon-o-gift')
-                            ->iconColor('pink')
-                            ->formatStateUsing(fn($record) => $record->package?->name ?? 'No package selected')
-                            ->color('pink')
-                            ->weight('bold'),
-                    ]),
-
+                    TextEntry::make('package.name')
+                        ->label('Package')
+                        ->icon('heroicon-o-gift')
+                        ->weight('bold'),
+                ]),
             ]);
+
     }
 }
