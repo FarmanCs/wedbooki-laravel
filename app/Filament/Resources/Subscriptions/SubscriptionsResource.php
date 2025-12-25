@@ -10,6 +10,7 @@ use App\Filament\Resources\Subscriptions\Schemas\SubscriptionsForm;
 use App\Filament\Resources\Subscriptions\Schemas\SubscriptionsInfolist;
 use App\Filament\Resources\Subscriptions\Tables\SubscriptionsTable;
 
+use App\Filament\Resources\Subscriptions\Widgets\SubscriptionPackagesWidget;
 use App\Models\Admin\AdminPackage;
 use App\Models\Vendor\Subscription;
 use BackedEnum;
@@ -26,7 +27,8 @@ class SubscriptionsResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
-    protected static ?string $recordTitleAttribute = 'Subscriptions';
+    protected static ?string $navigationLabel="Subscriptions";
+
 
     protected static ?int $navigationSort = 4;
 
@@ -70,5 +72,7 @@ class SubscriptionsResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+
 
 }

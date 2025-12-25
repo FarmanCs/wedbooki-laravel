@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\Subscriptions\Schemas;
 
+use App\Models\Admin\Feature;
+use App\Models\Vendor\Category;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -15,88 +18,162 @@ class SubscriptionsForm
     {
         return $schema->components([
             Section::make('Package Information')
-                ->description('Create a subscription package with three pricing tiers')
+                ->description('Select a category to automatically create Silver, Gold, and Platinum packages')
                 ->schema([
-                    TextInput::make('name')
-                        ->label('Package Name')
-                        ->required()
-                        ->maxLength(255)
-                        ->placeholder('e.g., Venue, Photography, Catering')
-                        ->helperText('The name of this package (e.g., Venue Packages, Photography Packages)'),
-
                     Select::make('category_id')
                         ->label('Category')
-                        ->relationship('category', 'type')
+                        ->relationship('category', 'type') // Changed from 'name' to 'type'
                         ->required()
                         ->searchable()
                         ->preload()
-                        ->helperText('Select the category for this package'),
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            // Reset all tier fields when category changes
+                            $tiers = ['silver', 'gold', 'platinum'];
+                            foreach ($tiers as $tier) {
+                                $set("{$tier}_description", null);
+                                $set("{$tier}_badge", null);
+                                $set("{$tier}_monthly_price", null);
+                                $set("{$tier}_quarterly_price", null);
+                                $set("{$tier}_yearly_price", null);
+                            }
+                        })
+                        ->helperText('All three packages (Silver, Gold, Platinum) will be created for this category'),
+                ])
+                ->columns(1),
+
+            Section::make('Silver Tier')
+                ->description('Configure the Silver package details')
+                ->schema([
+                    Textarea::make('silver_description')
+                        ->label('Description')
+                        ->required()
+                        ->rows(3)
+                        ->maxLength(500),
+
+                    TextInput::make('silver_badge')
+                        ->label('Badge')
+                        ->maxLength(50)
+                        ->placeholder('e.g., Most Popular, Best Value'),
+
+                    TextInput::make('silver_monthly_price')
+                        ->label('Monthly Price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('silver_quarterly_price')
+                        ->label('Quarterly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('silver_yearly_price')
+                        ->label('Yearly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
                 ])
                 ->columns(2)
-                ->columnSpanFull(),
+                ->collapsible(),
 
-            self::packageSection('silver', 'Silver Package', 'STARTER', 'Basic tier package'),
-            self::packageSection('gold', 'Gold Package', 'POPULAR', 'Premium tier package'),
-            self::packageSection('platinum', 'Platinum Package', 'PREMIUM', 'Elite tier package'),
+            Section::make('Gold Tier')
+                ->description('Configure the Gold package details')
+                ->schema([
+                    Textarea::make('gold_description')
+                        ->label('Description')
+                        ->required()
+                        ->rows(3)
+                        ->maxLength(500),
+
+                    TextInput::make('gold_badge')
+                        ->label('Badge')
+                        ->maxLength(50)
+                        ->placeholder('e.g., Most Popular, Best Value'),
+
+                    TextInput::make('gold_monthly_price')
+                        ->label('Monthly Price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('gold_quarterly_price')
+                        ->label('Quarterly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('gold_yearly_price')
+                        ->label('Yearly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+                ])
+                ->columns(2)
+                ->collapsible(),
+
+            Section::make('Platinum Tier')
+                ->description('Configure the Platinum package details')
+                ->schema([
+                    Textarea::make('platinum_description')
+                        ->label('Description')
+                        ->required()
+                        ->rows(3)
+                        ->maxLength(500),
+
+                    TextInput::make('platinum_badge')
+                        ->label('Badge')
+                        ->maxLength(50)
+                        ->placeholder('e.g., Most Popular, Best Value'),
+
+                    TextInput::make('platinum_monthly_price')
+                        ->label('Monthly Price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('platinum_quarterly_price')
+                        ->label('Quarterly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+
+                    TextInput::make('platinum_yearly_price')
+                        ->label('Yearly Price')
+                        ->numeric()
+                        ->prefix('$')
+                        ->minValue(0)
+                        ->step(0.01),
+                ])
+                ->columns(2)
+                ->collapsible(),
+
+            Section::make('Package Settings')
+                ->description('Configure additional package settings')
+                ->schema([
+                    Toggle::make('is_active')
+                        ->label('Active')
+                        ->default(true)
+                        ->helperText('Only active packages will be visible to users'),
+
+                    DateTimePicker::make('published_at')
+                        ->label('Publish Date')
+                        ->default(now())
+                        ->helperText('Set when this package should be published'),
+                ])
+                ->columns(2)
+                ->collapsible(),
         ]);
-    }
-
-    protected static function packageSection(
-        string $key,
-        string $title,
-        string $defaultBadge = null,
-        string $description = null
-    ): Section {
-        return Section::make($title)
-            ->description($description)
-            ->schema([
-                Textarea::make("{$key}_description")
-                    ->label('Description')
-                    ->required()
-                    ->rows(3)
-                    ->placeholder('Describe the features and benefits of this tier')
-                    ->helperText('What does this tier include?')
-                    ->columnSpanFull(),
-
-                TextInput::make("{$key}_badge")
-                    ->label('Badge')
-                    ->maxLength(255)
-                    ->default($defaultBadge)
-                    ->placeholder('e.g., Most Popular, Best Value')
-                    ->columnSpanFull(),
-
-               Grid::make(3)
-                    ->schema([
-                        TextInput::make("{$key}_monthly_price")
-                            ->label('Monthly Price')
-                            ->numeric()
-                            ->required()
-                            ->prefix('£')
-                            ->inputMode('decimal')
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->placeholder('0.00'),
-
-                        TextInput::make("{$key}_quarterly_price")
-                            ->label('Quarterly Price')
-                            ->numeric()
-                            ->prefix('£')
-                            ->inputMode('decimal')
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->placeholder('0.00'),
-
-                        TextInput::make("{$key}_yearly_price")
-                            ->label('Yearly Price')
-                            ->numeric()
-                            ->prefix('£')
-                            ->inputMode('decimal')
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->placeholder('0.00'),
-                    ]),
-            ])
-            ->columns(1)
-            ->collapsible();
     }
 }

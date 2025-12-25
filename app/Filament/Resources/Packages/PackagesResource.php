@@ -20,11 +20,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PackagesResource extends Resource
 {
-    protected static ?string $model = Package::class;
+//    protected static ?string $model = Package::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static ?string $recordTitleAttribute = 'Packages';
+//    protected static ?string $recordTitleAttribute = 'Packages';
 
     protected static ?int $navigationSort = 7;
 

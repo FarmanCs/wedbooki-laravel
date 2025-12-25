@@ -10,15 +10,17 @@ return new class extends Migration {
         Schema::create('feature_package', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('package_id')
-                ->constrained()
+            $table->foreignId('admin_package_id') // Note: table name is admin_packages
+            ->constrained('admin_packages')
                 ->cascadeOnDelete();
 
             $table->foreignId('feature_id')
-                ->constrained()
+                ->constrained('features')
                 ->cascadeOnDelete();
 
-            $table->unique(['package_id', 'feature_id']);
+            $table->timestamps(); // Add timestamps for withTimestamps()
+
+            $table->unique(['admin_package_id', 'feature_id']);
         });
     }
 

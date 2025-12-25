@@ -4,13 +4,12 @@ namespace App\Filament\Resources\Subscriptions\Tables;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\Layout\Split;
-use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -24,74 +23,97 @@ class SubscriptionsTable
                     ->label('Package Name')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold')
-                    ->icon('heroicon-o-cube'),
-
-                TextColumn::make('category.type')
-                    ->label('Category')
-                    ->icon('heroicon-o-tag')
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Silver' => 'gray',
+                        'Gold' => 'warning',
+                        'Platinum' => 'info',
+                        default => 'gray',
+                    }),
+
+                TextColumn::make('category.type') // Changed from 'category.name' to 'category.type'
+                ->label('Category')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('badge')
+                    ->label('Badge')
+                    ->badge()
+                    ->color('success')
+                    ->default('—'),
+
+                TextColumn::make('monthly_price')
+                    ->label('Monthly Price')
+                    ->money('usd')
+                    ->sortable(),
+
+                TextColumn::make('quarterly_price')
+                    ->label('Quarterly Price')
+                    ->money('usd')
                     ->sortable()
-                    ->searchable(),
+                    ->toggleable(),
 
-                Split::make([
-                    Stack::make([
-                        TextColumn::make('silver_monthly_price')
-                            ->label('Silver')
-                            ->money('GBP')
-                            ->badge()
-                            ->color('gray')
-                            ->icon('heroicon-o-star')
-                            ->formatStateUsing(fn($state) => 'Silver: £' . number_format($state, 2)),
-                    ]),
+                TextColumn::make('yearly_price')
+                    ->label('Yearly Price')
+                    ->money('usd')
+                    ->sortable()
+                    ->toggleable(),
 
-                    Stack::make([
-                        TextColumn::make('gold_monthly_price')
-                            ->label('Gold')
-                            ->money('GBP')
-                            ->badge()
-                            ->color('warning')
-                            ->icon('heroicon-o-sparkles')
-                            ->formatStateUsing(fn($state) => 'Gold: £' . number_format($state, 2)),
-                    ]),
-
-                    Stack::make([
-                        TextColumn::make('platinum_monthly_price')
-                            ->label('Platinum')
-                            ->money('GBP')
-                            ->badge()
-                            ->color('success')
-                            ->icon('heroicon-o-fire')
-                            ->formatStateUsing(fn($state) => 'Platinum: £' . number_format($state, 2)),
-                    ]),
-                ])->from('md'),
+                TextColumn::make('features_count')
+                    ->counts('features')
+                    ->label('Features')
+                    ->badge()
+                    ->color('primary'),
 
                 IconColumn::make('is_active')
-                    ->label('Active')
+                    ->label('Status')
                     ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
+                    ->sortable(),
 
                 TextColumn::make('published_at')
                     ->label('Published')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
+
+                TextColumn::make('created_at')
+                    ->label('Created')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc')
             ->filters([
-                TrashedFilter::make(),
                 SelectFilter::make('category')
-                    ->relationship('category', 'type'),
-                TernaryFilter::make('is_active')
-                    ->label('Active Status'),
+                    ->relationship('category', 'type') // Changed from 'name' to 'type'
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('name')
+                    ->label('Tier')
+                    ->options([
+                        'Silver' => 'Silver',
+                        'Gold' => 'Gold',
+                        'Platinum' => 'Platinum',
+                    ]),
+
+                SelectFilter::make('is_active')
+                    ->label('Status')
+                    ->options([
+                        '1' => 'Active',
+                        '0' => 'Inactive',
+                    ]),
+
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+                RestoreAction::make(),
+            ])
+            ->toolbarActions([
+
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }
