@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class SubscriptionsForm
 {
@@ -164,6 +165,7 @@ class SubscriptionsForm
                 ->schema([
                     Toggle::make('is_active')
                         ->label('Active')
+                        ->onIcon(Heroicon::Bolt)
                         ->default(true)
                         ->helperText('Only active packages will be visible to users'),
 

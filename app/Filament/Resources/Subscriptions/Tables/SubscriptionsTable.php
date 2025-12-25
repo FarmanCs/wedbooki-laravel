@@ -6,15 +6,19 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Toggle;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class SubscriptionsTable
 {
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -59,32 +63,13 @@ class SubscriptionsTable
                     ->sortable()
                     ->toggleable(),
 
-                TextColumn::make('features_count')
-                    ->counts('features')
-                    ->label('Features')
-                    ->badge()
-                    ->color('primary'),
-
-                IconColumn::make('is_active')
+                ToggleColumn::make('is_active')
                     ->label('Status')
-                    ->boolean()
-                    ->sortable(),
-
-                TextColumn::make('published_at')
-                    ->label('Published')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(),
-
-                TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->onIcon(Heroicon::BookOpen)
             ])
             ->filters([
                 SelectFilter::make('category')
-                    ->relationship('category', 'type') // Changed from 'name' to 'type'
+                    ->relationship('category', 'type')
                     ->searchable()
                     ->preload(),
 

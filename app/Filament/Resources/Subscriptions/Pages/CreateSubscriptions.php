@@ -16,8 +16,7 @@ class CreateSubscriptions extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // This won't be used since we override handleRecordCreation
-        // But we keep it for form validation
+
         return $data;
     }
 

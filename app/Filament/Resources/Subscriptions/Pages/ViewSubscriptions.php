@@ -17,4 +17,9 @@ class ViewSubscriptions extends ViewRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Subscription view';
+    }
 }

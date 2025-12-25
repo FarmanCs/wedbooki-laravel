@@ -26,6 +26,11 @@ class ListSubscriptions extends ListRecords
         ];
     }
 
+    public function getTitle(): string
+    {
+        return 'Subscriptions Packages';
+    }
+
 //    protected function hasTable(): bool
 //    {
 //        return false;
