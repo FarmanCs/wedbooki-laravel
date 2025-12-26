@@ -12,16 +12,7 @@ return new class extends Migration {
 
             $table->string('name');
             $table->string('key')->unique();
-
-            $table->string('silver')->nullable();
-            $table->string('gold')->nullable();
-            $table->string('platinum')->nullable();
-
-            $table->foreignId('category_id')
-                ->nullable()
-                ->constrained('categories')
-                ->nullOnDelete();
-
+            $table->string('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->softDeletes();
 

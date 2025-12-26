@@ -13,6 +13,8 @@ class AdminPackage extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'admin_packages';
+
     protected $fillable = [
         'name',
         'description',
@@ -33,15 +35,41 @@ class AdminPackage extends Model
         'published_at' => 'datetime',
     ];
 
+    /**
+     * Get the category that owns the package.
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    // Fix: Use belongsToMany for proper many-to-many relationship
+    /**
+     * The features that belong to the package.
+     */
     public function features(): BelongsToMany
     {
-        return $this->belongsToMany(Feature::class, 'feature_package')
-            ->withTimestamps();
+        return $this->belongsToMany(
+            Feature::class,
+            'feature_package',
+            'admin_package_id',
+            'feature_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Scope a query to only include active packages.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to only include published packages.
+     */
+    public function scopePublished($query)
+    {
+        return $query->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Subscriptions\Schemas;
 
 use App\Models\Admin\Feature;
-use App\Models\Vendor\Category;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class SubscriptionsForm
 {
@@ -23,7 +24,7 @@ class SubscriptionsForm
                 ->schema([
                     Select::make('category_id')
                         ->label('Category')
-                        ->relationship('category', 'type') // Changed from 'name' to 'type'
+                        ->relationship('category', 'type')
                         ->required()
                         ->searchable()
                         ->preload()
@@ -37,6 +38,7 @@ class SubscriptionsForm
                                 $set("{$tier}_monthly_price", null);
                                 $set("{$tier}_quarterly_price", null);
                                 $set("{$tier}_yearly_price", null);
+                                $set("{$tier}_features", []);
                             }
                         })
                         ->helperText('All three packages (Silver, Gold, Platinum) will be created for this category'),
@@ -44,7 +46,7 @@ class SubscriptionsForm
                 ->columns(1),
 
             Section::make('Silver Tier')
-                ->description('Configure the Silver package details')
+                ->description('Configure the Silver package details and features')
                 ->schema([
                     Textarea::make('silver_description')
                         ->label('Description')
@@ -78,12 +80,64 @@ class SubscriptionsForm
                         ->prefix('$')
                         ->minValue(0)
                         ->step(0.01),
+
+                    Select::make('silver_features')
+                        ->label('Features')
+                        ->multiple()
+                        ->options(fn() => Feature::where('is_active', true)
+                            ->get()
+                            ->mapWithKeys(fn($feature) => [
+                                $feature->id => $feature->name . ($feature->description ? " - {$feature->description}" : '')
+                            ])
+                            ->toArray()
+                        )
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->minItems(1)
+                        ->createOptionForm([
+                            TextInput::make('name')
+                                ->label('Feature Name')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn($state, callable $set) => $set('key', Str::slug($state))
+                                ),
+
+                            TextInput::make('key')
+                                ->label('Feature Key')
+                                ->required()
+                                ->unique(Feature::class, 'key', ignoreRecord: true)
+                                ->maxLength(255)
+                                ->helperText('Auto-generated from name, must be unique'),
+
+                            Textarea::make('description')
+                                ->label('Description')
+                                ->rows(2)
+                                ->maxLength(255),
+
+                            Toggle::make('is_active')
+                                ->label('Active')
+                                ->default(true),
+                        ])
+                        ->createOptionUsing(function (array $data): int {
+                            $feature = Feature::create($data);
+                            return $feature->id;
+                        })
+                        ->createOptionModalHeading('Create New Feature')
+                        ->createOptionAction(function (Action $action) {
+                            return $action
+                                ->modalHeading('Create New Feature')
+                                ->modalSubmitActionLabel('Create Feature')
+                                ->modalWidth('lg');
+                        })
+                        ->helperText('Select existing features or create new ones. Features will be linked to this package.'),
                 ])
                 ->columns(2)
                 ->collapsible(),
 
             Section::make('Gold Tier')
-                ->description('Configure the Gold package details')
+                ->description('Configure the Gold package details and features')
                 ->schema([
                     Textarea::make('gold_description')
                         ->label('Description')
@@ -117,12 +171,64 @@ class SubscriptionsForm
                         ->prefix('$')
                         ->minValue(0)
                         ->step(0.01),
+
+                    Select::make('gold_features')
+                        ->label('Features')
+                        ->multiple()
+                        ->options(fn() => Feature::where('is_active', true)
+                            ->get()
+                            ->mapWithKeys(fn($feature) => [
+                                $feature->id => $feature->name . ($feature->description ? " - {$feature->description}" : '')
+                            ])
+                            ->toArray()
+                        )
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->minItems(1)
+                        ->createOptionForm([
+                            TextInput::make('name')
+                                ->label('Feature Name')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn($state, callable $set) => $set('key', Str::slug($state))
+                                ),
+
+                            TextInput::make('key')
+                                ->label('Feature Key')
+                                ->required()
+                                ->unique(Feature::class, 'key', ignoreRecord: true)
+                                ->maxLength(255)
+                                ->helperText('Auto-generated from name, must be unique'),
+
+                            Textarea::make('description')
+                                ->label('Description')
+                                ->rows(2)
+                                ->maxLength(255),
+
+                            Toggle::make('is_active')
+                                ->label('Active')
+                                ->default(true),
+                        ])
+                        ->createOptionUsing(function (array $data): int {
+                            $feature = Feature::create($data);
+                            return $feature->id;
+                        })
+                        ->createOptionModalHeading('Create New Feature')
+                        ->createOptionAction(function (Action $action) {
+                            return $action
+                                ->modalHeading('Create New Feature')
+                                ->modalSubmitActionLabel('Create Feature')
+                                ->modalWidth('lg');
+                        })
+                        ->helperText('Select existing features or create new ones. Features will be linked to this package.'),
                 ])
                 ->columns(2)
                 ->collapsible(),
 
             Section::make('Platinum Tier')
-                ->description('Configure the Platinum package details')
+                ->description('Configure the Platinum package details and features')
                 ->schema([
                     Textarea::make('platinum_description')
                         ->label('Description')
@@ -156,6 +262,58 @@ class SubscriptionsForm
                         ->prefix('$')
                         ->minValue(0)
                         ->step(0.01),
+
+                    Select::make('platinum_features')
+                        ->label('Features')
+                        ->multiple()
+                        ->options(fn() => Feature::where('is_active', true)
+                            ->get()
+                            ->mapWithKeys(fn($feature) => [
+                                $feature->id => $feature->name . ($feature->description ? " - {$feature->description}" : '')
+                            ])
+                            ->toArray()
+                        )
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->minItems(1)
+                        ->createOptionForm([
+                            TextInput::make('name')
+                                ->label('Feature Name')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn($state, callable $set) => $set('key', Str::slug($state))
+                                ),
+
+                            TextInput::make('key')
+                                ->label('Feature Key')
+                                ->required()
+                                ->unique(Feature::class, 'key', ignoreRecord: true)
+                                ->maxLength(255)
+                                ->helperText('Auto-generated from name, must be unique'),
+
+                            Textarea::make('description')
+                                ->label('Description')
+                                ->rows(2)
+                                ->maxLength(255),
+
+                            Toggle::make('is_active')
+                                ->label('Active')
+                                ->default(true),
+                        ])
+                        ->createOptionUsing(function (array $data): int {
+                            $feature = Feature::create($data);
+                            return $feature->id;
+                        })
+                        ->createOptionModalHeading('Create New Feature')
+                        ->createOptionAction(function (Action $action) {
+                            return $action
+                                ->modalHeading('Create New Feature')
+                                ->modalSubmitActionLabel('Create Feature')
+                                ->modalWidth('lg');
+                        })
+                        ->helperText('Select existing features or create new ones. Features will be linked to this package.'),
                 ])
                 ->columns(2)
                 ->collapsible(),

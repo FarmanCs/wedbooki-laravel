@@ -2,10 +2,8 @@
 
 namespace App\Models\Admin;
 
-use App\Models\Vendor\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -13,13 +11,12 @@ class Feature extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'features';
+
     protected $fillable = [
         'name',
         'key',
-        'silver',
-        'gold',
-        'platinum',
-        'category_id',
+        'description',
         'is_active',
     ];
 
@@ -27,15 +24,24 @@ class Feature extends Model
         'is_active' => 'boolean',
     ];
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    // Fix: Use belongsToMany for proper many-to-many relationship
+    /**
+     * The packages that belong to the feature.
+     */
     public function packages(): BelongsToMany
     {
-        return $this->belongsToMany(AdminPackage::class, 'feature_package')
-            ->withTimestamps();
+        return $this->belongsToMany(
+            AdminPackage::class,
+            'feature_package',
+            'feature_id',
+            'admin_package_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Scope a query to only include active features.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

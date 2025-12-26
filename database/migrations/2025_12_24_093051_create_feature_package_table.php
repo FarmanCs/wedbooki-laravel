@@ -18,7 +18,7 @@ return new class extends Migration {
                 ->constrained('features')
                 ->cascadeOnDelete();
 
-            $table->timestamps(); // Add timestamps for withTimestamps()
+            $table->timestamps();
 
             $table->unique(['admin_package_id', 'feature_id']);
         });

@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\Subscriptions\Tables;
 
+
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Toggle;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -18,7 +17,6 @@ use Filament\Tables\Table;
 
 class SubscriptionsTable
 {
-
     public static function configure(Table $table): Table
     {
         return $table
@@ -28,15 +26,15 @@ class SubscriptionsTable
                     ->searchable()
                     ->sortable()
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Silver' => 'gray',
                         'Gold' => 'warning',
                         'Platinum' => 'info',
                         default => 'gray',
                     }),
 
-                TextColumn::make('category.type') // Changed from 'category.name' to 'category.type'
-                ->label('Category')
+                TextColumn::make('category.type')
+                    ->label('Category')
                     ->searchable()
                     ->sortable(),
 
@@ -45,6 +43,21 @@ class SubscriptionsTable
                     ->badge()
                     ->color('success')
                     ->default('—'),
+
+                TextColumn::make('features_count')
+                    ->label('Features')
+                    ->counts('features')
+                    ->badge()
+                    ->color('primary')
+                    ->sortable(),
+
+                TextColumn::make('features.name')
+                    ->label('Feature List')
+                    ->badge()
+                    ->separator(',')
+                    ->limit(3)
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('monthly_price')
                     ->label('Monthly Price')
@@ -65,13 +78,26 @@ class SubscriptionsTable
 
                 ToggleColumn::make('is_active')
                     ->label('Status')
-                    ->onIcon(Heroicon::BookOpen)
+                    ->onIcon(Heroicon::BookOpen),
+
+                TextColumn::make('published_at')
+                    ->label('Published')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('created_at')
+                    ->label('Created At')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('category')
                     ->relationship('category', 'type')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->label('Category'),
 
                 SelectFilter::make('name')
                     ->label('Tier')
@@ -97,7 +123,7 @@ class SubscriptionsTable
                 RestoreAction::make(),
             ])
             ->toolbarActions([
-
+//                DeleteAction::make(),
             ])
             ->defaultSort('created_at', 'desc');
     }

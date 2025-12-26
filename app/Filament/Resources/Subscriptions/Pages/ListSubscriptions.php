@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Subscriptions\Pages;
 
 use App\Filament\Resources\Subscriptions\SubscriptionsResource;
 use App\Filament\Resources\Subscriptions\Widgets\SubscriptionPackagesWidget;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSubscriptions extends ListRecords
@@ -20,7 +20,7 @@ class ListSubscriptions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Create Package Bundle')
                 ->icon('heroicon-o-plus-circle'),
         ];
@@ -31,8 +31,5 @@ class ListSubscriptions extends ListRecords
         return 'Subscriptions Packages';
     }
 
-//    protected function hasTable(): bool
-//    {
-//        return false;
-//    }
+
 }
