@@ -710,36 +710,6 @@ class FinanceInfolist
                     ->iconColor('gray')
                     ->collapsed()
                     ->collapsible(),
-
-                // Timestamps
-                Section::make('Timestamps')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextEntry::make('created_at')
-                                    ->label('Created At')
-                                    ->dateTime('M d, Y h:i A')
-                                    ->icon('heroicon-o-plus-circle')
-                                    ->color('success'),
-
-                                TextEntry::make('updated_at')
-                                    ->label('Updated At')
-                                    ->dateTime('M d, Y h:i A')
-                                    ->icon('heroicon-o-pencil-square')
-                                    ->color('warning'),
-
-                                TextEntry::make('deleted_at')
-                                    ->label('Deleted At')
-                                    ->dateTime('M d, Y h:i A')
-                                    ->icon('heroicon-o-trash')
-                                    ->color('danger')
-                                    ->placeholder('Not deleted'),
-                            ]),
-                    ])
-                    ->icon('heroicon-o-clock')
-                    ->iconColor('gray')
-                    ->collapsed()
-                    ->collapsible(),
             ]);
     }
 }

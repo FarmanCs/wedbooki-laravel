@@ -19,7 +19,7 @@ class CreateSubscriptions extends CreateRecord
 
     protected function tiers(): array
     {
-        return ['silver', 'gold', 'platinum'];
+        return ['silver', 'gold', 'platinum', 'dimond'];
     }
     public function form(Schema $schema): Schema
     {
@@ -71,25 +71,6 @@ class CreateSubscriptions extends CreateRecord
         return $package;
     }
 
-
-//    protected function mutateFormDataBeforeCreate(array $data): array
-//    {
-//        // Validate that each tier has at least one feature
-//        $tiers = ['silver', 'gold', 'platinum'];
-//
-//        foreach ($tiers as $tier) {
-//            if (empty($data["{$tier}_features"]) || count($data["{$tier}_features"]) === 0) {
-//                throw new \Exception(ucfirst($tier) . " tier must have at least one feature");
-//            }
-//        }
-//
-//        return $data;
-//    }
-
-//    protected function getFormSchema(): array
-//    {
-//        return SubscriptionsForm::getSchema();
-//    }
 
 
 //    protected function handleRecordCreation(array $data): Model
