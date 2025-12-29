@@ -28,7 +28,6 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->string('postal_code')->nullable();
             $table->integer('otp')->nullable();
-            $table->foreignId('business_id')->nullable()->constrained('businesses')->onDelete('set null');
             $table->enum('profile_verification', ['approved', 'under_review', 'rejected', 'banned'])->default('approved');
             $table->boolean('email_verified')->default(false);
             $table->string('stripe_account_id')->nullable();
@@ -42,6 +41,7 @@ return new class extends Migration
             $table->string('cover_image')->nullable();
             $table->timestamp('last_login')->nullable();
             $table->boolean('account_deactivated')->default(false);
+            $table->boolean('is_active')->default(false);
             $table->boolean('account_soft_deleted')->default(false);
             $table->timestamp('account_soft_deleted_at')->nullable();
             $table->integer('auto_hard_delete_after_days')->default(30);

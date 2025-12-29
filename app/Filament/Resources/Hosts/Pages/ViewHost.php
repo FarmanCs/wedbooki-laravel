@@ -10,6 +10,11 @@ class ViewHost extends ViewRecord
 {
     protected static string $resource = HostResource::class;
 
+
+    public function getHeading(): string
+    {
+        return $this->record->full_name;
+    }
     protected function getHeaderActions(): array
     {
         return [

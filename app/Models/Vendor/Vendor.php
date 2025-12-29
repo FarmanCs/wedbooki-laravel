@@ -2,7 +2,7 @@
 
 namespace App\Models\Vendor;
 
-use App\Models\services\Service;
+use App\Models\Services\Service;
 use App\Models\Vendor\Category;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Booking;
@@ -14,7 +14,6 @@ use Laravel\Sanctum\HasApiTokens;
 class Vendor extends Authenticatable
 {
     use HasApiTokens, HasFactory, SoftDeletes;
-
 
     protected $fillable = [
         'full_name',
@@ -35,7 +34,6 @@ class Vendor extends Authenticatable
         'category_id',
         'postal_code',
         'otp',
-        'business_id',
         'profile_verification',
         'email_verified',
         'stripe_account_id',
@@ -70,14 +68,16 @@ class Vendor extends Authenticatable
         'last_login' => 'datetime',
     ];
 
-    //Relationships
-    public function business()
-    {
-        return $this->belongsTo(Business::class, 'business_id');
-    }
+    // Relationships
+
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function businesses()
+    {
+        return $this->hasMany(Business::class, 'vendor_id');
     }
 
     public function bookings()
@@ -89,7 +89,4 @@ class Vendor extends Authenticatable
     {
         return $this->hasMany(Service::class, 'vendor_id');
     }
-
-
-
 }

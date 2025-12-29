@@ -13,6 +13,10 @@ class EditHost extends EditRecord
 {
     protected static string $resource = HostResource::class;
 
+    public function getHeading(): string
+    {
+        return 'Editing ' . $this->record->full_name;
+    }
     protected function getHeaderActions(): array
     {
         return [

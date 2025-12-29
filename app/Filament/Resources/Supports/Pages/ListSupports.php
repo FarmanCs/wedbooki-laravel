@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Supports\Pages;
 
 use App\Filament\Resources\Supports\SupportResource;
-use Filament\Actions\CreateAction;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSupports extends ListRecords
@@ -13,7 +13,15 @@ class ListSupports extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // No create action needed since this is view-only
+        ];
+    }
+
+    // Add stats widgets (optional)
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            // You can add stats widgets here if needed
         ];
     }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory ;
 
     protected $table = 'categories';
 

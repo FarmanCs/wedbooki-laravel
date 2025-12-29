@@ -13,7 +13,7 @@ class VendorInfolist
     {
         return $schema
             ->components([
-                Section::make('Profile_image')
+                Section::make('Profile')
                     ->columns(2)
                     ->schema([
                         ImageEntry::make('profile_image')
@@ -21,27 +21,32 @@ class VendorInfolist
                             ->circular()
                             ->disk('s3')
                             ->size(200),
+
                         TextEntry::make('full_name')
-                            ->label('Name')
+                            ->label('Full Name')
                             ->size(100),
                     ]),
-                Section::make('Business_Information')
+
+                Section::make('Business Information')
                     ->schema([
                         TextEntry::make('category.type')
                             ->label('Category')
                             ->placeholder('—'),
+
+                        TextEntry::make('businesses')
+                            ->label('Businesses')
+                            ->state(fn($record) => $record->businesses->pluck('company_name')->join(', '))
+                            ->placeholder('—'),
+
                         TextEntry::make('country')
                             ->label('Location'),
-                        TextEntry::make('created_at')
-                            ->label('Joining Date')
-                            ->date(),
+
                         TextEntry::make('phone_no')
                             ->label('Phone Number')
-                            ->state(function ($record) {
-                                return $record->country_code . ' ' . $record->phone_no;
-                            }),
+                            ->state(fn($record) => $record->country_code . ' ' . $record->phone_no),
+
                         TextEntry::make('profile_verification')
-                            ->label('Verified')
+                            ->label('Verified Status')
                             ->badge()
                             ->color(fn(string $state) => match ($state) {
                                 'approved' => 'success',
@@ -56,10 +61,12 @@ class VendorInfolist
                                 'rejected' => 'heroicon-o-x-circle',
                                 'banned' => 'heroicon-o-no-symbol',
                                 default => 'heroicon-o-question-mark-circle',
-                            })
-                    ])
+                            }),
 
-
+                        TextEntry::make('created_at')
+                            ->label('Joining Date')
+                            ->date(),
+                    ]),
             ]);
     }
 }

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->text('business_desc')->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->foreignId('subcategory_id')->nullable()->constrained('sub_categories')->onDelete('set null');
+            $table->foreignId('vendor_id')->nullable()->constrained('vendors')->onDelete('set null');
             $table->string('venue_type')->nullable();
             $table->enum('member_type', ['general', 'premium'])->default('general');
             $table->string('business_registration')->nullable();
@@ -43,7 +44,6 @@ return new class extends Migration
             $table->decimal('advance_percentage', 5, 2)->default(10);
             $table->timestamps();
             $table->softDeletes();
-
         });
     }
 

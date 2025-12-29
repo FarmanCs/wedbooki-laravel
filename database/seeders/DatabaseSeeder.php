@@ -3,27 +3,26 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Vendor\Vendor;
+use Database\Seeders\Host\HostSeeder;
+use Database\Seeders\Vendor\CategorySeeder;
+use Database\Seeders\Vendor\VendorSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-//    public function run(): void
-//    {
-//        // User::factory(10)->create();
-////        User::factory()->create([
-////            'name' => 'Test User',
-////            'email' => 'test@example.com',
-////        ]);
-//    }
+
 
     public function run(): void
     {
         $this->call([
             SupportQuerySeeder::class,
+            CategorySeeder::Class,
+            VendorSeeder::class,
+            HostSeeder::class,
+
         ]);
     }
 
