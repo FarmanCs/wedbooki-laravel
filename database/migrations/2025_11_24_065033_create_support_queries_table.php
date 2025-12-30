@@ -14,10 +14,10 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone_number');
             $table->string('subject');
-            $table->enum('priority', ['low', 'medium', 'high'])->default('low');
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('low');
             $table->text('message');
             $table->json('attachments')->nullable();
-            $table->enum('status', ['pending', 'resolved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'in_progress', 'resolved', 'closed'])->default('pending');
             $table->softDeletes();
             $table->timestamps();
 

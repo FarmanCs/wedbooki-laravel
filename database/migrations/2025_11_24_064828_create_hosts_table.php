@@ -31,13 +31,13 @@ return new class extends Migration
             $table->string('google_name')->nullable();
             $table->string('apple_id')->unique()->nullable();
             $table->enum('signup_method', ['email', 'google', 'apple'])->default('email');
-            $table->enum('status', ['Approved', 'Banned', 'Pending'])->default('Pending');
+            $table->enum('status', ['approved', 'pending', 'rejected', 'blocked', 'Banned',])->default('Pending');
             $table->string('role')->default('host');
             $table->integer('otp')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->string('invite_image_url')->nullable();
             $table->string('pending_email')->nullable();
-            $table->json('category')->nullable();
+            $table->string('category')->nullable();
             $table->string('event_type')->nullable();
             $table->integer('estimated_guests')->nullable();
             $table->decimal('event_budget', 15, 2)->nullable();

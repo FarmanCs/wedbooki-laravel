@@ -14,7 +14,7 @@ return new class extends Migration
             // Foreign relationships
             $table->foreignId('host_id')->constrained('hosts')->onDelete('cascade');
             $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
-            $table->foreignId('venue_id')->nullable()->constrained('vendors')->nullOnDelete();
+            $table->foreignId('vendor_id')->nullable()->constrained('vendors')->nullOnDelete();
             $table->foreignId('package_id')->nullable()->constrained('packages')->nullOnDelete();
 
             // Unique booking ID

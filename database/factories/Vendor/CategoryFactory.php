@@ -5,9 +5,6 @@ namespace Database\Factories\Vendor;
 use App\Models\Vendor\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Vendor\Category>
- */
 class CategoryFactory extends Factory
 {
     protected $model = Category::class;
@@ -15,14 +12,54 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            // Dynamically generate any category type
-            'type' => $this->faker->words($this->faker->numberBetween(1, 3), true),
-
-            // Random description
-            'description' => $this->faker->sentence($this->faker->numberBetween(5, 12)),
-
-            // Optionally leave image null for now
-            'image' => null,
+            'type' => fake()->randomElement([
+                'Photography',
+                'Videography',
+                'Catering',
+                'Venue',
+                'Decoration',
+                'Music & Entertainment',
+                'Makeup & Hair',
+                'Wedding Planner',
+                'Florist',
+                'Transportation'
+            ]),
+            'description' => fake()->paragraph(2),
+            'image' => fake()->imageUrl(640, 480, 'business', true),
         ];
     }
+
+    /**
+     * Photography category.
+     */
+    public function photography(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'Photography',
+            'description' => 'Professional wedding photography services to capture your special moments.',
+        ]);
+    }
+
+    /**
+     * Catering category.
+     */
+    public function catering(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'Catering',
+            'description' => 'Delicious catering services for your wedding and events.',
+        ]);
+    }
+
+    /**
+     * Venue category.
+     */
+    public function venue(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => 'Venue',
+            'description' => 'Beautiful venues for your special day.',
+        ]);
+    }
 }
+

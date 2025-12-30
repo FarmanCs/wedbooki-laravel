@@ -2,10 +2,10 @@
 
 namespace Database\Factories\Vendor;
 
+use App\Models\Vendor\Category;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class VendorFactory extends Factory
 {
@@ -14,51 +14,86 @@ class VendorFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone_no' => $this->faker->numerify('3#########'),
+            'full_name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone_no' => fake()->numerify('##########'),
             'pending_email' => null,
-            'country_code' => '+92',
-            'profile_image' => null,
-            'cover_image' => null,
-
-            'years_of_experience' => $this->faker->numberBetween(1, 15),
-            'languages' => ['English', 'Urdu'],
-            'team_members' => $this->faker->numberBetween(1, 10),
-            'specialties' => ['Consulting', 'Installation'],
-            'about' => $this->faker->paragraph(),
-
-            'country' => 'Pakistan',
-            'city' => $this->faker->city(),
-            'postal_code' => $this->faker->postcode(),
-
+            'country_code' => fake()->randomElement(['+1', '+44', '+91', '+92', '+61']),
+            'profile_image' => fake()->imageUrl(400, 400, 'people', true),
+            'years_of_experience' => fake()->numberBetween(1, 20),
+            'languages' => fake()->randomElements(['English', 'Spanish', 'French', 'German', 'Urdu', 'Arabic'], rand(1, 3)),
+            'team_members' => fake()->numberBetween(1, 50),
+            'specialties' => fake()->randomElements(['Weddings', 'Corporate Events', 'Parties', 'Ceremonies'], rand(1, 3)),
+            'about' => fake()->paragraph(4),
+            'country' => fake()->country(),
+            'city' => fake()->city(),
             'role' => 'vendor',
             'password' => Hash::make('password'),
-
-            /**
-             * 🔑 RELATIONAL KEYS
-             * Keep these FIXED so other factories can link later
-             */
-            'category_id' => 1,   // Vendor\Category
+            'category_id' => Category::factory(),
+            'postal_code' => fake()->postcode(),
             'otp' => null,
-            'profile_verification' => true,
-            'email_verified' => true,
-
-            'stripe_account_id' => 'acct_' . Str::random(16),
-            'bank_last4' => '1234',
-            'bank_name' => 'HBL',
-            'account_holder_name' => $this->faker->name(),
-            'payout_currency' => 'PKR',
-
-            'custom_vendor_id' => 'VND-' . strtoupper(Str::random(8)),
-            'google_id' => null,
-            'signup_method' => 'email',
-
-            'last_login' => now(),
-            'account_deactivated' => false,
-            'account_soft_deleted' => false,
+            'profile_verification' => fake()->randomElement(['pending', 'verified', 'approved', 'under_review', 'rejected', 'banned']),
+            'email_verified' => fake()->boolean(80),
+            'stripe_account_id' => fake()->boolean(50) ? 'acct_' . fake()->uuid() : null,
+            'bank_last4' => fake()->boolean(50) ? fake()->numerify('####') : null,
+            'bank_name' => fake()->boolean(50) ? fake()->randomElement(['Chase', 'Bank of America', 'Wells Fargo', 'Citibank']) : null,
+            'account_holder_name' => fake()->boolean(50) ? fake()->name() : null,
+            'payout_currency' => fake()->randomElement(['USD', 'EUR', 'GBP', 'PKR']),
+            'custom_vendor_id' => 'VEN-' . fake()->unique()->numerify('######'),
+            'google_id' => fake()->boolean(20) ? fake()->uuid() : null,
+            'signup_method' => fake()->randomElement(['email', 'google']),
+            'cover_image' => fake()->imageUrl(1200, 400, 'business', true),
+            'last_login' => fake()->dateTimeBetween('-1 month', 'now'),
+            'account_deactivated' => fake()->boolean(5),
+            'account_soft_deleted' => fake()->boolean(3),
             'account_soft_deleted_at' => null,
             'auto_hard_delete_after_days' => 30,
         ];
+    }
+
+    /**
+     * Indicate that the vendor is verified.
+     */
+    public function verified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified' => true,
+            'profile_verification' => 'verified',
+        ]);
+    }
+
+    /**
+     * Indicate that the vendor is unverified.
+     */
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified' => false,
+            'profile_verification' => 'pending',
+            'otp' => fake()->numerify('######'),
+        ]);
+    }
+
+    /**
+     * Indicate that the vendor has Stripe connected.
+     */
+    public function withStripe(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'stripe_account_id' => 'acct_' . fake()->uuid(),
+            'bank_last4' => fake()->numerify('####'),
+            'bank_name' => fake()->randomElement(['Chase', 'Bank of America', 'Wells Fargo', 'Citibank']),
+            'account_holder_name' => fake()->name(),
+        ]);
+    }
+
+    /**
+     * Indicate that the vendor is deactivated.
+     */
+    public function deactivated(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_deactivated' => true,
+        ]);
     }
 }

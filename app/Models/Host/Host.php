@@ -28,21 +28,21 @@ class Host extends Authenticatable
         'password',
         'google_id',
         'apple_id',
-        'signupMethod',
+        'signup_method',
         'status',
         'role',
         'account_deactivated',
         'account_soft_deleted',
         'account_soft_deleted_at',
         'otp',
-        'isVerified',
+        'is_verified',
         'pending_email',
         'category',
         'event_type',
         'estimated_guests',
         'event_budget',
         'interested_vendors',
-        'joinDate'
+        'join_date'
     ];
 
     protected $hidden = [
@@ -55,8 +55,9 @@ class Host extends Authenticatable
         'email_verified_at' => 'datetime',
         'wedding_date' => 'date',
         'event_budget' => 'decimal:2',
-        'isVerified' => 'boolean',
+        'is_verified' => 'boolean',
         'password' => 'hashed',
+        'category' => 'string',
     ];
 
     public function favouriteBusinesses()

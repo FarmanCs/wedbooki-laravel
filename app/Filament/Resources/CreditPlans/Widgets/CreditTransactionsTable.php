@@ -181,8 +181,8 @@ class CreditTransactionsTable extends TableWidget
                 ->columns(3)
                 ->schema([
                     TextEntry::make('business.street_address')->columnSpanFull(),
-                    TextEntry::make('business.city'),
-                    TextEntry::make('business.country'),
+//                    TextEntry::make('business.city'),
+//                    TextEntry::make('business.country'),
                     TextEntry::make('business.postal_code'),
                 ]),
 

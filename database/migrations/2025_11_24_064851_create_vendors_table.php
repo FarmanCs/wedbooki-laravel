@@ -28,7 +28,7 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->string('postal_code')->nullable();
             $table->integer('otp')->nullable();
-            $table->enum('profile_verification', ['approved', 'under_review', 'rejected', 'banned'])->default('approved');
+            $table->enum('profile_verification', ['pending', 'verified', 'approved', 'under_review', 'rejected', 'banned'])->default('approved');
             $table->boolean('email_verified')->default(false);
             $table->string('stripe_account_id')->nullable();
             $table->string('bank_last4')->nullable();
