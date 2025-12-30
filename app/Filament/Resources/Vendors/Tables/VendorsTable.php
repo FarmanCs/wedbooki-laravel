@@ -42,6 +42,7 @@ class VendorsTable
                             'rejected' => 'warning',
                             'pending' => 'info',
                             'banned' => 'danger',
+                            default => 'gray'
                         };
                     })
                     ->icon(function ($state): string {
@@ -51,6 +52,7 @@ class VendorsTable
                             'rejected' => 'heroicon-o-x-circle',
                             'pending' => 'heroicon-o-check',
                             'banned' => 'heroicon-o-x-circle',
+                            default => 'heroicon-o-x-circle'
                         };
 
                     }),

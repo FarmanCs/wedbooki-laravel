@@ -27,7 +27,10 @@ class BookingResource extends Resource
     protected static ?string $recordTitleAttribute = 'Bookings';
     protected static ?int $navigationSort = 5;
 
-
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['host.full_name', 'host.email', 'Amount'];
+    }
     public static function form(Schema $schema): Schema
     {
         return BookingForm::configure($schema);
