@@ -6,17 +6,16 @@ use App\Models\BusinessSocialClick;
 use App\Models\Chat;
 use App\Models\Host\Review;
 use App\Models\Message;
-use App\Models\Vendor;
 use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Timing;
+use App\Models\Vendor\Vendor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class VendorProfileService
 {
-    protected $s3Service;
 
     public function __construct(S3Service $s3Service)
     {

@@ -25,14 +25,14 @@ use Illuminate\Support\Facades\Validator;
 
 class VendorController extends Controller
 {
-    protected $vendorAuthService;
-    protected $vendorProfileService;
-    protected $vendorTimingService;
-    protected $vendorMediaService;
-    protected $vendorBookingService;
-    protected $vendorPackageService;
-    protected $vendorReviewService;
-    protected $vendorStatsService;
+    protected VendorAuthService $vendorAuthService;
+    protected VendorProfileService $vendorProfileService;
+    protected VendorTimingService $vendorTimingService;
+    protected VendorMediaService $vendorMediaService;
+    protected VendorBookingService $vendorBookingService;
+    protected VendorPackageService $vendorPackageService;
+    protected VendorReviewService $vendorReviewService;
+    protected VendorStatsService $vendorStatsService;
 
     public function __construct(
         VendorAuthService $vendorAuthService,

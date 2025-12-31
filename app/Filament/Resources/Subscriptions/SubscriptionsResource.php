@@ -28,7 +28,7 @@ class SubscriptionsResource extends Resource
     protected static ?string $navigationLabel="Subscriptions";
 
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     //this will work the same but more dynomically for both editing and creating
     public static function form(Schema $schema): Schema

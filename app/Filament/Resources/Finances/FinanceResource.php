@@ -26,7 +26,7 @@ class FinanceResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
     protected static ?string $recordTitleAttribute = 'Transaction';
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 8;
 
 
     public static function form(Schema $schema): Schema
