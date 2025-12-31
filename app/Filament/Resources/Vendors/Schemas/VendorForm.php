@@ -68,6 +68,7 @@ class VendorForm
 
                         Select::make('Business_id')
                             ->label('Business')
+                            ->multiple()
                             ->relationship('businesses', 'company_name')
 
                     ]),

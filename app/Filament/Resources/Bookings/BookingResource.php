@@ -11,12 +11,13 @@ use App\Filament\Resources\Bookings\Schemas\BookingInfolist;
 use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Vendor\Booking;
 use BackedEnum;
-use Filament\Resources\Resource;
+use Filament\Resources;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Laravel\Mcp\Server\Resource;
 
 class BookingResource extends Resource
 {

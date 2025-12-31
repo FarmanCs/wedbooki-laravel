@@ -14,6 +14,13 @@ class Charts extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected string $color = 'info';
+    protected bool $isCollapsible = true;
+
+    protected ?string $maxHeight = '500px';
+    protected int|string|array $columnSpan = 'full';
+
+
 
     protected function getData(): array
     {

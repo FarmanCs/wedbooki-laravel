@@ -9,7 +9,8 @@ use App\Filament\Resources\Communications\Pages\ViewCommunications;
 use App\Filament\Resources\Communications\Schemas\CommunicationsForm;
 use App\Filament\Resources\Communications\Schemas\CommunicationsInfolist;
 use App\Filament\Resources\Communications\Tables\CommunicationsTable;
-use App\Models\Communications;
+use App\Models;
+use App\Models\Cms\CmsSetting;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CommunicationsResource extends Resource
 {
+    protected static ?string $model = CmsSetting::class;
+
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 

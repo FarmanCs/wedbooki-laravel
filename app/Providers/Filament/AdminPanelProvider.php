@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Widgets\Charts;
+use App\Filament\Widgets\RecentJoinedVendor;
 use App\Filament\Widgets\States;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;

@@ -20,6 +20,7 @@ class AdminDatabaseSeeder extends Seeder
             CreditTransactionSeeder::class,
             SupportQuerySeeder::class,
             TransactionSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }

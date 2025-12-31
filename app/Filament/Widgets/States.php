@@ -31,7 +31,7 @@ class States extends StatsOverviewWidget
                 ->chart([15, 4, 10, 2, 12, 4, 12])
                 ->color('info'),
 
-            Stat::make('Active Vendors', Vendor::where('email_verified', true)->count())
+            Stat::make('Active Vendors', Vendor::where('is_active', true)->count())
                 ->description('3% increase')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),

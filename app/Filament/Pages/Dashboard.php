@@ -2,6 +2,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\Charts;
+use App\Filament\Widgets\RecentJoinedVendor;
 use App\Filament\Widgets\States;
 use Filament\Pages\Dashboard as BaseDashboard;
 
@@ -11,7 +12,8 @@ class Dashboard extends BaseDashboard
     {
         return [
             States::class,
-            Charts::make()
+            Charts::make(),
+            RecentJoinedVendor::class,
         ];
     }
 
