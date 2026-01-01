@@ -8,7 +8,7 @@ use App\Models\Admin\Admin;
 use App\Models\Host\Host;
 use App\Models\SubCategory;
 use App\Models\Vendor\Business;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Package;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;

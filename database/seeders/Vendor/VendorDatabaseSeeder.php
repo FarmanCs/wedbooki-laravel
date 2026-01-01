@@ -13,7 +13,6 @@ class VendorDatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CategorySeeder::class,
             VendorSeeder::class,
             BusinessSeeder::class,
             BookingSeeder::class,

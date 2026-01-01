@@ -4,7 +4,7 @@ namespace Database\Factories\Vendor;
 
 use App\Models\SubCategory;
 use App\Models\Vendor\Business;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

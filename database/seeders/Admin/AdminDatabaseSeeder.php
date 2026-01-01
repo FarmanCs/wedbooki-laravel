@@ -18,6 +18,7 @@ class AdminDatabaseSeeder extends Seeder
             PlanSeeder::class,
             CreditPlanSeeder::class,
             CreditTransactionSeeder::class,
+            CategorySeeder::class,
             SupportQuerySeeder::class,
             TransactionSeeder::class,
             InvoiceSeeder::class,

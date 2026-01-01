@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -167,6 +167,14 @@ class RecentJoinedVendor extends TableWidget
                 SelectFilter::make('category_id')
                     ->label('Category')
                     ->options(function () {
+                        $recentVendors = Vendor::whereBetween('created_at', [
+                            Carbon::now()->subWeek(),
+                            Carbon::now(),
+                        ])->with('category')->get();
+
+                        // Debug: See all categories
+//                        dump($recentVendors->pluck('category.type')->unique());
+
                         return Category::query()
                             ->whereHas('vendors', function (Builder $query) {
                                 $query->whereBetween('created_at', [
@@ -174,7 +182,6 @@ class RecentJoinedVendor extends TableWidget
                                     Carbon::now(),
                                 ]);
                             })
-                            ->get()
                             ->pluck('type', 'id');
                     })
                     ->searchable()

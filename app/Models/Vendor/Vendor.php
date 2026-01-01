@@ -3,7 +3,7 @@
 namespace App\Models\Vendor;
 
 use App\Models\Services\Service;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Booking;
 use Illuminate\Database\Eloquent\SoftDeletes;

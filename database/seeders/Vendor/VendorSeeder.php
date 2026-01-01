@@ -2,7 +2,7 @@
 
 namespace Database\Seeders\Vendor;
 
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

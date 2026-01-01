@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models\Vendor;
+namespace App\Models\Admin;
 
 use App\Models\SubCategory;
+use App\Models\Vendor\Vendor;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

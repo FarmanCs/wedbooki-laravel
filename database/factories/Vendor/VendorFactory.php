@@ -2,7 +2,7 @@
 
 namespace Database\Factories\Vendor;
 
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -51,9 +51,7 @@ class VendorFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the vendor is verified.
-     */
+    //Indicate that the vendor is verified.
     public function verified(): static
     {
         return $this->state(fn (array $attributes) => [

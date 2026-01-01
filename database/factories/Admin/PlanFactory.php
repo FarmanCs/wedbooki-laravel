@@ -3,7 +3,7 @@
 namespace Database\Factories\Admin;
 
 use App\Models\Admin\Plan;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PlanFactory extends Factory
@@ -15,43 +15,39 @@ class PlanFactory extends Factory
         return [
             'name' => fake()->words(2, true) . ' Plan',
             'description' => fake()->paragraph(),
-            'badge' => fake()->randomElement(['Popular', 'Best Value', 'Premium', 'Starter', null]),
-            'monthly_price' => fake()->randomFloat(2, 19.99, 199.99),
-            'quarterly_price' => fake()->randomFloat(2, 49.99, 499.99),
-            'yearly_price' => fake()->randomFloat(2, 149.99, 1499.99),
-            'category_id' => Category::factory(),
-            'is_active' => fake()->boolean(80),
-            'published_at' => fake()->boolean(70) ? fake()->dateTimeBetween('-1 year', 'now') : null,
+            'badge' => fake()->randomElement([
+                'Starter',
+                'Popular',
+                'Best Value',
+                'Premium',
+            ]),
+            'monthly_price' => fake()->randomFloat(2, 10, 100),
+            'quarterly_price' => fake()->randomFloat(2, 30, 300),
+            'yearly_price' => fake()->randomFloat(2, 100, 1000),
+            'category_id' => Category::factory(), // fallback only
+            'is_active' => true,
+            'published_at' => now(),
         ];
     }
 
-    /**
-     * Indicate that the plan is active.
-     */
     public function active(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state([
             'is_active' => true,
         ]);
     }
 
-    /**
-     * Indicate that the plan is published.
-     */
-    public function published(): static
+    public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'published_at' => fake()->dateTimeBetween('-6 months', 'now'),
+        return $this->state([
+            'is_active' => false,
         ]);
     }
 
-    /**
-     * Indicate that the plan is inactive.
-     */
-    public function inactive(): static
+    public function published(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => false,
+        return $this->state([
+            'published_at' => now(),
         ]);
     }
 }

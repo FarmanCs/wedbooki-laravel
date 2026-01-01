@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Vendor\Business;
 use App\Models\BusinessSocialClick;
 use App\Models\BusinessView;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Country;
 use App\Models\SupportQuery;
 use App\Models\Vendor;

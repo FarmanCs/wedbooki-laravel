@@ -3,7 +3,7 @@
 namespace Database\Factories\Admin;
 
 use App\Models\Admin\AdminPackage;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AdminPackageFactory extends Factory

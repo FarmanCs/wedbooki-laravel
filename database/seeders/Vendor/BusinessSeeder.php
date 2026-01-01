@@ -3,7 +3,7 @@
 namespace Database\Seeders\Vendor;
 
 use App\Models\Vendor\Business;
-use App\Models\Vendor\Category;
+use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Seeder;
 
@@ -33,7 +33,7 @@ class BusinessSeeder extends Seeder
             ->featured()
             ->verified()
             ->highRated()
-            ->count(10)
+            ->count(50)
             ->create();
 
         // Create verified businesses
@@ -46,14 +46,14 @@ class BusinessSeeder extends Seeder
         Business::factory()
             ->venue()
             ->verified()
-            ->count(15)
+            ->count(30)
             ->create();
 
         // Create high-rated businesses
         Business::factory()
             ->highRated()
             ->verified()
-            ->count(10)
+            ->count(30)
             ->create();
 
         // Create businesses for each vendor
