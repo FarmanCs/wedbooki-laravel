@@ -139,7 +139,7 @@ Route::prefix('/v1/host')->group(function () {
 });
 
 //vendors routes goes here
-Route::prefix('v1/vendor')->group(function () {
+Route::prefix('/v1/vendor')->group(function () {
     // Public Routes
     Route::post('/signup', [VendorController::class, 'VendorSignup']);
     Route::post('/verify-signup-otp', [VendorController::class, 'verifySignup']);

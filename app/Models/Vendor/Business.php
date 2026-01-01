@@ -83,17 +83,17 @@ class Business extends Model
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function subcategory()
     {
-        return $this->belongsTo(SubCategory::class, 'subcategory_id');
+        return $this->belongsTo(SubCategory::class);
     }
 
     public function vendor()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id');
+        return $this->belongsTo(Vendor::class);
     }
 
     public function packages()

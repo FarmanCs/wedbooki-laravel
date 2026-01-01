@@ -66,23 +66,24 @@ class Vendor extends Authenticatable
         'account_soft_deleted' => 'boolean',
         'account_soft_deleted_at' => 'datetime',
         'last_login' => 'datetime',
+
     ];
 
     // Relationships
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function businesses()
     {
-        return $this->hasMany(Business::class, 'vendor_id');
+        return $this->hasMany(Business::class);
     }
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'vendor_id');
+        return $this->hasMany(Booking::class);
     }
 
     public function services()

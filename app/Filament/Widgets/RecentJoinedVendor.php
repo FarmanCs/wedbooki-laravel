@@ -70,7 +70,7 @@ class RecentJoinedVendor extends TableWidget
                     ->sortable(),
             ])
             ->recordActions([
-               ViewAction::make()
+                ViewAction::make()
                     ->label('View')
                     ->modalHeading('Vendor Details')
                     ->modalWidth('2xl')
@@ -78,7 +78,7 @@ class RecentJoinedVendor extends TableWidget
                         Section::make('Basic Information')
                             ->columns(3)
                             ->schema([
-                               ImageEntry::make('profile_image')
+                                ImageEntry::make('profile_image')
                                     ->label('Profile Image')
                                     ->circular(),
 
@@ -166,12 +166,17 @@ class RecentJoinedVendor extends TableWidget
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Category')
-                    ->options(fn () => Vendor::query()
-                        ->whereBetween('created_at', [Carbon::now()->subWeek(), Carbon::now()])
-                        ->pluck('category_id')
-                        ->unique()
-                        ->mapWithKeys(fn($id) => [ $id => Category::find($id)?->type ])
-                    )
+                    ->options(function () {
+                        return Category::query()
+                            ->whereHas('vendors', function (Builder $query) {
+                                $query->whereBetween('created_at', [
+                                    Carbon::now()->subWeek(),
+                                    Carbon::now(),
+                                ]);
+                            })
+                            ->get()
+                            ->pluck('type', 'id');
+                    })
                     ->searchable()
                     ->preload(),
 

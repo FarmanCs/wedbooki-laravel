@@ -15,6 +15,7 @@ use App\Mail\Vendor\ForgetPasswordMail;
 use App\Mail\Vendor\ResetPasswordMail;
 use App\Mail\Vendor\UpdatePasswordMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -41,53 +42,72 @@ class VendorAuthService
 
     public function signup($request)
     {
-        // VALIDATION
         $validated = $request->validated();
         $email = strtolower($validated['email']);
-        // VENDOR TYPE
-        $vendorType = (int)$validated['category_id'] === 1 ? 'venue' : 'service';
-
-        // CUSTOM ID
+//        $vendorType = (int)$validated['category_id'] === 1 ? 'venue' : 'service';
+//function (email)
+//{
+//  return 'WB-'+emai
+//}
+        // Custom vendor ID
         $customVendorId = $this->counterService->getNextCounter('vendor_id', 'WB-V300');
 
-        // CREATE BUSINESS PROFILE
-        $businessProfile = Business::create([
-            'company_name' => $validated['company_name'],
-            'category_id' => $validated['category_id'],
-            'sub_category_id' => $validated['sub_category_id'] ?? null,
-            'business_registration' => $validated['business_registration'] ?? null,
-            'business_license_number' => $validated['business_license_number'] ?? null,
-            'vendor_type' => $vendorType,
-        ]);
-
-        // GENERATE OTP
+        // Generate OTP
         $otp = $this->generateOtp();
 
-        // CREATE VENDOR
-        $vendor = Vendor::create([
-            'full_name' => $validated['full_name'],
-            'country' => $validated['country'],
-            'city' => $validated['city'],
-            'email' => $email,
-            'phone_no' => $validated['phone_no'],
-            'country_code' => $validated['country_code'],
-            'category' => $validated['category_id'],
-            'password' => Hash::make($validated['password']),
-            'custom_vendor_id' => $customVendorId,
-            'business_id' => $businessProfile->id,
-            'otp' => $otp,
-        ]);
+        DB::beginTransaction(); // Start transaction
 
-        // SEND OTP EMAIL
-        Mail::to($email)->send(new SignupOtpMail($validated['full_name'], $otp));
+        try {
+            //  Create Vendor
+            $vendor = Vendor::create([
+                'full_name'        => $validated['full_name'],
+                'email'            => $email,
+                'phone_no'         => $validated['phone_no'],
+                'country_code'     => $validated['country_code'],
+                'country'          => $validated['country'],
+                'city'             => $validated['city'],
+                'category_id'      => $validated['category_id'],
+                'password'         => Hash::make($validated['password']),
+                'custom_vendor_id' => $customVendorId,
+                'otp'              => $otp,
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Vendor registered successfully. OTP has been sent to email.',
-            'vendor' => $vendor->toArray(),
-        ], 201);
+            //  Create Business via child  relationship)
+            $vendor->businesses()->create([
+                'company_name'            => $validated['company_name'],
+                'category_id'             => $validated['category_id'],
+                'sub_category_id'         => $validated['sub_category_id'] ?? null,
+                'business_registration'   => $validated['business_registration'] ?? null,
+                'business_license_number' => $validated['business_license_number'] ?? null,
+//                'vendor_type'             => $vendorType,
+            ]);
+
+            // 3️⃣ Send OTP email
+            Mail::to($email)->send(new SignupOtpMail($validated['full_name'], $otp));
+
+            DB::commit(); // Commit transaction
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vendor registered successfully. OTP has been sent to email.',
+                'vendor'  => $vendor->load(['category', 'businesses']),
+            ], 201);
+
+        } catch (\Throwable $e) {
+            DB::rollBack(); // Rollback transaction on error
+
+            // Optional: Log the error
+            \Log::error('Vendor Signup Failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Vendor registration failed. Please try again.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
-
     public function verifySignup(array $data)
     {
         $validated = Validator::make($data, [

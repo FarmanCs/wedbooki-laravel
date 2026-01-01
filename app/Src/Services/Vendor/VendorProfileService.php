@@ -2,6 +2,7 @@
 
 namespace App\Src\Services\Vendor;
 
+use AllowDynamicProperties;
 use App\Models\BusinessSocialClick;
 use App\Models\Chat;
 use App\Models\Host\Review;
@@ -14,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
+#[AllowDynamicProperties]//add new thing check if its change something
 class VendorProfileService
 {
 

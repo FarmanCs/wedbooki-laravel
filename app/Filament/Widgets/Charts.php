@@ -10,7 +10,7 @@ use Filament\Widgets\ChartWidget;
 
 class Charts extends ChartWidget
 {
-    protected ?string $heading = 'Platform Growth Analytics';
+    protected  ?string $heading = 'Platform Growth Analytics';
 
     protected static ?int $sort = 2;
 
@@ -20,12 +20,13 @@ class Charts extends ChartWidget
     protected ?string $maxHeight = '500px';
     protected int|string|array $columnSpan = 'full';
 
-
+    // Add this property to set default filter
+    public ?string $filter = 'monthly';
 
     protected function getData(): array
     {
+
         return match ($this->filter) {
-            'monthly' => $this->monthlyData(),
             'half_year' => $this->halfYearData(),
             'yearly' => $this->yearlyData(),
             default => $this->monthlyData(),
@@ -37,7 +38,7 @@ class Charts extends ChartWidget
         return 'line';
     }
 
-    protected function getFilters(): ?array
+    protected function getFilters(): array
     {
         return [
             'monthly' => 'Last 30 Days',
