@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Host\Host;
 
 
-class Favorite extends Model
+class Favourites extends Model
 {
-    protected $table = 'favorites';
+    protected $table = 'favourites';
 
     // Mass assignable fields
     protected $fillable = [

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Host;
 
 use App\Http\Controllers\Controller;
-use App\Models\Host\Favorite;
+use App\Models\Host\Favourites;
 use App\Models\Host\Review;
 use App\Models\Vendor\Package;
 use Illuminate\Http\Request;
@@ -30,7 +30,7 @@ class FavouriteController extends Controller
         $businessId = $request->business_id;
 
         // Check if favourite already exists
-        $existing = Favorite::where('host_id', $hostId)
+        $existing = Favourites::where('host_id', $hostId)
             ->where('business_id', $businessId)
             ->first();
 
@@ -45,7 +45,7 @@ class FavouriteController extends Controller
         }
 
         // Add new favourite
-        Favorite::create([
+        Favourites::create([
             'host_id' => $hostId,
             'business_id' => $businessId,
         ]);
@@ -67,7 +67,7 @@ class FavouriteController extends Controller
           }
 
             // Load favourites with their business
-            $favourites = Favorite::with('business')
+            $favourites = Favourites::with('business')
                 ->where('host_id', $host)
                 ->get();
 

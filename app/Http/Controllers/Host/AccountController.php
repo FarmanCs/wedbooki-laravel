@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Host\Host;
 use App\Models\Host\Checklist;
 use App\Models\Host\GuestGroup;
-use App\Models\Host\Favorite;
+use App\Models\Host\Favourites;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Models\Vendor\Booking;
@@ -213,7 +213,7 @@ class AccountController extends Controller
                 Checklist::where('host_id', $hostId)->delete();
 
                 // Delete favorites
-                Favorite::where('host_id', $hostId)->delete();
+                Favourites::where('host_id', $hostId)->delete();
 
                 // Delete messages & chats
                 $chats = Chat::where('participants->userId', $hostId)

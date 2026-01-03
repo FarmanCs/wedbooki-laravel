@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class Host extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    protected $guard = 'web';
     protected $fillable = [
         'full_name',
         'partner_full_name',
@@ -58,7 +60,20 @@ class Host extends Authenticatable
         'is_verified' => 'boolean',
         'password' => 'hashed',
         'category' => 'string',
+        'otp' => 'integer',
     ];
+    public function initials(): string
+    {
+        return Str::of($this->name)
+            ->explode(' ')
+            ->take(2)
+            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->implode('');
+    }
+    public function favourites()
+    {
+        return $this->hasMany(Favourites::class);
+    }
 
     public function favouriteBusinesses()
     {
@@ -77,10 +92,6 @@ class Host extends Authenticatable
         return $this->hasMany(GuestGroup::class, 'host_id');
     }
 
-    public function favourites()
-    {
-        return $this->hasMany(Favorite::class, 'host_id');
-    }
 
     public function personalizedChecklists()
     {

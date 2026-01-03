@@ -3,7 +3,7 @@
 namespace App\Models\Vendor;
 
 use App\Models\Admin\CreditTransaction;
-use App\Models\Host\Favorite;
+use App\Models\Host\Favourites;
 use App\Models\Host\Review;
 use App\Models\Admin\Category;
 use App\Models\Services\ExtraService;
@@ -119,7 +119,7 @@ class Business extends Model
 
     public function favourites()
     {
-        return $this->hasMany(Favorite::class, 'business_id');
+        return $this->hasMany(Favourites::class, 'business_id');
     }
 
     public function extraServices()

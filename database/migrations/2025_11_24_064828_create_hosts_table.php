@@ -34,6 +34,7 @@ return new class extends Migration
             $table->enum('status', ['approved', 'pending', 'rejected', 'blocked', 'Banned',])->default('Pending');
             $table->string('role')->default('host');
             $table->integer('otp')->nullable();
+            $table->integer('otp_attempts')->default(0);
             $table->boolean('is_verified')->default(false);
             $table->string('invite_image_url')->nullable();
             $table->string('pending_email')->nullable();
