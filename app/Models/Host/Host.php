@@ -2,6 +2,7 @@
 
 namespace App\Models\Host;
 
+use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,7 +45,8 @@ class Host extends Authenticatable
         'estimated_guests',
         'event_budget',
         'interested_vendors',
-        'join_date'
+        'join_date',
+        'otp_expires_at'
     ];
 
     protected $hidden = [
@@ -62,13 +64,10 @@ class Host extends Authenticatable
         'category' => 'string',
         'otp' => 'integer',
     ];
-    public function initials(): string
+
+    public function bookings()
     {
-        return Str::of($this->name)
-            ->explode(' ')
-            ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
-            ->implode('');
+        return $this->hasMany(Booking::class, 'host_id');
     }
     public function favourites()
     {
@@ -101,6 +100,15 @@ class Host extends Authenticatable
     public function checklists()
     {
         return $this->hasMany(Checklist::class, 'host_id', 'id');
+    }
+
+    public function initials(): string
+    {
+        return Str::of($this->full_name)
+        ->explode(' ')
+            ->take(2)
+            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->implode('');
     }
 
 

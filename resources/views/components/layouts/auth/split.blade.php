@@ -20,7 +20,7 @@
                 <img
                     src="{{ asset('assets/WedBooki.png') }}"
                     alt="Wedbooki Logo"
-                    class="h-5 w-3xl object-contain "
+                    class="object-contain "
                 />
             </div>
         </a>
@@ -31,18 +31,18 @@
 
         </div>
 
-        @php
-            [$message, $author] = str(Illuminate\Foundation\Inspiring::quotes()->random())->explode('-');
-        @endphp
+{{--        @php--}}
+{{--            [$message, $author] = str(Illuminate\Foundation\Inspiring::quotes()->random())->explode('-');--}}
+{{--        @endphp--}}
 
-        <div class="relative z-20 mt-auto">
-            <blockquote class="space-y-2">
-                <flux:heading size="lg">&ldquo;{{ trim($message) }}&rdquo;</flux:heading>
-                <footer>
-                    <flux:heading>{{ trim($author) }}</flux:heading>
-                </footer>
-            </blockquote>
-        </div>
+{{--        <div class="relative z-20 mt-auto">--}}
+{{--            <blockquote class="space-y-2">--}}
+{{--                <flux:heading size="lg">&ldquo;{{ trim($message) }}&rdquo;</flux:heading>--}}
+{{--                <footer>--}}
+{{--                    <flux:heading>{{ trim($author) }}</flux:heading>--}}
+{{--                </footer>--}}
+{{--            </blockquote>--}}
+{{--        </div>--}}
     </div>
     <div class="w-full lg:p-8">
         <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">

@@ -1,8 +1,19 @@
 <div class="flex flex-col gap-6">
-    <x-auth-header
-        title="Create an account"
-        description="Enter your details below to create your account"
-    />
+
+        <div class="flex items-center justify-center gap-1">
+{{--            <div class="flex size-10 items-center justify-center rounded-md">--}}
+{{--                <img--}}
+{{--                    src="https://pre.wedbooki.com/imgs/logo/logo1.png"--}}
+{{--                    alt="Wedbooki Logo"--}}
+{{--                    class="object-contain"--}}
+{{--                />--}}
+{{--            </div>--}}
+
+            <x-auth-header
+                title="Create an account"
+                description="Enter your details below to create your account"
+            />
+        </div>
 
     <form wire:submit.prevent="signup" class="flex flex-col gap-6">
 

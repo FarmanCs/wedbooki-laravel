@@ -3,19 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
-
+use \App\Livewire\Host\Auth\HostSignup;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-
 Route::prefix('host')->name('host.')->group(function () {
-
     // Guest Routes (Not Authenticated)
     Route::middleware('guest')->group(function () {
-        Route::get('/signup', \App\Livewire\Auth\HostSignup::class)->name('signup');
-        Route::get('/verify-otp', \App\Livewire\Auth\HostVerifyOtp::class)->name('verify-otp');
-        Route::get('/login', \App\Livewire\Auth\HostLogin::class)->name('host-login');
+        Route::get('/signup', HostSignup::class)->name('host-signup');
+        Route::get('/verify-otp', \App\Livewire\Host\Auth\HostVerifyOtp::class)->name('verify-otp');
+        Route::get('/login', \App\Livewire\Host\Auth\HostLogin::class)->name('host-login');
         Route::get('/forgot-password', function () {
             // Create this component later
             return 'Forgot Password Page';
@@ -24,8 +22,34 @@ Route::prefix('host')->name('host.')->group(function () {
 
     // Authenticated Routes
     Route::middleware('auth:host')->group(function () {
-        Route::get('/dashboard', \App\Livewire\Dashboard\HostDashboard::class)->name('host-dashboard');
+        // Dashboard
+        Route::get('/dashboard', \App\Livewire\Host\Dashboard\HostDashboard::class)->name('host-dashboard');
 
+        // Bookings
+//        Route::prefix('bookings')->name('bookings.')->group(function () {
+//            Route::get('/', \App\Livewire\Host\Bookings\Index::class)->name('index');
+//            Route::get('/create', \App\Livewire\Host\Bookings\Create::class)->name('create');
+//            Route::get('/{booking}', \App\Livewire\Host\Bookings\Show::class)->name('show');
+//            Route::get('/{booking}/edit', \App\Livewire\Host\Bookings\Edit::class)->name('edit');
+//        });
+//
+//        // Guests
+//        Route::prefix('guests')->name('guests.')->group(function () {
+//            Route::get('/', \App\Livewire\Host\Guests\Index::class)->name('index');
+//            Route::get('/groups', \App\Livewire\Host\Guests\Groups::class)->name('groups');
+//        });
+//
+//        // Checklists
+//        Route::prefix('checklists')->name('checklists.')->group(function () {
+//            Route::get('/', \App\Livewire\Host\Checklists\Index::class)->name('index');
+//            Route::get('/personalized', \App\Livewire\Host\Checklists\Personalized::class)->name('personalized');
+//        });
+//
+//        // Vendors
+//        Route::prefix('vendors')->name('vendors.')->group(function () {
+//            Route::get('/', \App\Livewire\Host\Vendors\Index::class)->name('index');
+//            Route::get('/favourites', \App\Livewire\Host\Vendors\Favourites::class)->name('favourites');
+//        });
 
         // Logout
         Route::post('/logout', function () {
@@ -36,23 +60,6 @@ Route::prefix('host')->name('host.')->group(function () {
         })->name('logout');
     });
 });
-
-
-//Route::get('/host/signup', \App\Livewire\Auth\HostSignup::class)->name('host.signup');
-//Route::get('/host/verify', \App\Livewire\Auth\HostVerifyOtp::class)->name('host.verify');
-//Route::get('/host/login', \App\Livewire\Auth\HostLogin::class)->name('host.login');
-//Route::post('/host/logout', function () {
-//    auth('host')->logout();
-//    return redirect()->route('host.login');
-//})->name('host.logout');
-//
-//
-//
-//Route::middleware('auth:host')->group(function () {
-//    Route::get('/host/dashboard', \App\Livewire\Dashboard\HostDashboard::class)
-//        ->name('host.dashboard');
-//});
-
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

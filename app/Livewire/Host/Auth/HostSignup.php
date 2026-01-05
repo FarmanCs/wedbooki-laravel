@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Auth;
+namespace App\Livewire\Host\Auth;
 
 use App\Models\Host\Host;
 use App\Src\Services\OtpService;
@@ -50,6 +50,8 @@ class HostSignup extends Component
                 'phone_no' => $this->phone_no,
                 'password' => Hash::make($this->password),
                 'otp' => $otp,
+                'otp_expires_at'  => now()->addSeconds(30),
+                'otp_attempts'    => 0,
                 'is_verified' => false,
                 'signup_method' => 'email',
                 'status' => 'pending',
