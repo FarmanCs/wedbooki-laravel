@@ -69,6 +69,7 @@ class Host extends Authenticatable
     {
         return $this->hasMany(Booking::class, 'host_id');
     }
+
     public function favourites()
     {
         return $this->hasMany(Favourites::class);
@@ -77,13 +78,7 @@ class Host extends Authenticatable
     public function favouriteBusinesses()
     {
         return $this->belongsToMany(
-            Business::class,
-            'host_business',
-            'host_id',
-            'business_id',
-            'id',
-            'id'
-        );
+            Business::class);
     }
 
     public function guestGroups()
@@ -105,9 +100,9 @@ class Host extends Authenticatable
     public function initials(): string
     {
         return Str::of($this->full_name)
-        ->explode(' ')
+            ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 

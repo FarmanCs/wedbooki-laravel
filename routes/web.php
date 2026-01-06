@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Host\HostDashboard\HostDashboard;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
@@ -23,33 +24,33 @@ Route::prefix('host')->name('host.')->group(function () {
     // Authenticated Routes
     Route::middleware('auth:host')->group(function () {
         // Dashboard
-        Route::get('/dashboard', \App\Livewire\Host\Dashboard\HostDashboard::class)->name('host-dashboard');
+        Route::get('/dashboard', HostDashboard::class)->name('host-dashboard');
 
         // Bookings
-//        Route::prefix('bookings')->name('bookings.')->group(function () {
-//            Route::get('/', \App\Livewire\Host\Bookings\Index::class)->name('index');
+        Route::prefix('bookings')->name('bookings.')->group(function () {
+            Route::get('/', \App\Livewire\Host\Bookings\Index::class)->name('index');
 //            Route::get('/create', \App\Livewire\Host\Bookings\Create::class)->name('create');
 //            Route::get('/{booking}', \App\Livewire\Host\Bookings\Show::class)->name('show');
 //            Route::get('/{booking}/edit', \App\Livewire\Host\Bookings\Edit::class)->name('edit');
-//        });
-//
-//        // Guests
-//        Route::prefix('guests')->name('guests.')->group(function () {
-//            Route::get('/', \App\Livewire\Host\Guests\Index::class)->name('index');
+        });
+
+        // Guests
+        Route::prefix('guests')->name('guests.')->group(function () {
+            Route::get('/', \App\Livewire\Host\Guests\Index::class)->name('index');
 //            Route::get('/groups', \App\Livewire\Host\Guests\Groups::class)->name('groups');
-//        });
-//
-//        // Checklists
-//        Route::prefix('checklists')->name('checklists.')->group(function () {
-//            Route::get('/', \App\Livewire\Host\Checklists\Index::class)->name('index');
-//            Route::get('/personalized', \App\Livewire\Host\Checklists\Personalized::class)->name('personalized');
-//        });
-//
-//        // Vendors
-//        Route::prefix('vendors')->name('vendors.')->group(function () {
-//            Route::get('/', \App\Livewire\Host\Vendors\Index::class)->name('index');
+        });
+
+        // Checklists
+        Route::prefix('checklists')->name('checklists.')->group(function () {
+            Route::get('/', \App\Livewire\Host\Checklists\Personalized::class)->name('index');
+            Route::get('/personalized', \App\Livewire\Host\Checklists\Personalized::class)->name('personalized');
+        });
+
+        // Vendors
+        Route::prefix('vendors')->name('vendors.')->group(function () {
+            Route::get('/', \App\Livewire\Host\Vendors\Index::class)->name('index');
 //            Route::get('/favourites', \App\Livewire\Host\Vendors\Favourites::class)->name('favourites');
-//        });
+        });
 
         // Logout
         Route::post('/logout', function () {

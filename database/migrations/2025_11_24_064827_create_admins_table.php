@@ -14,9 +14,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role')->default('admin');
+            $table->rememberToken();
+            $table->integer('otp')->nullable();
+            $table->integer('otp_attempts')->default(0);
+            $table->timestamp('otp_expires_at')->nullable();
             $table->integer('two_factor_code')->nullable();
             $table->timestamp('two_factor_code_expires')->nullable();
-            $table->string('remember_token', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

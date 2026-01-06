@@ -20,7 +20,13 @@ return new class extends Migration
             $table->bigInteger('phone_no');
             $table->string('password');
             $table->integer('otp')->nullable();
+            $table->integer('otp_attempts')->default(0);
+            $table->timestamp('otp_expires_at')->nullable();
             $table->boolean('is_verified')->default(false);
+            $table->string('remember_token', 255)->nullable();
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->timestamp('last_login')->nullable();
             $table->timestamps();
 

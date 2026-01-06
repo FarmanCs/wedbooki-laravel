@@ -13,91 +13,59 @@ class HostFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => fake()->name(),
-            'partner_full_name' => fake()->name(),
-            'partner_email' => fake()->unique()->safeEmail(),
-            'country' => fake()->country(),
-            'email' => fake()->unique()->safeEmail(),
-            'linked_email' => fake()->boolean(30) ? fake()->safeEmail() : null,
-            'country_code' => fake()->randomElement(['+1', '+44', '+91', '+92', '+61']),
-            'phone_no' => fake()->numerify('##########'),
-            'profile_image' => fake()->imageUrl(400, 400, 'people', true),
-            'about' => fake()->paragraph(3),
-            'wedding_date' => fake()->dateTimeBetween('now', '+2 years'),
+            'full_name' => $this->faker->name(),
+            'partner_full_name' => $this->faker->name(),
+            'partner_email' => $this->faker->unique()->safeEmail(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'linked_email' => $this->faker->boolean(30) ? $this->faker->safeEmail() : null,
+            'country' => $this->faker->country(),
+            'country_code' => $this->faker->randomElement(['+1', '+44', '+91', '+92', '+61']),
+            'phone_no' => $this->faker->numerify('##########'),
+            'profile_image' => $this->faker->imageUrl(400, 400, 'people', true),
+            'about' => $this->faker->paragraph(3),
+            'wedding_date' => $this->faker->dateTimeBetween('now', '+2 years'),
             'password' => Hash::make('password'),
-            'google_id' => fake()->boolean(20) ? fake()->uuid() : null,
-            'apple_id' => fake()->boolean(10) ? fake()->uuid() : null,
-            'signup_method' => fake()->randomElement(['email', 'google', 'apple']),
-            'status' => fake()->randomElement(['approved', 'pending', 'rejected', 'blocked', 'Banned', 'Pending']),
+            'google_id' => $this->faker->boolean(20) ? $this->faker->uuid() : null,
+            'apple_id' => $this->faker->boolean(10) ? $this->faker->uuid() : null,
+            'signup_method' => $this->faker->randomElement(['email', 'google', 'apple']),
+            'status' => $this->faker->randomElement(['approved', 'pending', 'rejected', 'blocked']),
             'role' => 'host',
-            'account_deactivated' => fake()->boolean(5),
-            'account_soft_deleted' => fake()->boolean(5),
+            'account_deactivated' => $this->faker->boolean(5),
+            'account_soft_deleted' => $this->faker->boolean(5),
             'account_soft_deleted_at' => null,
             'otp' => null,
-            'is_verified' => fake()->boolean(80),
+            'is_verified' => $this->faker->boolean(80),
             'pending_email' => null,
-            'category' => fake()->randomElement(['Wedding', 'Engagement', 'Reception', 'Anniversary']),
-            'event_type' => fake()->randomElement(['Wedding', 'Reception', 'Engagement Party', 'Bridal Shower']),
-            'estimated_guests' => fake()->numberBetween(50, 500),
-            'event_budget' => fake()->randomFloat(2, 5000.00, 100000.00),
-            'join_date' => fake()->dateTime(),
+            'category' => $this->faker->randomElement(['Wedding', 'Engagement', 'Reception', 'Anniversary']),
+            'event_type' => $this->faker->randomElement(['Wedding', 'Reception', 'Engagement Party', 'Bridal Shower']),
+            'estimated_guests' => $this->faker->numberBetween(50, 500),
+            'event_budget' => $this->faker->randomFloat(2, 5000, 100000),
+            'join_date' => $this->faker->dateTime(),
         ];
     }
 
-    /**
-     * Indicate that the host is verified.
-     */
     public function verified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_verified' => true,
-            'otp' => null,
-        ]);
+        return $this->state(fn () => ['is_verified' => true, 'otp' => null]);
     }
 
-    /**
-     * Indicate that the host is unverified.
-     */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_verified' => false,
-            'otp' => fake()->numerify('######'),
-        ]);
+        return $this->state(fn () => ['is_verified' => false, 'otp' => $this->faker->numerify('######')]);
     }
 
-    /**
-     * Indicate that the host account is deactivated.
-     */
     public function deactivated(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'account_deactivated' => true,
-            'status' => 'blocked',
-        ]);
+        return $this->state(fn () => ['account_deactivated' => true, 'status' => 'blocked']);
     }
 
-    /**
-     * Indicate that the host signed up with Google.
-     */
     public function googleSignup(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'signup_method' => 'google',
-            'google_id' => fake()->uuid(),
-            'is_verified' => true,
-        ]);
+        return $this->state(fn () => ['signup_method' => 'google', 'google_id' => $this->faker->uuid(), 'is_verified' => true]);
     }
 
-    /**
-     * Indicate that the host signed up with Apple.
-     */
     public function appleSignup(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'signup_method' => 'apple',
-            'apple_id' => fake()->uuid(),
-            'is_verified' => true,
-        ]);
+        return $this->state(fn () => ['signup_method' => 'apple', 'apple_id' => $this->faker->uuid(), 'is_verified' => true]);
     }
 }

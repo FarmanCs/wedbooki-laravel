@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('vendors', function (Blueprint $table) {
@@ -28,6 +27,11 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->string('postal_code')->nullable();
             $table->integer('otp')->nullable();
+            $table->integer('otp_attempts')->default(0);
+            $table->timestamp('otp_expires_at')->nullable();
+            $table->integer('two_factor_code')->nullable();
+            $table->timestamp('two_factor_code_expires')->nullable();
+            $table->string('remember_token', 255)->nullable();
             $table->enum('profile_verification', ['pending', 'verified', 'approved', 'under_review', 'rejected', 'banned'])->default('approved');
             $table->boolean('email_verified')->default(false);
             $table->string('stripe_account_id')->nullable();
@@ -47,8 +51,6 @@ return new class extends Migration
             $table->integer('auto_hard_delete_after_days')->default(30);
             $table->softDeletes();
             $table->timestamps();
-
-
 
 
         });

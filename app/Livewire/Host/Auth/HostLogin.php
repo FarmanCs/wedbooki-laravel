@@ -19,8 +19,6 @@ class HostLogin extends Component
 
     public function login()
     {
-        $this->validate();
-
         $host = Host::where('email', $this->email)->first();
 
         if (!$host) {
