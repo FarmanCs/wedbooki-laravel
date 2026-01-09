@@ -26,6 +26,12 @@ Route::prefix('host')->name('host.')->group(function () {
         // Dashboard
         Route::get('/dashboard', HostDashboard::class)->name('host-dashboard');
 
+        // Vendors
+        Route::prefix('vendors')->name('vendors.')->group(function () {
+            Route::get('/', \App\Livewire\Host\Vendors\Index::class)->name('index');
+//            Route::get('/favourites', \App\Livewire\Host\Vendors\Favourites::class)->name('favourites');
+        });
+
         // Bookings
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', \App\Livewire\Host\Bookings\Index::class)->name('index');
@@ -46,11 +52,7 @@ Route::prefix('host')->name('host.')->group(function () {
             Route::get('/personalized', \App\Livewire\Host\Checklists\Personalized::class)->name('personalized');
         });
 
-        // Vendors
-        Route::prefix('vendors')->name('vendors.')->group(function () {
-            Route::get('/', \App\Livewire\Host\Vendors\Index::class)->name('index');
-//            Route::get('/favourites', \App\Livewire\Host\Vendors\Favourites::class)->name('favourites');
-        });
+
 
         // Logout
         Route::post('/logout', function () {

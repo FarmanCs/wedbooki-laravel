@@ -3,6 +3,7 @@
 namespace App\Models\Admin;
 
 use App\Models\SubCategory;
+use App\Models\Vendor\Business;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

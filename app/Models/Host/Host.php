@@ -10,6 +10,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+use Carbon\Carbon;
+
 
 class Host extends Authenticatable
 {
@@ -64,6 +66,27 @@ class Host extends Authenticatable
         'category' => 'string',
         'otp' => 'integer',
     ];
+
+
+    public function getWeddingTimelineAttribute(): ?array
+    {
+        if (!$this->wedding_date) {
+            return null;
+        }
+
+        $weddingDate = Carbon::parse($this->wedding_date)->startOfDay();
+        $today = now()->startOfDay();
+
+        $daysToWedding = $today->diffInDays($weddingDate, false);
+
+        return [
+            'days_to_wedding'        => max($daysToWedding, 0),
+            'wedding_date'           => $weddingDate->toDateString(),
+            'wedding_date_formatted' => $weddingDate->format('l, d F Y'),
+            'is_today'               => $daysToWedding === 0,
+            'is_past'                => $daysToWedding < 0,
+        ];
+    }
 
     public function bookings()
     {

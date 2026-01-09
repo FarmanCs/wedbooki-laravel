@@ -5,37 +5,36 @@ namespace Database\Seeders\Admin;
 use App\Models\Admin\CreditTransaction;
 use App\Models\Vendor\Business;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CreditTransactionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get existing businesses or create some
-        $businesses = Business::limit(10)->get();
+        //  Reset table
+//        DB::table('credit_transactions')->truncate();
 
-        if ($businesses->isEmpty()) {
-            $businesses = Business::factory()->count(10)->create();
-        }
+        // Get existing businesses
+        $businesses = Business::count() ? Business::all() : Business::factory()->count(10)->create();
 
-        // Create credit transactions for each business
+        // 🔹 Create credit & debit transactions per business in a controlled way
         foreach ($businesses as $business) {
-            // Create some credit transactions (adding credits)
-            CreditTransaction::factory()
-                ->credit()
-                ->count(rand(3, 7))
+            // Fixed number of credits
+            CreditTransaction::factory()->credit()->count(3)
                 ->create(['business_id' => $business->id]);
 
-            // Create some debit transactions (using credits)
-            CreditTransaction::factory()
-                ->debit()
-                ->count(rand(2, 5))
+            // Fixed number of debits
+            CreditTransaction::factory()->debit()->count(2)
                 ->create(['business_id' => $business->id]);
         }
 
-        // Create additional random transactions
-        CreditTransaction::factory()->count(50)->create();
+        // 🔹 Additional random transactions
+        CreditTransaction::factory()->count(20)
+            ->create([
+                'business_id' => $businesses->random()->id,
+            ]);
+
+        $this->command->info('✅ Credit transactions seeded safely.');
+        $this->command->info('Total credit transactions: ' . CreditTransaction::count());
     }
 }

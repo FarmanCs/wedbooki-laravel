@@ -2,29 +2,28 @@
 
 namespace Database\Seeders\Vendor;
 
-use App\Models\Admin\Category;
 use App\Models\Vendor\Vendor;
+use App\Models\Admin\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class VendorSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Ensure we have categories
-        $categories = Category::all();
-        if ($categories->isEmpty()) {
-            $this->call(CategorySeeder::class);
-            $categories = Category::all();
+        DB::table('vendors')->truncate();
+
+        $categories = Category::pluck('id')->toArray();
+
+        if (empty($categories)) {
+            $this->command->error('Categories missing. Seed categories first.');
+            return;
         }
 
-        // Create a default verified vendor
         Vendor::create([
             'full_name' => 'John Photography Studio',
-            'email' => 'vendor@example.com',
+            'email' => 'vendor1@example.com',
             'phone_no' => '1234567890',
             'country_code' => '+1',
             'password' => Hash::make('password'),
@@ -36,7 +35,7 @@ class VendorSeeder extends Seeder
             'country' => 'United States',
             'city' => 'New York',
             'role' => 'vendor',
-            'category_id' => $categories->first()->id,
+            'category_id' => fake()->randomElement($categories),
             'postal_code' => '10001',
             'profile_verification' => 'verified',
             'email_verified' => true,
@@ -45,44 +44,21 @@ class VendorSeeder extends Seeder
             'last_login' => now(),
         ]);
 
-        // Create verified vendors with Stripe
-        Vendor::factory()
-            ->verified()
-            ->withStripe()
-            ->count(15)
-            ->create();
+        Vendor::factory()->verified()->withStripe()->count(15)
+            ->create(['category_id' => fake()->randomElement($categories)]);
 
-        // Create verified vendors without Stripe
-        Vendor::factory()
-            ->verified()
-            ->count(10)
-            ->create();
+        Vendor::factory()->verified()->count(10)
+            ->create(['category_id' => fake()->randomElement($categories)]);
 
-        // Create unverified vendors
-        Vendor::factory()
-            ->unverified()
-            ->count(5)
-            ->create();
+        Vendor::factory()->unverified()->count(5)
+            ->create(['category_id' => fake()->randomElement($categories)]);
 
-        // Create deactivated vendors
-        Vendor::factory()
-            ->deactivated()
-            ->count(3)
-            ->create();
+        Vendor::factory()->deactivated()->count(3)
+            ->create(['category_id' => fake()->randomElement($categories)]);
 
-        // Create vendors for each category
-        foreach ($categories->take(5) as $category) {
-            Vendor::factory()
-                ->verified()
-                ->count(2)
-                ->create(['category_id' => $category->id]);
-        }
+        Vendor::factory()->count(22)
+            ->create(['category_id' => fake()->randomElement($categories)]);
 
-        // Create additional random vendors
-        Vendor::factory()->count(20)->create();
-
-        $this->command->info('Vendors seeded successfully!');
-        $this->command->info('Total vendors: ' . Vendor::count());
-        $this->command->info('Verified vendors: ' . Vendor::where('email_verified', true)->count());
+        $this->command->info('Vendors seeded safely (56 total)');
     }
 }

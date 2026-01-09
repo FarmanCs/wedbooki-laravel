@@ -7,83 +7,59 @@ use App\Models\Vendor\Booking;
 use App\Models\Vendor\Business;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class BookingSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Ensure we have hosts, businesses, and vendors
-        $hosts = Host::limit(20)->get();
-        $businesses = Business::limit(20)->get();
-        $vendors = Vendor::limit(20)->get();
+        DB::table('bookings')->truncate();
 
-        if ($hosts->isEmpty()) {
-            $hosts = Host::factory()->count(20)->create();
-        }
-        if ($businesses->isEmpty()) {
-            $businesses = Business::factory()->count(20)->create();
-        }
-        if ($vendors->isEmpty()) {
-            $vendors = Vendor::factory()->count(20)->create();
-        }
+        $hosts = Host::count() ? Host::all() : Host::factory()->count(20)->create();
+        $businesses = Business::count() ? Business::all() : Business::factory()->count(20)->create();
+        $vendors = Vendor::count() ? Vendor::all() : Vendor::factory()->count(20)->create();
 
-        // Create confirmed bookings
-        Booking::factory()
-            ->confirmed()
-            ->count(20)
-            ->create();
+        Booking::factory()->confirmed()->count(20)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
-        // Create completed bookings
-        Booking::factory()
-            ->completed()
-            ->count(15)
-            ->create();
+        Booking::factory()->completed()->count(15)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
-        // Create pending bookings
-        Booking::factory()
-            ->pending()
-            ->count(10)
-            ->create();
+        Booking::factory()->pending()->count(10)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
-        // Create bookings with advance paid
-        Booking::factory()
-            ->advancePaid()
-            ->count(12)
-            ->create();
+        Booking::factory()->advancePaid()->count(12)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
-        // Create cancelled bookings
-        Booking::factory()
-            ->cancelled()
-            ->count(5)
-            ->create();
+        Booking::factory()->cancelled()->count(5)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
-        // Create bookings for specific hosts
-        foreach ($hosts->take(10) as $host) {
-            Booking::factory()
-                ->confirmed()
-                ->count(rand(1, 3))
-                ->create([
-                    'host_id' => $host->id,
-                    'business_id' => $businesses->random()->id,
-                    'vendor_id' => $vendors->random()->id,
-                ]);
-        }
-
-        // Create bookings for specific businesses
-        foreach ($businesses->take(10) as $business) {
-            Booking::factory()
-                ->count(rand(2, 5))
-                ->create([
-                    'business_id' => $business->id,
-                    'vendor_id' => $business->vendor_id,
-                ]);
-        }
-
-        // Create additional random bookings
-        Booking::factory()->count(30)->create();
+        Booking::factory()->count(20)
+            ->create([
+                'host_id' => $hosts->random()->id,
+                'business_id' => $businesses->random()->id,
+                'vendor_id' => $vendors->random()->id,
+            ]);
 
         $this->command->info('Bookings seeded successfully!');
         $this->command->info('Total bookings: ' . Booking::count());

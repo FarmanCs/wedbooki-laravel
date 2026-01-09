@@ -1,0 +1,198 @@
+/*@import 'tailwindcss';*/
+/*@import '../../vendor/livewire/flux/dist/flux.css';*/
+
+/*@source '../views';*/
+/*@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views!*.blade.php';*/
+/*@source '../../vendor/livewire/flux-pro/stubs!**!*.blade.php';*/
+/*@source '../../vendor/livewire/flux/stubs!**!*.blade.php';*/
+
+/*@custom-variant dark (&:where(.dark, .dark *));*/
+
+/*@theme {*/
+/*    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';*/
+/*    --color-zinc-50: #fafafa;*/
+/*    --color-zinc-100: #f5f5f5;*/
+/*    --color-zinc-200: #e5e5e5;*/
+/*    --color-zinc-300: #d4d4d4;*/
+/*    --color-zinc-400: #a3a3a3;*/
+/*    --color-zinc-500: #737373;*/
+/*    --color-zinc-600: #525252;*/
+/*    !*--color-zinc-700: #404040;*!*/
+/*    --color-zinc-800: #262626;*/
+/*    --color-zinc-900: #171717;*/
+/*    --color-zinc-950: #0a0a0a;*/
+
+/*    --color-accent: var(--color-yellow-800);*/
+/*    --color-accent-content: var(--color-yellow-950);*/
+/*    --color-accent-foreground: var(--color-white);*/
+/*}*/
+
+/*@layer theme {*/
+/*    .dark {*/
+/*        --color-accent: var(--color-pink-950);*/
+/*        --color-accent-content: var(--color-yellow-500);*/
+/*        --color-accent-foreground: var(--color-neutral-900);*/
+/*    }*/
+/*}*/
+
+/*@layer base {*/
+
+/*    !* Tailwind default border fix *!*/
+/*    *,*/
+/*    ::after,*/
+/*    ::before,*/
+/*    ::backdrop,*/
+/*    ::file-selector-button {*/
+/*        border-color: var(--color-gray-200, currentColor);*/
+/*    }*/
+
+/*    !* WHY base? It’s HTML behavior, not a reusable component *!*/
+/*    html {*/
+/*        scroll-behavior: smooth;*/
+/*    }*/
+
+/*    !* Global app background helper class (still fine in base) *!*/
+/*    .app-bg {*/
+/*        @apply bg-gradient-to-r from-purple-600 to-pink-600 dark:from-slate-600 dark:to-slate-400 ;*/
+/*    }*/
+
+/*    .bg-blob {*/
+/*        @apply absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500;*/
+/*    }*/
+/*    .bg-blob-icon {*/
+/*        @apply p-4 bg-gradient-to-br  rounded-xl shadow-lg group-hover:shadow-purple-500/50 transition-shadow duration-300;*/
+/*    }*/
+/*    .bg-blob-icon-color{*/
+/*        @apply from-purple-600 to-purple-800;*/
+/*    }*/
+
+/*    .bg-blob-blue {*/
+/*        @apply bg-blue-800/5 dark:bg-blue-500/10 ;*/
+
+/*    }*/
+
+/*    .bg-blob-purple {*/
+/*        @apply bg-purple-500/5 dark:bg-purple-500/10 ;*/
+/*    }*/
+
+/*    !* WHY base? Scrollbar applies to whole document, not a reusable UI element *!*/
+/*    ::-webkit-scrollbar {*/
+/*        width: 8px;*/
+/*    }*/
+
+/*    ::-webkit-scrollbar-track {*/
+/*        background: transparent;*/
+/*    }*/
+
+/*    ::-webkit-scrollbar-thumb {*/
+/*        background: rgba(161, 161, 170, 0.3);*/
+/*        border-radius: 4px;*/
+/*    }*/
+
+/*    ::-webkit-scrollbar-thumb:hover {*/
+/*        background: rgba(161, 161, 170, 0.5);*/
+/*    }*/
+
+/*    .dark ::-webkit-scrollbar-thumb {*/
+/*        background: rgba(63, 63, 70, 0.5);*/
+/*    }*/
+
+/*    .dark ::-webkit-scrollbar-thumb:hover {*/
+/*        background: rgba(63, 63, 70, 0.7);*/
+/*    }*/
+/*}*/
+
+/*!* ---------- COMPONENTS LAYER ---------- *!*/
+/*!* reusable UI classes *!*/
+/*@layer components {*/
+/*    .app-body {*/
+/*        @apply min-h-screen bg-gradient-to-br*/
+/*        from-zinc-50 via-white to-purple-50*/
+/*        dark:from-zinc-950 dark:via-zinc-900 dark:to-purple-950/20;*/
+/*    }*/
+
+/*    !* Reusable navbar style *!*/
+/*    .app-navbar {*/
+/*        @apply sticky top-0 z-50*/
+/*        border-b border-zinc-200/50 dark:border-zinc-800/50*/
+/*        bg-white/80 dark:bg-zinc-900/80*/
+/*        shadow-sm;*/
+/*    }*/
+
+/*    .navbar-blur {*/
+/*        backdrop-filter: blur(12px);*/
+/*        -webkit-backdrop-filter: blur(12px);*/
+/*    }*/
+
+/*    .h1-heading {*/
+/*        @apply px-2 text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 dark:from-purple-300 dark:to-pink-300 bg-clip-text text-transparent;*/
+/*    }*/
+/*    .p-text {*/
+/*        @apply text-sm font-medium text-zinc-600 dark:text-zinc-400;*/
+/*    }*/
+
+/*.stat-grid-card {*/
+/*    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8;*/
+/*}*/
+
+/*.small-stat-card {*/
+/*    @apply  relative overflow-hidden inline-flex items-center gap-3 px-6 py-4 bg-gradient-to-l fill-red-950 to-pink-950 rounded-2xl text-green-100 shadow-lg;*/
+/*}*/
+
+/*    .stat-card {*/
+/*        @apply  relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 transition-all duration-400;*/
+
+/*        @variant hover {*/
+/*            @apply shadow-xl scale-110;*/
+/*            .bg-blob {*/
+/*                    @apply scale-200 shadow-xl shadow-pink-950;*/
+/*                }*/
+/*            .bg-blob-icon {*/
+/*                @apply scale-110;*/
+/*            }*/
+/*        }*/
+/*    }*/
+
+/*    .bg-active-nav-item {*/
+/*        @apply shadow-xl absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600;*/
+/*    }*/
+
+/*    !* reusable icon grads *!*/
+/*    .bg-icon-pink {*/
+/*        @apply p-4 bg-gradient-to-br from-pink-400 to-pink-900 rounded-xl shadow-lg transition-shadow duration-300;*/
+/*    }*/
+
+/*    .bg-icon-blue-dark {*/
+/*        @apply p-4 bg-gradient-to-br from-blue-600 to-blue-950 rounded-xl shadow-lg transition-shadow duration-300;*/
+/*    }*/
+
+/*    .bg-icon-orange {*/
+/*        @apply p-4 bg-gradient-to-br from-orange-600 to-orange-800 rounded-xl shadow-lg transition-shadow duration-300;*/
+/*    }*/
+
+/*    .bg-icon-green {*/
+/*        @apply p-4 bg-gradient-to-br from-green-600 to-green-800 rounded-xl shadow-lg transition-shadow duration-300;*/
+/*    }*/
+/*}*/
+
+
+/*[data-flux-field]:not(ui-radio, ui-checkbox) {*/
+/*    @apply grid gap-2;*/
+/*}*/
+
+/*[data-flux-label] {*/
+/*    @apply !mb-0 !leading-tight;*/
+/*}*/
+
+/*input:focus[data-flux-control],*/
+/*textarea:focus[data-flux-control],*/
+/*select:focus[data-flux-control] {*/
+/*    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;*/
+/*}*/
+
+/*!* \[:where(&)\]:size-4 {*/
+/*    @apply size-4;*/
+/*} *!*/
+
+
+

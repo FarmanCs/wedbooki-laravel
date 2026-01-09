@@ -7,27 +7,21 @@ use App\Models\Host\Host;
 use App\Models\Vendor\Booking;
 use App\Models\Vendor\Vendor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-class TransactionSeeder extends Seeder
+class cTransactionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create or get existing bookings, hosts, vendors
-        $bookings = Booking::limit(10)->get();
-        $hosts = Host::limit(5)->get();
-        $vendors = Vendor::limit(5)->get();
+        // 🔹 Reset table
+        DB::table('transactions')->truncate();
 
-        if ($bookings->isEmpty()) {
-            $bookings = Booking::factory()->count(10)->create();
-        }
-        if ($hosts->isEmpty()) {
-            $hosts = Host::factory()->count(5)->create();
-        }
-        if ($vendors->isEmpty()) {
-            $vendors = Vendor::factory()->count(5)->create();
-        }
+        // 🔹 Ensure we have related records
+        $hosts = Host::count() ? Host::all() : Host::factory()->count(5)->create();
+        $vendors = Vendor::count() ? Vendor::all() : Vendor::factory()->count(5)->create();
+        $bookings = Booking::count() ? Booking::all() : Booking::factory()->count(10)->create();
 
-        // Helper function to get random IDs
+        // 🔹 Helper for random related IDs
         $getRandomIds = function() use ($bookings, $hosts, $vendors) {
             return [
                 'booking_id' => $bookings->random()->id,
@@ -36,42 +30,26 @@ class TransactionSeeder extends Seeder
             ];
         };
 
-        // Completed transactions
-        foreach (range(1, 50) as $i) {
-            Transaction::factory()
-                ->completed()
-                ->create($getRandomIds());
-        }
+        // 🔹 Controlled transactions
+        Transaction::factory()->completed()->count(50)
+            ->create($getRandomIds());
 
-        // Pending transactions
-        foreach (range(1, 15) as $i) {
-            Transaction::factory()
-                ->pending()
-                ->create($getRandomIds());
-        }
+        Transaction::factory()->pending()->count(15)
+            ->create($getRandomIds());
 
-        // Failed transactions
-        foreach (range(1, 10) as $i) {
-            Transaction::factory()
-                ->failed()
-                ->create($getRandomIds());
-        }
+        Transaction::factory()->failed()->count(10)
+            ->create($getRandomIds());
 
-        // Transactions for specific bookings
-        foreach ($bookings->take(5) as $booking) {
-            Transaction::factory()
-                ->completed()
-                ->create([
-                    'booking_id' => $booking->id,
-                    'host_id' => $hosts->random()->id,
-                    'vendor_id' => $vendors->random()->id,
-                ]);
-        }
+        Transaction::factory()->completed()->count(5)
+            ->create($getRandomIds());
 
-        // Additional random transactions
-        foreach (range(1, 25) as $i) {
-            Transaction::factory()
-                ->create($getRandomIds());
-        }
+        Transaction::factory()->count(25)
+            ->create($getRandomIds());
+
+        $this->command->info('✅ Transactions seeded safely');
+        $this->command->info('Total transactions: ' . Transaction::count());
+        $this->command->info('Completed: ' . Transaction::completed()->count());
+        $this->command->info('Pending: ' . Transaction::pending()->count());
+        $this->command->info('Failed: ' . Transaction::failed()->count());
     }
 }
