@@ -31,39 +31,7 @@
         </div>
     </div>
 
-    <div class="relative w-full max-w-[1200px] mx-auto px-4">
 
-        <!-- Left Button -->
-        <button
-            id="prevBtn"
-            class="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full custom-button"
-        >
-            <x-heroicon-o-chevron-left class="w-5 h-5"/>
-        </button>
-
-        <!-- Carousel Container -->
-        <div id="carouselWrapper" class="overflow-hidden">
-            <div id="carousel" class="flex gap-4 transition-transform duration-500">
-                <div class="custom-card">Card 1</div>
-                <div class="custom-card">Card 2</div>
-                <div class="custom-card">Card 3</div>
-                <div class="custom-card">Card 4</div>
-                <div class="custom-card">Card 5</div>
-                <div class="custom-card">Card 6</div>
-                <div class="custom-card">Card 7</div>
-                <div class="custom-card">Card 8</div>
-            </div>
-        </div>
-
-        <!-- Right Button -->
-        <button
-            id="nextBtn"
-            class="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full custom-button"
-        >
-            <x-heroicon-o-chevron-right class="w-5 h-5"/>
-        </button>
-
-    </div>
 
 
     <!-- Category Filter -->
