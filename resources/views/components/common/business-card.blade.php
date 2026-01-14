@@ -104,13 +104,8 @@
     </div>
 
     <!-- View Details Button -->
-{{--    <a href="{{ route('host.vendors.index', $business->id) }}"--}}
-{{--       class="w-full custom-button">--}}
-{{--        View Details--}}
-{{--    </a>--}}
-@if(@showdetail)
-    <x-common.details wire:click="details"/>
-
-
-    <div class="w-full custom-button">View Details---</div>
+    <button wire:click="showBusinessDetail({{ $business->id }})"
+            class="w-full custom-button">
+        View Details
+    </button>
 </div>

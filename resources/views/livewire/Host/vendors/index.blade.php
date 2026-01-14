@@ -32,8 +32,6 @@
     </div>
 
 
-
-
     <!-- Category Filter -->
     @if($categories->isNotEmpty())
         <div class="mb-8">
@@ -70,8 +68,6 @@
                     $position = $this->carouselPositions[$category->id] ?? 0;
                     $totalBusinesses = $businesses->count();
                     $showCarousel = $totalBusinesses > $maxCardsBeforeCarousel;
-
-
                 @endphp
 
                 <div class="carousel-section mb-12">
@@ -105,7 +101,7 @@
                                             @endphp
                                             <div class="carousel-slide">
                                                 <div class="h-full px-2">
-                                                    @include('livewire.helpers.business-card', [
+                                                    @include('components.common.business-card', [
                                                         'business' => $business,
                                                         'importantData' => $importantData,
                                                         'favouriteIds' => $favouriteIds,
@@ -158,7 +154,7 @@
                                         $importantData = $getBusinessImportantData($business);
                                     @endphp
                                     <div class="@if($totalBusinesses === 1) mx-auto @endif">
-                                        @include('livewire.helpers.business-card', [
+                                        @include('components.common.business-card', [
                                             'business' => $business,
                                             'importantData' => $importantData,
                                             'favouriteIds' => $favouriteIds,
@@ -220,7 +216,7 @@
                             $business = $businesses->first();
                             $importantData = $getBusinessImportantData($business);
                         @endphp
-                        @include('livewire.helpers.business-card', [
+                        @include('components.common.business-card', [
                             'business' => $business,
                             'importantData' => $importantData,
                             'favouriteIds' => $favouriteIds,
@@ -237,7 +233,7 @@
                             $importantData = $getBusinessImportantData($business);
                         @endphp
                         <div>
-                            @include('livewire.helpers.business-card', [
+                            @include('components.common.business-card', [
                                 'business' => $business,
                                 'importantData' => $importantData,
                                 'favouriteIds' => $favouriteIds,
@@ -255,7 +251,7 @@
                             $importantData = $getBusinessImportantData($business);
                         @endphp
                         <div class="flex justify-center">
-                            @include('livewire.helpers.business-card', [
+                            @include('components.common.business-card', [
                                 'business' => $business,
                                 'importantData' => $importantData,
                                 'favouriteIds' => $favouriteIds,
@@ -291,25 +287,31 @@
         @endif
     @endif
 
-    <script>
-        const carousel = document.getElementById('carousel');
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
+    {{-- Detail Modal --}}
+    @if($showDetailModal && $selectedBusiness)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                {{-- Overlay --}}
+                <div class="fixed inset-0 transition-opacity bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75"
+                     wire:click="closeDetailModal"
+                     aria-hidden="true"></div>
 
-        const gap = 16; // Tailwind gap-4 = 1rem = 16px
-        const cardWidth = carousel.children[0].offsetWidth + gap;
+                {{-- Modal Content --}}
+                <div class="relative inline-block w-full max-w-6xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-900 shadow-xl rounded-2xl">
 
-        nextBtn.addEventListener('click', () => {
-            const maxScroll = carousel.scrollWidth - carousel.offsetWidth;
-            const nextScroll = Math.min(carousel.scrollLeft + cardWidth, maxScroll);
-            carousel.scrollTo({ left: nextScroll, behavior: 'smooth' });
-        });
+                    {{-- Close Button --}}
+                    <button wire:click="closeDetailModal"
+                            class="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                            aria-label="Close modal">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
 
-        prevBtn.addEventListener('click', () => {
-            const prevScroll = Math.max(carousel.scrollLeft - cardWidth, 0);
-            carousel.scrollTo({ left: prevScroll, behavior: 'smooth' });
-        });
-    </script>
-
-
+                    {{-- Include the detail view component --}}
+                    @include('components.common.details', ['business' => $selectedBusiness, 'favouriteIds' => $favouriteIds])
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

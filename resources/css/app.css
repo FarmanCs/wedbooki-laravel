@@ -351,14 +351,13 @@
     /* Buttons */
     .custom-button {
         @apply
-        bg-gradient-to-br from-gray-900 to-zinc-900
+        bg-gradient-to-br from-gray-900 to-zinc-950/20
         hover:from-gray-700 hover:to-slate-900
         text-gray-50 hover:text-zinc-950
-        font-medium rounded-full
+        font-medium rounded-md
         shadow-md
         transition-all duration-150
         flex items-center justify-center
-        w-10 h-10;
     }
 
     @media (max-width: 1024px) {
@@ -487,6 +486,9 @@
 
     .vendor-business-features {
         @apply flex flex-wrap gap-2 mt-3;
+    }
+    .vendor-feature-badge-testing-pop {
+        @apply inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300;
     }
 
     .vendor-feature-badge {

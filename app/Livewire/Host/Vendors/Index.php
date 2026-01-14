@@ -21,13 +21,17 @@ class Index extends Component
     public string $search = '';
     public ?int $categoryFilter = null;
     public array $carouselPositions = [];
-    public array $carouselDotPositions = []; // New: Track dot positions
+    public array $carouselDotPositions = [];
     public int $perPage = 25;
+
+    // NEW: For showing business detail
+    public ?int $selectedBusinessId = null;
+    public bool $showDetailModal = false;
 
     // Maximum number of cards to show before enabling carousel
     private const MAX_CARDS_BEFORE_CAROUSEL = 4;
     private const CARDS_PER_VIEW = 4;
-    private const CAROUSEL_STEP = 4; // New: Move by 4 cards at a time
+    private const CAROUSEL_STEP = 4;
 
     protected $queryString = [
         'search' => ['except' => '', 'as' => 'q'],
@@ -47,7 +51,7 @@ class Index extends Component
         $categories = Category::all();
         foreach ($categories as $category) {
             $this->carouselPositions[$category->id] = 0;
-            $this->carouselDotPositions[$category->id] = 0; // Initialize dot positions
+            $this->carouselDotPositions[$category->id] = 0;
         }
     }
 
@@ -64,6 +68,20 @@ class Index extends Component
     public function updatingPerPage()
     {
         $this->resetPage();
+    }
+
+    // NEW: Show business detail
+    public function showBusinessDetail(int $businessId): void
+    {
+        $this->selectedBusinessId = $businessId;
+        $this->showDetailModal = true;
+    }
+
+    // NEW: Close detail modal
+    public function closeDetailModal(): void
+    {
+        $this->showDetailModal = false;
+        $this->selectedBusinessId = null;
     }
 
     public function toggleFavourite(int $businessId): void
@@ -97,7 +115,6 @@ class Index extends Component
 
         if ($this->carouselPositions[$categoryId] < $maxPosition) {
             $this->carouselPositions[$categoryId] += self::CARDS_PER_VIEW;
-            // Update dot position
             $this->carouselDotPositions[$categoryId] = min(
                 $maxDots,
                 floor($this->carouselPositions[$categoryId] / self::CARDS_PER_VIEW)
@@ -121,7 +138,6 @@ class Index extends Component
 
         if ($this->carouselPositions[$categoryId] > 0) {
             $this->carouselPositions[$categoryId] -= self::CARDS_PER_VIEW;
-            // Update dot position
             $this->carouselDotPositions[$categoryId] = max(
                 0,
                 floor($this->carouselPositions[$categoryId] / self::CARDS_PER_VIEW)
@@ -175,7 +191,6 @@ class Index extends Component
             ->orderBy('is_featured', 'desc');
     }
 
-    // Helper method to get important business data
     private function getBusinessImportantData($business)
     {
         return [
@@ -199,6 +214,14 @@ class Index extends Component
 
         $categories = Category::orderBy('type')->get();
 
+        // Get selected business for detail view
+        $selectedBusiness = null;
+        if ($this->selectedBusinessId) {
+            $selectedBusiness = Business::with(['vendor', 'packages', 'reviews', 'category', 'subcategory'])
+                ->withCount(['packages', 'reviews'])
+                ->find($this->selectedBusinessId);
+        }
+
         if ($this->categoryFilter) {
             $query = $this->getBusinessQueryForCategory($this->categoryFilter);
             $totalBusinesses = $query->count();
@@ -218,6 +241,7 @@ class Index extends Component
                 'viewMode' => 'grid',
                 'usePagination' => $usePagination,
                 'totalBusinesses' => $totalBusinesses,
+                'selectedBusiness' => $selectedBusiness,
                 'getBusinessImportantData' => fn($business) => $this->getBusinessImportantData($business),
             ]);
         }
@@ -245,6 +269,7 @@ class Index extends Component
             'maxCardsBeforeCarousel' => self::MAX_CARDS_BEFORE_CAROUSEL,
             'cardsPerView' => self::CARDS_PER_VIEW,
             'carouselStep' => self::CAROUSEL_STEP,
+            'selectedBusiness' => $selectedBusiness,
             'getBusinessImportantData' => fn($business) => $this->getBusinessImportantData($business),
         ]);
     }
