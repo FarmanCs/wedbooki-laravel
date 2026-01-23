@@ -11,8 +11,7 @@ class CreditTransactionSeeder extends Seeder
 {
     public function run(): void
     {
-        //  Reset table
-//        DB::table('credit_transactions')->truncate();
+      
 
         // Get existing businesses
         $businesses = Business::count() ? Business::all() : Business::factory()->count(10)->create();

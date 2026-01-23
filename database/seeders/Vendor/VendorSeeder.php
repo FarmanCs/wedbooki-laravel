@@ -12,7 +12,7 @@ class VendorSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('vendors')->truncate();
+    
 
         $categories = Category::pluck('id')->toArray();
 

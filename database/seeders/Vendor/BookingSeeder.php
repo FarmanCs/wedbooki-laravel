@@ -13,8 +13,7 @@ class BookingSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('bookings')->truncate();
-
+       
         $hosts = Host::count() ? Host::all() : Host::factory()->count(20)->create();
         $businesses = Business::count() ? Business::all() : Business::factory()->count(20)->create();
         $vendors = Vendor::count() ? Vendor::all() : Vendor::factory()->count(20)->create();

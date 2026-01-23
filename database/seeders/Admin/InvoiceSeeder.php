@@ -14,8 +14,7 @@ class InvoiceSeeder extends Seeder
 {
     public function run(): void
     {
-        // 🔹 Reset table
-        DB::table('invoices')->truncate();
+        
 
         // 🔹 Ensure we have related records
         $hosts = Host::count() ? Host::all() : Host::factory()->count(5)->create();
